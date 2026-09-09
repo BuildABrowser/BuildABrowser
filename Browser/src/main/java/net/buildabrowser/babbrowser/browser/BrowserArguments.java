@@ -29,7 +29,8 @@ public record BrowserArguments(
   Supplier<ComponentPainter<Component>> painter,
   CookieStoreSupplier cookieStore,
   URI profilePath,
-  List<URI> launchPaths
+  List<URI> launchPaths,
+  boolean noRelaunch
 ) {
 
   private static final String STARTUP_PAGE = "https://buildabrowser.net/";
@@ -93,6 +94,12 @@ public record BrowserArguments(
       .flagType(URIFlagType.relative())
       .defaultValue(FileUtil.appConfigDirectory(configName))
       .build();
+
+    Flag<Void> noRelaunchFlag = Flag.<Void>builder()
+      .name("no-relaunch")
+      .helpText("Do not automatically relaunch the process")
+      .duplicateStrategy(DuplicateFlagStrategy.last())
+      .build();
     
     Flag<Void> helpFlag = Flag.<Void>builder()
       .name("help")
@@ -117,6 +124,7 @@ public record BrowserArguments(
       .flag(graphicsBackendFlag)
       .flag(cookieStoreFlag)
       .flag(profileURI)
+      .flag(noRelaunchFlag)
       .flag(helpFlag)
       .flag(versionFlag)
       .loose(launchPathsFlag)
@@ -140,7 +148,8 @@ public record BrowserArguments(
       results.value(graphicsBackendFlag).get(),
       results.value(cookieStoreFlag).get(),
       results.value(profileURI).get(),
-      results.value(launchPathsFlag).get()
+      results.value(launchPathsFlag).get(),
+      results.present(noRelaunchFlag)
     );
   }
 

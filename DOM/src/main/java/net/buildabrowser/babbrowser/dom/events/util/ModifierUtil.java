@@ -9,5 +9,6 @@ public final class ModifierUtil {
   public static final byte MODIFIER_META = 1 << 2;
   public static final byte MODIFIER_SHIFT = 1 << 3;
   public static final byte MODIFIER_REPEAT = 1 << 4;
+  public static final byte MODIFIER_MENU = 1 << 5;
 
 }

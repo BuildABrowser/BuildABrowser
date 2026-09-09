@@ -1,5 +1,6 @@
 package net.buildabrowser.babbrowser.browser.chrome;
 
+import java.awt.Toolkit;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -13,6 +14,8 @@ import net.buildabrowser.babbrowser.renderer.event.events.RendererKeyboardEvent;
 import net.buildabrowser.babbrowser.renderer.event.events.RendererKeyboardEvent.KeyboardEventType;
 
 public class RendererKeyboardInputAdapter implements KeyListener {
+
+  private static final int MENU_MASK = Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx();
 
   private final Supplier<GraphicalDocumentRenderer> rendererSupplier;
 
@@ -84,7 +87,8 @@ public class RendererKeyboardInputAdapter implements KeyListener {
       (e.isAltDown() ? ModifierUtil.MODIFIER_SHIFT : 0)
       + (e.isControlDown() ? ModifierUtil.MODIFIER_CTRL : 0)
       + (e.isMetaDown() ? ModifierUtil.MODIFIER_META : 0)
-      + (e.isShiftDown() ? ModifierUtil.MODIFIER_SHIFT : 0));
+      + (e.isShiftDown() ? ModifierUtil.MODIFIER_SHIFT : 0)
+      + ((e.getModifiersEx() & MENU_MASK) != 0 ? ModifierUtil.MODIFIER_MENU : 0));
     // TODO: Check repeat
     return modifiers;
   }

@@ -13,19 +13,36 @@ dependencies {
     implementation 'com.github.BuildABrowser:JFlags:-SNAPSHOT'
 
     implementation 'com.github.taucher2003:t2003-logger-impl:1.0.2'
-	implementation 'com.github.taucher2003:t2003-logger-binder:1.0.2'
+    implementation 'com.github.taucher2003:t2003-logger-binder:1.0.2'
 }
+
+def jvmVersion = Runtime.version().feature()
 
 application {
     mainClass = 'net.buildabrowser.babbrowser.browser.Main'
-    applicationDefaultJvmArgs = [
+
+    def defaultJvmArgs = [
         '-Xms32m',
         '-XX:MaxHeapFreeRatio=10', '-XX:MinHeapFreeRatio=10',
         '-XX:G1PeriodicGCInterval=3000',
         '-XX:+G1PeriodicGCInvokesConcurrent',
-        '-XX:+UnlockExperimentalVMOptions', '-XX:+UseCompactObjectHeaders',
-        '-Djava.net.preferIPv4Stack=true', '-XX:CICompilerCount=2'
+        '-Djava.net.preferIPv4Stack=true',
+        '-XX:CICompilerCount=2'
     ]
+
+    if (jvmVersion < 25) {
+        defaultJvmArgs.addAll([
+            '-XX:+UnlockExperimentalVMOptions',
+            '-XX:+UseCompactObjectHeaders'
+        ])
+    } else if (jvmVersion == 25) {
+        defaultJvmArgs.add('-XX:+UseCompactObjectHeaders')
+    }
+
+    // -XstartOnFirstThread causes it to hang, so cannot add that
+    // (just hope macOS works by default)
+
+    applicationDefaultJvmArgs = defaultJvmArgs
 }
 
 run {
@@ -35,15 +52,19 @@ run {
     if (project.hasProperty('debug')) {
         systemProperty "babbrowser.debug", project.getProperty('debug')
     }
+
+    doFirst {
+        setArgs(['--no-relaunch'] + (args ?: []))
+    }
 }
 
 jar {
-	manifest {
-		attributes(
-			"Main-Class": application.mainClass,
-			"Multi-Release": "true"
-		)
-	}
+    manifest {
+        attributes(
+            "Main-Class": application.mainClass,
+            "Multi-Release": "true"
+        )
+    }
 }
 
 java {

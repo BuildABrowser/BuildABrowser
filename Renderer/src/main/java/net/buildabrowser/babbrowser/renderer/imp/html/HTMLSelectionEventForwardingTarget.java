@@ -55,7 +55,7 @@ public class HTMLSelectionEventForwardingTarget<T> extends AbstractEventForwardi
 
     if (
       event.type().equals(KeyboardEventType.KEY_DOWN)
-      && event.ctrlKey()
+      && event.menuShortcut()
       && event.code().equals(RendererKeyboardEvent.KEY_C)
     ) {
       copySelection();

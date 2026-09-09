@@ -39,7 +39,13 @@ public class Main {
     BrowserArguments arguments = BrowserArguments.parse(args);
     if (arguments == null) return;
 
+    if (!arguments.noRelaunch()) {
+      Relauncher.relaunchWithFlags(args);
+      return;
+    }
+
     System.setProperty("org.lwjgl.opengl.contextAPI", "GLX");
+    System.setProperty("apple.laf.useScreenMenuBar", "true");
     setLookAndFeel();
 
     URI profilePath = FileUtil.asDirectory(arguments.profilePath());

@@ -42,6 +42,10 @@ public record RendererKeyboardEvent(
     return (modifiers & ModifierUtil.MODIFIER_SHIFT) != 0;
   }
 
+  public boolean menuShortcut() {
+    return (modifiers & ModifierUtil.MODIFIER_MENU) != 0;
+  }
+
   public static enum KeyboardEventType {
     KEY_PRESS, KEY_DOWN, KEY_UP
   }
