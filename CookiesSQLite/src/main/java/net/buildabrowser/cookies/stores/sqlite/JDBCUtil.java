@@ -10,12 +10,24 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Properties;
+
+import org.sqlite.SQLiteConfig;
 
 import net.buildabrowser.babbrowser.cookies.exception.CookieStoreException;
 
 public final class JDBCUtil {
 
   private static final String EXPECTED_EXACTLY_ONE_RESULT = "Expected exactly one result!";
+  private static final Properties CONNECTION_PROPS;
+
+  static {
+    SQLiteConfig config = new SQLiteConfig();
+    config.setJournalMode(SQLiteConfig.JournalMode.WAL);
+    config.setBusyTimeout(5000); // Wait up to 5s instead of throwing SQLITE_BUSY instantly
+    config.setSynchronous(SQLiteConfig.SynchronousMode.NORMAL); // Recommended pairing for WAL
+    CONNECTION_PROPS = config.toProperties();
+  }
   
   private JDBCUtil() {}
 
@@ -26,7 +38,7 @@ public final class JDBCUtil {
     Object... params
   ) throws CookieStoreException {
     try (
-      Connection connection = DriverManager.getConnection(connectionURL);
+      Connection connection = getConnection(connectionURL);
       PreparedStatement statement = connection.prepareStatement(query);
     ) {
       fillStatementParams(statement, params);
@@ -66,7 +78,7 @@ public final class JDBCUtil {
     Object... params
   ) throws CookieStoreException {
     try (
-      Connection connection = DriverManager.getConnection(connectionURL);
+      Connection connection = getConnection(connectionURL);
       PreparedStatement statement = connection.prepareStatement(query);
     ) {
       fillStatementParams(statement, params);
@@ -88,7 +100,7 @@ public final class JDBCUtil {
     Object... params
   ) throws CookieStoreException {
     try (
-      Connection connection = DriverManager.getConnection(connectionURL);
+      Connection connection = getConnection(connectionURL);
       PreparedStatement statement = connection.prepareStatement(query);
     ) {
       fillStatementParams(statement, params);
@@ -117,6 +129,10 @@ public final class JDBCUtil {
           "Unrecognized argument: " + params[i]);
       }
     }
+  }
+
+  private static Connection getConnection(String connectionURL) throws SQLException {
+    return DriverManager.getConnection(connectionURL, CONNECTION_PROPS);
   }
 
   public static interface RowMapper<T> {

@@ -156,7 +156,7 @@ public class J2DPaintCanvas implements PaintCanvas {
 
   @Override
   public FontMetrics fontMetrics() {
-    return new J2DFontMetrics(graphics.getFontMetrics(), new FontOptions(List.of(), 0, 0));
+    return currentFont.metrics();
   }
 
   private void syncPaint(J2DPaint paint) {

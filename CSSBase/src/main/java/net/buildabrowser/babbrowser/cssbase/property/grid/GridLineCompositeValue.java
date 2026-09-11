@@ -10,7 +10,7 @@ public record GridLineCompositeValue(
   
   @Override
   public String serialize() {
-    return "<UNIMPLEMENTED>";
+    return "<Not Serialized>";
   }
 
 }

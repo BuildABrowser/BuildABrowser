@@ -46,8 +46,8 @@ public class GridTrackImp implements GridTrack {
     CSSValue newMaxTrackSizingValue = sizeValue;
 
     if (sizeValue.equals(CSSValue.AUTO)) {
-      this.minTrackSizingValue = CSSValue.AUTO;
-      this.maxTrackSizingValue = SizeValue.MAX_CONTENT;
+      newMinTrackSizingValue = CSSValue.AUTO;
+      newMaxTrackSizingValue = SizeValue.MAX_CONTENT;
     } else if (sizeValue instanceof GridMinMaxValue minMaxValue) {
       newMinTrackSizingValue = minMaxValue.min();
       newMaxTrackSizingValue = minMaxValue.max();

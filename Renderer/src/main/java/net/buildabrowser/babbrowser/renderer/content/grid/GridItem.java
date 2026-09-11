@@ -4,6 +4,7 @@ import net.buildabrowser.babbrowser.renderer.box.ElementBox;
 import net.buildabrowser.babbrowser.renderer.content.generic.GenericItem;
 import net.buildabrowser.babbrowser.renderer.content.grid.imp.GridItemImp;
 import net.buildabrowser.babbrowser.renderer.fragment.UnmanagedBoxFragment;
+import net.buildabrowser.babbrowser.renderer.layout.LayoutConstraint;
 
 public interface GridItem extends GenericItem {
 
@@ -31,6 +32,10 @@ public interface GridItem extends GenericItem {
   void setFallbackSpan(int fallbackSpan);
 
   void setRelatedFragment(UnmanagedBoxFragment<?> fragment);
+  
+  LayoutConstraint firstMarginCross(LayoutConstraint parentSize);
+
+  LayoutConstraint secondMarginCross(LayoutConstraint parentSize);
 
   default GridSpan _gridSpan() {
     Integer colStart = colLineStart();

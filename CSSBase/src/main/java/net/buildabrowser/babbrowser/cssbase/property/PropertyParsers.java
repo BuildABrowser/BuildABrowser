@@ -43,12 +43,12 @@ import net.buildabrowser.babbrowser.cssbase.property.font.FontWeightParser;
 import net.buildabrowser.babbrowser.cssbase.property.grid.GridAreaParser;
 import net.buildabrowser.babbrowser.cssbase.property.grid.GridAutoFlowParser;
 import net.buildabrowser.babbrowser.cssbase.property.grid.GridAutoTracksParser;
+import net.buildabrowser.babbrowser.cssbase.property.grid.GridLineCompositeParser;
 import net.buildabrowser.babbrowser.cssbase.property.grid.GridLineParser;
 import net.buildabrowser.babbrowser.cssbase.property.grid.GridParser;
 import net.buildabrowser.babbrowser.cssbase.property.grid.GridTemplateAreasParser;
 import net.buildabrowser.babbrowser.cssbase.property.grid.GridTemplateParser;
 import net.buildabrowser.babbrowser.cssbase.property.grid.GridTrackListParser;
-import net.buildabrowser.babbrowser.cssbase.property.grid.GridLineCompositeParser;
 import net.buildabrowser.babbrowser.cssbase.property.misc.AllParser;
 import net.buildabrowser.babbrowser.cssbase.property.outline.OutlineColorParser;
 import net.buildabrowser.babbrowser.cssbase.property.outline.OutlineShorthandParser;
@@ -59,6 +59,7 @@ import net.buildabrowser.babbrowser.cssbase.property.position.PositionParser;
 import net.buildabrowser.babbrowser.cssbase.property.position.ZIndexParser;
 import net.buildabrowser.babbrowser.cssbase.property.shared.LineWidthParser;
 import net.buildabrowser.babbrowser.cssbase.property.shared.ManySideShorthandParser;
+import net.buildabrowser.babbrowser.cssbase.property.shared.TwoSideShorthandParser;
 import net.buildabrowser.babbrowser.cssbase.property.size.BoxSizingParser;
 import net.buildabrowser.babbrowser.cssbase.property.size.SizeParser;
 import net.buildabrowser.babbrowser.cssbase.property.table.BorderCollapseParser;
@@ -118,6 +119,13 @@ public final class PropertyParsers {
     "padding", new ManySideShorthandParser(new SizeParser(false, false, null),
       new CSSProperty[] { CSSProperty.PADDING_TOP, CSSProperty.PADDING_RIGHT, CSSProperty.PADDING_BOTTOM, CSSProperty.PADDING_LEFT },
       CSSProperty.PADDING),
+    // TODO: The below currently do not respect writing direction (which does not yet exist)
+    "padding-inline", new TwoSideShorthandParser(new SizeParser(false, true, null),
+      new CSSProperty[] { CSSProperty.PADDING_LEFT, CSSProperty.PADDING_RIGHT },
+      CSSProperty.PADDING_INLINE),
+    "padding-block", new TwoSideShorthandParser(new SizeParser(false, true, null),
+      new CSSProperty[] { CSSProperty.PADDING_TOP, CSSProperty.PADDING_BOTTOM },
+      CSSProperty.PADDING_BLOCK),
     
     "border-top-width", new LineWidthParser(CSSProperty.BORDER_TOP_WIDTH),
     "border-bottom-width", new LineWidthParser(CSSProperty.BORDER_BOTTOM_WIDTH),
@@ -148,6 +156,7 @@ public final class PropertyParsers {
     "border-left", new BorderSideShorthandParser(CSSProperty.BORDER_LEFT, CSSProperty.BORDER_LEFT_WIDTH, CSSProperty.BORDER_LEFT_COLOR, CSSProperty.BORDER_LEFT_STYLE),
     "border-right", new BorderSideShorthandParser(CSSProperty.BORDER_RIGHT, CSSProperty.BORDER_RIGHT_WIDTH, CSSProperty.BORDER_RIGHT_COLOR, CSSProperty.BORDER_RIGHT_STYLE),
     "border", new BorderShorthandParser(),
+    // TODO: Need -inline and -block parsers
 
     "margin-top", SizeParser.forMargin(CSSProperty.MARGIN_TOP),
     "margin-bottom", SizeParser.forMargin(CSSProperty.MARGIN_BOTTOM),
@@ -156,6 +165,13 @@ public final class PropertyParsers {
     "margin", new ManySideShorthandParser(new SizeParser(false, true, null),
       new CSSProperty[] { CSSProperty.MARGIN_TOP, CSSProperty.MARGIN_RIGHT, CSSProperty.MARGIN_BOTTOM, CSSProperty.MARGIN_LEFT },
       CSSProperty.MARGIN),
+    // TODO: The below currently do not respect writing direction (which does not yet exist)
+    "margin-inline", new TwoSideShorthandParser(new SizeParser(false, true, null),
+      new CSSProperty[] { CSSProperty.MARGIN_LEFT, CSSProperty.MARGIN_RIGHT },
+      CSSProperty.MARGIN_INLINE),
+    "margin-block", new TwoSideShorthandParser(new SizeParser(false, true, null),
+      new CSSProperty[] { CSSProperty.MARGIN_TOP, CSSProperty.MARGIN_BOTTOM },
+      CSSProperty.MARGIN_BLOCK),
     
     "outline-width", new LineWidthParser(CSSProperty.OUTLINE_WIDTH),
     "outline-style", new OutlineStyleParser(),
@@ -212,6 +228,9 @@ public final class PropertyParsers {
     "row-gap", new GapParser(CSSProperty.ROW_GAP),
     "column-gap", new GapParser(CSSProperty.COLUMN_GAP),
     "gap", new GapShorthandParser(),
+    // Legacy names used by some websites
+    "grid-row-gap", new GapParser(CSSProperty.ROW_GAP),
+    "grid-column-gap", new GapParser(CSSProperty.COLUMN_GAP),
 
     "table-layout", new TableLayoutParser(),
     "border-collapse", new BorderCollapseParser(),

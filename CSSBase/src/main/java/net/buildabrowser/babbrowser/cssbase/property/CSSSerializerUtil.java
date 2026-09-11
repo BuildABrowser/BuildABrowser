@@ -77,7 +77,7 @@ public final class CSSSerializerUtil {
 
   // TODO: Implement token list serialization
   public static String serializeTokenList(List<Token> value) {
-    return "/*<UNIMPLEMENTED>*/";
+    return "/*<Not Serialized>*/";
   }
 
   public static String serializeSelectorList(List<ComplexSelector> selectors) {

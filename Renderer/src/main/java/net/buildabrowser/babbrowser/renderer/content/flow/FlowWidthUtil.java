@@ -38,10 +38,6 @@ public final class FlowWidthUtil {
       return SizingWidthUtil.clampWidth(parentWidthConstraint, childBox, baseWidth);
     }
 
-    if (parentWidthConstraint.isPreLayoutConstraint()) {
-      return parentWidthConstraint;
-    }
-
     ElementBoxDimensions boxDimensions = childBox.dimensions();
 
     LayoutConstraint chosenConstraint = null;
@@ -66,6 +62,8 @@ public final class FlowWidthUtil {
         EBDimensionsUtil.preferredWidthConstraint(childBox));
     } else if (boxDimensions.intrinsicWidth() != -1) {
       chosenConstraint = LayoutConstraint.of(boxDimensions.intrinsicWidth());
+    } else if (parentWidthConstraint.isPreLayoutConstraint()) {
+      return parentWidthConstraint;
     } else {
       // TODO: Check if window smaller than 300px
       chosenConstraint = LayoutConstraint.of(300);

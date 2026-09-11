@@ -79,7 +79,12 @@ public class SwingStyleView extends JScrollPane {
   private void updateComputedStylesSection(PropertyContainer computedStyles) {
     Map<String, String> props = new LinkedHashMap<>();
     for (CSSProperty property : CSSProperty.values()) {
-      if (computedStyles.wasSet(property)) {
+      if (
+        computedStyles.wasSet(property)
+        // TODO: Sometimes it thinks a property was set because it was inherited. Fix that
+        // Unfortunately, yhis temp-patch will result in some legitamitely set values not being shown
+        && !computedStyles.get(property).equals(property.initial())
+      ) {
         props.put(property.serialize(), computedStyles.get(property).serialize() + ';');
       }
     }

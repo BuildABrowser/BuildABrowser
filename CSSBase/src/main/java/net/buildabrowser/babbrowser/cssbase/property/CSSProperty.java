@@ -101,6 +101,9 @@ public enum CSSProperty {
   PADDING_LEFT(nextId(), false, LengthValue.ZERO),
   PADDING_RIGHT(nextId(), false, LengthValue.ZERO),
   PADDING(new CSSProperty[] { PADDING_TOP, PADDING_BOTTOM, PADDING_LEFT, PADDING_RIGHT }),
+  // TODO: These need to respect writing direction once added
+  PADDING_INLINE(new CSSProperty[] { PADDING_LEFT, PADDING_RIGHT }),
+  PADDING_BLOCK(new CSSProperty[] { PADDING_TOP, PADDING_BOTTOM }),
 
   BORDER_TOP_WIDTH(nextId(), false, LengthValue.ZERO),
   BORDER_BOTTOM_WIDTH(nextId(), false, LengthValue.ZERO),
@@ -133,6 +136,9 @@ public enum CSSProperty {
   MARGIN_LEFT(nextId(), false, LengthValue.ZERO),
   MARGIN_RIGHT(nextId(), false, LengthValue.ZERO),
   MARGIN(new CSSProperty[] { MARGIN_TOP, MARGIN_BOTTOM, MARGIN_LEFT, MARGIN_RIGHT }),
+  // TODO: These need to respect writing direction once added
+  MARGIN_INLINE(new CSSProperty[] { MARGIN_LEFT, MARGIN_RIGHT }),
+  MARGIN_BLOCK(new CSSProperty[] { MARGIN_TOP, MARGIN_BOTTOM }),
 
   OUTLINE_WIDTH(nextId(), false, InvalidationLevel.PAINT, LengthValue.MEDIUM),
   OUTLINE_STYLE(nextId(), false, InvalidationLevel.PAINT, CSSValue.NONE),

@@ -191,8 +191,8 @@ public class FlowInlineLayout {
     FragmentFactory fragmentFactory = childBox.layoutContext().global().fragmentFactory();
     BoxFragment<?> newFragment = parentWidthConstraint.isPreLayoutConstraint() ?
       fragmentFactory.createGenericUnmanagedBox(
-        FlowUtil.constraintWidth(childBox, parentWidthConstraint),
-        FlowUtil.constraintHeight(childBox, parentHeightConstraint),
+        FlowUtil.constraintWidth(childBox, childWidthConstraint),
+        FlowUtil.constraintHeight(childBox, childHeightContraint),
         childBox) :
       childBox.layout(childWidthConstraint, childHeightContraint);
 

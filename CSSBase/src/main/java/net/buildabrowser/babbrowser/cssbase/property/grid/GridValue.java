@@ -26,7 +26,7 @@ public record GridValue(
 
   @Override
   public String serialize() {
-    return "<UNIMPLEMENTED>";
+    return "<Not Serialized>";
   }
 
 }

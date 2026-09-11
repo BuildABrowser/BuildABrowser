@@ -19,7 +19,7 @@ public record GridLineValue(
 
     @Override
     public String serialize() {
-      return "<UNIMPLEMENTED>";
+      return "<Not Serialized>";
     }
 
   }
@@ -34,7 +34,7 @@ public record GridLineValue(
 
     @Override
     public String serialize() {
-      return "<UNIMPLEMENTED>";
+      return "<Not Serialized>";
     }
 
   }
@@ -50,7 +50,7 @@ public record GridLineValue(
 
   @Override
   public String serialize() {
-    return "<UNIMPLEMENTED>";
+    return "<Not Serialized>";
   }
 
 }

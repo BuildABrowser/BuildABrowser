@@ -192,19 +192,17 @@ public class SQLiteCookieStore implements CookieStore {
       && oldCookie.httpOnly()
     ) return null;
 
+    // Don't need to actually remove the cookie now, since other code updates the existing cookie
+    // TODO: But now the method name is wrong
     boolean changed = CookieUtil.isCookieChanged(cookie, oldCookie, httpOnlyAllowed);
-    if (changed) {
-      JDBCUtil.execute(
-        jdbcURL, CookieQueries.REMOVE_DUPLICATE_COOKIE_QUERY,
-        cookie.name(), cookie.host(), cookiePath, cookie.hostOnly());
-    } else {
+    if (!changed) {
       JDBCUtil.execute(
         jdbcURL, CookieQueries.UPDATE_COOKIE_LAST_ACCESS,
         ZonedDateTime.now(),
         oldCookie.name(), oldCookie.host(), cookiePath, oldCookie.hostOnly());
+      return null;
     }
-    
-    if (!changed) return null;
+
     return CookieBuilder.fromCookie(cookie)
       .setCreationTime(oldCookie.creationTime())
       .build();

@@ -21,34 +21,29 @@ public final class FlowHeightUtil {
     LayoutConstraint childWidthConstraint,
     ElementBox childBox
   ) {
-    // TODO: computeIntrinsics is not great to call here, but it's usually not called until
-    // the child is being layed out (too late)
     computeVerticalMarginsOrZero(childBox, parentWidthConstraint);
-
-    if (
-      parentHeightConstraint.isPreLayoutConstraint()
-      || childWidthConstraint.isPreLayoutConstraint()
-    ) {
-      return parentHeightConstraint;
-    }
 
     LayoutConstraint determinedHeightConstraint = SizingHeightUtil.evaluateAdjustedHeightSize(
       parentHeightConstraint, childBox);
-    
-    boolean isHeightAuto = determinedHeightConstraint.type().equals(LayoutConstraintType.AUTO);
+
+    if (!determinedHeightConstraint.type().equals(LayoutConstraintType.AUTO)) {
+      return SizingHeightUtil.clampHeight(parentHeightConstraint, childBox, determinedHeightConstraint);
+    }
+
     ElementBoxDimensions boxDimensions = childBox.dimensions();
-    LayoutConstraint chosenConstraint = determinedHeightConstraint;
+    LayoutConstraint chosenConstraint;
     if (
       childWidthConstraint.type().equals(LayoutConstraintType.AUTO)
-      && isHeightAuto
       && boxDimensions.intrinsicHeight() != -1
     ) {
       chosenConstraint = LayoutConstraint.of(boxDimensions.intrinsicHeight());
-    } else if (isHeightAuto && boxDimensions.intrinsicRatio() != -1) {
+    } else if (boxDimensions.intrinsicRatio() != -1) {
       chosenConstraint = LayoutConstraint.of((int) (childWidthConstraint.value() / boxDimensions.intrinsicRatio())); 
-    } else if (isHeightAuto && boxDimensions.intrinsicHeight() != -1) {
+    } else if (boxDimensions.intrinsicHeight() != -1) {
       chosenConstraint = LayoutConstraint.of(boxDimensions.intrinsicHeight());
-    } else if (isHeightAuto) {
+    } else if (parentHeightConstraint.isPreLayoutConstraint()) {
+      return parentHeightConstraint;
+    } else {
       // TODO: Viewport width
       chosenConstraint = LayoutConstraint.of(Math.min(childWidthConstraint.value() / 2, 150));
     }

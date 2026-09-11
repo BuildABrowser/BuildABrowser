@@ -163,7 +163,7 @@ public class LineSegment {
         float itemHeight = fragment.height(Measurement.BORDER) - fragment.lastBaseline(Measurement.BORDER);
         if (fragment instanceof BoxFragment boxFragment) {
           float[] margin = boxFragment.box().dimensions().getComputedMargin();
-          itemHeight = itemHeight + Math.max(0, margin[1]) + Math.max(0, margin[0]);
+          itemHeight = itemHeight + Math.max(0, margin[0]);
         }
         maxBaseline = Math.max(maxBaseline, itemBaseline);
         desiredHeight = Math.max(desiredHeight, itemHeight);

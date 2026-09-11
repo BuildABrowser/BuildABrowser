@@ -20,7 +20,7 @@ public record GridTemplateAreasValue(List<GridArea> areas) implements CSSValue {
 
     @Override
     public String serialize() {
-      return "<UNIMPLEMENTED>";
+      return "<Not Serialized>";
     }
   
   }
@@ -39,7 +39,7 @@ public record GridTemplateAreasValue(List<GridArea> areas) implements CSSValue {
 
   @Override
   public String serialize() {
-    return "<UNIMPLEMENTED>";
+    return "<Not Serialized>";
   }
 
 }

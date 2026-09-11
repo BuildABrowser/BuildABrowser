@@ -16,7 +16,7 @@ public record GridMinMaxValue(
 
   @Override
   public String serialize() {
-    return "<UNIMPLEMENTED>";
+    return "<Not Serialized>";
   }
 
 }

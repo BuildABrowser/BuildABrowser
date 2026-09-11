@@ -168,6 +168,23 @@ public class FlowBlockLayout {
 
     FlowBlockBoxFragment newFragment = childContext.close(childWidthConstraint, childHeightConstraint);
     activeContext = parentContext;
+
+    boolean isSelfCollapsing =
+      newFragment.height(Measurement.BORDER) == 0
+      && !needsCollapsed(childBox, 0)
+      && !needsCollapsed(childBox, 1)
+      && !needsFloatClear;
+    if (!isSelfCollapsing) {
+      boolean hasPrecedingContent = parentContext.currentY() > 0;
+      boolean cannotCollapseWithParent =
+        parentContext.parentContext() == null
+        || parentContext.elementBox() == null
+        || needsCollapsed(parentContext.elementBox(), 0);
+      if (hasPrecedingContent || cannotCollapseWithParent) {
+        parentContext.collapse();
+      }
+      parentContext.clearCollapseContext();
+    }
     
     addFinishedFragment(newFragment, alignStart, parentWidthConstraint);
     
@@ -185,6 +202,12 @@ public class FlowBlockLayout {
     LayoutConstraint parentWidthConstraint,
     LayoutConstraint parentHeightConstraint
   ) {
+    boolean needsFloatClear = needsFloatClear(childBox);
+    if (needsFloatClear) {
+      activeContext.collapse();
+      ackFloatClear(childBox);
+    }
+
     FloatTracker floatTracker = flowContext.floatTracker();
     float leftContent = floatTracker.lineStartPos();
     float rightContent = parentWidthConstraint.isBounded() ?

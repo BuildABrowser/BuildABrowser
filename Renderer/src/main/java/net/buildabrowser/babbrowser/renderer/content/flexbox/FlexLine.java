@@ -58,7 +58,6 @@ public class FlexLine implements GenericTrack {
   @Override
   public void setCrossPos(float startPos) {
     for (GenericItem item: genericItems()) {
-      // TODO: Handle auto margin
       float[] margin = item.box().dimensions().getComputedMargin();
       if (isVertical) {
         float newX = item.fragment().posX(Measurement.BORDER) + startPos;

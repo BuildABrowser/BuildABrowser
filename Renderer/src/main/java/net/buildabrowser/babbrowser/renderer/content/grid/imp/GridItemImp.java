@@ -1,9 +1,13 @@
 package net.buildabrowser.babbrowser.renderer.content.grid.imp;
 
+import net.buildabrowser.babbrowser.cssbase.property.CSSProperty;
+import net.buildabrowser.babbrowser.cssbase.property.CSSValue;
+import net.buildabrowser.babbrowser.cssbase.property.PropertyContainer;
 import net.buildabrowser.babbrowser.renderer.box.ElementBox;
 import net.buildabrowser.babbrowser.renderer.content.grid.GridDirection;
 import net.buildabrowser.babbrowser.renderer.content.grid.GridItem;
 import net.buildabrowser.babbrowser.renderer.fragment.UnmanagedBoxFragment;
+import net.buildabrowser.babbrowser.renderer.layout.LayoutConstraint;
 
 public class GridItemImp implements GridItem {
   
@@ -94,6 +98,33 @@ public class GridItemImp implements GridItem {
   @Override
   public UnmanagedBoxFragment<?> fragment() {
     return this.relatedFragment;
+  }
+
+  @Override
+  public LayoutConstraint firstMarginCross(
+    LayoutConstraint parentSize
+  ) {
+    PropertyContainer properties = itemBox.properties();
+    CSSValue relevantValue = properties.get(CSSProperty.MARGIN_TOP);
+    if (relevantValue.equals(CSSValue.AUTO)) {
+      return LayoutConstraint.AUTO;
+    }
+
+    float[] margin = itemBox.dimensions().getComputedMargin();
+    return LayoutConstraint.of(margin[0]);
+  }
+
+  @Override
+  public LayoutConstraint secondMarginCross(
+    LayoutConstraint parentSize
+  ) {
+    PropertyContainer properties = itemBox.properties();
+    CSSValue relevantValue = properties.get(CSSProperty.MARGIN_BOTTOM);
+    if (relevantValue.equals(CSSValue.AUTO)) {
+      return LayoutConstraint.AUTO;
+    }
+    float[] margin = itemBox.dimensions().getComputedMargin();
+    return LayoutConstraint.of(margin[1]);
   }
 
   @Override

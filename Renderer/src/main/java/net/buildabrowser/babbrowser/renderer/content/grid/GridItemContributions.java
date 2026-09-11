@@ -2,6 +2,8 @@ package net.buildabrowser.babbrowser.renderer.content.grid;
 
 import net.buildabrowser.babbrowser.renderer.box.EBDimensionsUtil;
 import net.buildabrowser.babbrowser.renderer.box.ElementBoxDimensions;
+import net.buildabrowser.babbrowser.renderer.content.common.SizingHeightUtil;
+import net.buildabrowser.babbrowser.renderer.content.common.SizingWidthUtil;
 import net.buildabrowser.babbrowser.renderer.fragment.LayoutFragment.Measurement;
 import net.buildabrowser.babbrowser.renderer.fragment.UnmanagedBoxFragment;
 import net.buildabrowser.babbrowser.renderer.layout.LayoutConstraint;
@@ -57,6 +59,8 @@ public final class GridItemContributions {
   private static float minContentRaw(
     GridItem item, Grid grid, GridDirection direction
   ) {
+    LayoutConstraint explicitConstraint = explicitConstraint(item, direction);
+    if (explicitConstraint.isBounded()) return explicitConstraint.value();
     return switch (direction) {
       case COLUMN -> EBDimensionsUtil.preferredMinWidthConstraint(item.box());
       case ROW -> computeContentRow(item, grid);
@@ -68,6 +72,8 @@ public final class GridItemContributions {
   private static float maxContentRaw(
     GridItem item, Grid grid, GridDirection direction
   ) {
+    LayoutConstraint explicitConstraint = explicitConstraint(item, direction);
+    if (explicitConstraint.isBounded()) return explicitConstraint.value();
     return switch (direction) {
       case COLUMN -> EBDimensionsUtil.preferredWidthConstraint(item.box());
       case ROW -> computeContentRow(item, grid);
@@ -104,6 +110,14 @@ public final class GridItemContributions {
       LayoutConstraint.of(contentWidth),
       LayoutConstraint.AUTO);
     return fragment.height(Measurement.CONTENT);
+  }
+
+  private static LayoutConstraint explicitConstraint(
+    GridItem item, GridDirection direction
+  ) {
+    return direction.equals(GridDirection.ROW) ?
+      SizingHeightUtil.evaluateAdjustedHeightSize(LayoutConstraint.AUTO, item.box()) :
+      SizingWidthUtil.evaluateWidthSize(LayoutConstraint.AUTO, item.box());
   }
 
 }

@@ -168,13 +168,10 @@ public final class FlexCrossSizeDetermination {
     if (
       itemAlignmentValue.equals(AlignItemsValue.STRETCH)
       && item.box().properties().get(crossProperty).equals(CSSValue.AUTO)
+      && !GenericAlignItemAligner.hasCrossAutoMargin(isVertical, item)
       // TODO: Other checks
     ) {
       // TODO: Clamp
-      if (
-        GenericAlignItemAligner.hasCrossAutoMargin(isVertical, item)
-      ) return;
-
       ElementBoxDimensions dimensions = item.box().dimensions();
       float[] margin = dimensions.getComputedMargin();
       // isVertical applies for main, we are cross, so horizontal for isVertical

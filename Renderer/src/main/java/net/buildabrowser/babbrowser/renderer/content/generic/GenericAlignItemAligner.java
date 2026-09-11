@@ -8,6 +8,7 @@ import net.buildabrowser.babbrowser.cssbase.property.PropertyContainer;
 import net.buildabrowser.babbrowser.cssbase.property.align.AlignItemsValue;
 import net.buildabrowser.babbrowser.renderer.content.generic.GenericAlignContentAligner.CrossAlignmentContext;
 import net.buildabrowser.babbrowser.renderer.fragment.LayoutFragment.Measurement;
+import net.buildabrowser.babbrowser.renderer.layout.LayoutConstraint;
 
 // align-items, align-self
 public final class GenericAlignItemAligner {
@@ -80,7 +81,11 @@ public final class GenericAlignItemAligner {
   ) {
     boolean hasCrossMargin = hasCrossAutoMargin(
       alignmentContext.isVertical(), item);
-    if (hasCrossMargin) return;
+    if (hasCrossMargin) {
+      alignItemMargin(alignmentContext, line, item);
+      return;
+    }
+
     AlignItemsValue itemAlignment = getItemAlignment(
       alignmentContext.alignItems(), item);
     float lineCrossSize = line.crossSize();
@@ -99,6 +104,30 @@ public final class GenericAlignItemAligner {
     };
 
     item.setCrossPos(itemCrossPos);
+  }
+
+  private static void alignItemMargin(
+    CrossAlignmentContext alignmentContext, GenericTrack line, GenericItem item
+  ) {
+    if (!alignmentContext.crossSize().isBounded()) return;
+    // TODO: This will probably break on a grid item spanning multiple tracks
+    LayoutConstraint firstMargin = item.firstMarginCross(
+      alignmentContext.crossSize());
+    LayoutConstraint secondMargin = item.secondMarginCross(
+      alignmentContext.crossSize());
+    float itemSize = alignmentContext.isVertical() ?
+      item.fragment().width(Measurement.BORDER) :
+      item.fragment().height(Measurement.BORDER);
+    float beforeItemMargin = 0;
+    float remainingSpace = Math.max(0, alignmentContext.crossSize().value() - itemSize);
+    if (!(firstMargin.isBounded() || secondMargin.isBounded())) {
+      beforeItemMargin = remainingSpace / 2;
+    } else if (firstMargin.isBounded()) {
+      beforeItemMargin = firstMargin.value();
+    } else if (secondMargin.isBounded()) {
+      beforeItemMargin = Math.max(0, remainingSpace - secondMargin.value());
+    }
+    item.setCrossPos(beforeItemMargin);
   }
 
   private static float itemBaseline(

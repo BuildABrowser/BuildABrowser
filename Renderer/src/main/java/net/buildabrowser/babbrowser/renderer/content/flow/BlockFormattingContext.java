@@ -64,14 +64,14 @@ public class BlockFormattingContext {
     }
   }
 
-  public float estimateAbsY(boolean asIfCollapsed) {
+  public float estimateAbsY() {
     if (parentContext == null) {
       return this.y;
     } else {
-      float extra = asIfCollapsed ? maxMargin + minMargin : 0;
+      float extra = maxMargin + minMargin;
       float[] border = elementBox.dimensions().getComputedBorder();
       float[] padding = elementBox.dimensions().getComputedPadding();
-      return this.y + extra + border[0] + padding[0] + parentContext.estimateAbsY(asIfCollapsed);
+      return this.y + extra + border[0] + padding[0] + parentContext.estimateAbsY();
     }
   }
 
@@ -167,6 +167,18 @@ public class BlockFormattingContext {
 
   public PropertyContainer properties() {
     return elementBox.properties();
+  }
+
+  public BlockFormattingContext parentContext() {
+    return this.parentContext;
+  }
+
+  public ElementBox elementBox() {
+    return this.elementBox;
+  }
+
+  public void clearCollapseContext() {
+    this.collapseContext = null;
   }
 
 }

@@ -177,8 +177,28 @@ public class FlexItem implements GenericItem, GenericJustifyContentItem {
   }
 
   @Override
-  public LayoutConstraint firstMargin(
-    LayoutConstraint parentSize
+  public LayoutConstraint firstMargin(LayoutConstraint parentSize) {
+    return firstMargin(parentSize, isVertical);
+  }
+
+  @Override
+  public LayoutConstraint secondMargin(LayoutConstraint parentSize) {
+    return secondMargin(parentSize, isVertical);
+  }
+
+  @Override
+  public LayoutConstraint firstMarginCross(LayoutConstraint parentSize) {
+    return firstMargin(parentSize, !isVertical);
+  }
+
+  @Override
+  public LayoutConstraint secondMarginCross(LayoutConstraint parentSize) {
+    return secondMargin(parentSize, !isVertical);
+  }
+
+  private LayoutConstraint firstMargin(
+    LayoutConstraint parentSize,
+    boolean isVertical
   ) {
     PropertyContainer properties = itemBox.properties();
     CSSValue relevantValue = isVertical ?
@@ -192,9 +212,9 @@ public class FlexItem implements GenericItem, GenericJustifyContentItem {
     return LayoutConstraint.of(isVertical ? margin[0] : margin[2]);
   }
 
-  @Override
-  public LayoutConstraint secondMargin(
-    LayoutConstraint parentSize
+  private LayoutConstraint secondMargin(
+    LayoutConstraint parentSize,
+    boolean isVertical
   ) {
     PropertyContainer properties = itemBox.properties();
     CSSValue relevantValue = isVertical ?

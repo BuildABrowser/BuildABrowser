@@ -96,7 +96,7 @@ public class StackingContextImp implements StackingContext {
       normalizedX = 0;
     }
     if (Float.isNaN(normalizedY)) {
-      normalizedX = 0;
+      normalizedY = 0;
     }
     positionFragment(
       normalizedX + posX, normalizedY + posY,

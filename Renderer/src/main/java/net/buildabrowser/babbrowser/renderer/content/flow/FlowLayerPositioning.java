@@ -30,11 +30,13 @@ public final class FlowLayerPositioning {
       layerX, layerY, 0, 0,
       rootFragment, rootBox.stackingContext());
 
-    for (BoxFragment<?> floatFragment: floats) {
+    float rootContentX = layerX + (rootFragment.posX(Measurement.CONTENT) - rootFragment.posX(Measurement.BORDER));
+    float rootContentY = layerY + (rootFragment.posY(Measurement.CONTENT) - rootFragment.posY(Measurement.BORDER));
+
+    for (BoxFragment<?> floatFragment : floats) {
       positionFloatLayers(
-        layerX + floatFragment.layerX(Measurement.BORDER),
-        layerY + floatFragment.layerY(Measurement.BORDER),
-        // TODO: Make FloatTracker only take UnmanagedBoxFragment<?>
+        rootContentX + floatFragment.layerX(Measurement.BORDER),
+        rootContentY + floatFragment.layerY(Measurement.BORDER),
         (UnmanagedBoxFragment<?>) floatFragment, rootBox.stackingContext());
     }
   }
@@ -56,7 +58,8 @@ public final class FlowLayerPositioning {
         layerX, layerY, layerStartX, layerStartY, refContext, boxFragment);
       case UnmanagedBoxFragment<?> boxFragment -> recursePositionUnmanagedBoxFragment(
         layerX, layerY, refContext, boxFragment);
-      case FloatRefFragment floatRefFragment -> floatRefFragment.setFloatLayerStartPos(layerStartX, layerStartY);
+      case FloatRefFragment floatRefFragment -> floatRefFragment.setFloatLayerStartPos(
+        layerStartX, layerStartY);
 
       default -> throw new UnsupportedOperationException("Don't recognize fragment type!");
     }
@@ -128,7 +131,7 @@ public final class FlowLayerPositioning {
     if (box.stackingContext() != refContext) {
       box.stackingContext().positionFragment(
         layerX, layerY, boxFragment,
-        box.content()::positionLayers);
+        (frag, innerX, innerY) -> box.content().positionLayers(frag, innerX, innerY));
     } else {
       box.content().positionLayers(boxFragment, layerX, layerY);
     }
@@ -144,15 +147,20 @@ public final class FlowLayerPositioning {
   ) {
     ElementBox box = boxFragment.box();
     if (box.stackingContext() == null) {
-      // TODO: Why is it sometimes null
       assert false;
     } else if (box.stackingContext() != refContext) {
       box.stackingContext().positionNormalizedFragment(
         layerX, layerY, boxFragment,
-        box.content()::positionLayers);
+        (frag, innerX, innerY) -> {
+          float innerContentX = innerX + (frag.posX(Measurement.CONTENT) - frag.posX(Measurement.BORDER));
+          float innerContentY = innerY + (frag.posY(Measurement.CONTENT) - frag.posY(Measurement.BORDER));
+          box.content().positionLayers(frag, innerContentX, innerContentY);
+        });
     } else {
       boxFragment.setLayerPos(layerX, layerY);
-      box.content().positionLayers(boxFragment, layerX, layerY);
+      float contentX = layerX + (boxFragment.posX(Measurement.CONTENT) - boxFragment.posX(Measurement.BORDER));
+      float contentY = layerY + (boxFragment.posY(Measurement.CONTENT) - boxFragment.posY(Measurement.BORDER));
+      box.content().positionLayers(boxFragment, contentX, contentY);
     }
   }
 

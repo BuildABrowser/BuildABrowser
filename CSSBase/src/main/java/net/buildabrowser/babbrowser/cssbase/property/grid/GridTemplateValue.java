@@ -31,7 +31,7 @@ public record GridTemplateValue(
 
     @Override
     public String serialize() {
-      return "<UNIMPLEMENTED>";
+      return "<Not Serialized>";
     }
 
   }
@@ -44,7 +44,7 @@ public record GridTemplateValue(
 
   @Override
   public String serialize() {
-    return "<UNIMPLEMENTED>";
+    return "<Not Serialized>";
   }
 
 }
