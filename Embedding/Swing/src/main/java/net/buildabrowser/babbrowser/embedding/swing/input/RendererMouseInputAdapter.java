@@ -1,4 +1,4 @@
-package net.buildabrowser.babbrowser.browser.chrome;
+package net.buildabrowser.babbrowser.embedding.swing.input;
 
 import java.awt.Component;
 import java.awt.event.MouseEvent;

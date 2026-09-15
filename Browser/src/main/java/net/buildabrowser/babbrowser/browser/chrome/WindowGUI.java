@@ -4,10 +4,8 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.KeyboardFocusManager;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.util.Collections;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -28,19 +26,15 @@ import net.buildabrowser.babbrowser.browser.uistate.event.TabMutationEventListen
 import net.buildabrowser.babbrowser.browser.uistate.event.WindowMutationEventListener;
 import net.buildabrowser.babbrowser.common.util.CommonUtil;
 import net.buildabrowser.babbrowser.debugger.core.Debugger;
+import net.buildabrowser.babbrowser.embedding.swing.SwingEmbedding;
 import net.buildabrowser.babbrowser.network.URLUtil;
-import net.buildabrowser.babbrowser.painter.core.CanvasCallbacks;
 import net.buildabrowser.babbrowser.painter.core.ComponentPainter;
-import net.buildabrowser.babbrowser.painter.core.PaintCanvas;
-import net.buildabrowser.babbrowser.renderer.GraphicalDocumentRenderer;
-import net.buildabrowser.babbrowser.renderer.imp.NoOpGraphicalDocumentRenderer;
 import net.buildabrowser.babbrowser.renderer.uistate.DebuggableFrame;
+import net.buildabrowser.babbrowser.renderer.uistate.Frame;
 
 public class WindowGUI extends JFrame implements WindowMutationEventListener {
 
   private static final String NEW_TAB_PAGE = "https://buildabrowser.net/";
-
-  private static final GraphicalDocumentRenderer NO_OP_RENDERER = new NoOpGraphicalDocumentRenderer();
   
   private final JTabbedPane tabbedPane;
 
@@ -216,39 +210,7 @@ public class WindowGUI extends JFrame implements WindowMutationEventListener {
 	}
 
   private Component createSharedRenderedContent(ComponentPainter<Component> painter) {
-    Component panel = painter.createComponent(new CanvasCallbacks() {
-
-      @Override
-      public void layout(float width, float height) {
-        GraphicalDocumentRenderer activeRenderer = activeRenderer();
-        if (activeRenderer == null) return;
-        // TODO: Make renderer accept float instead?
-        activeRenderer.resize((int) Math.ceil(width), (int) Math.ceil(height));
-      }
-
-      @Override
-      public void paint(PaintCanvas canvas) {
-        GraphicalDocumentRenderer activeRenderer = activeRenderer();
-        if (activeRenderer == null) return;
-        activeRenderer.draw(canvas);
-      }
-
-      // TODO: Handle invalidation listener
-      
-    });
-
-    // TODO: Still allow focus to loop at start/end of document
-    panel.setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, Collections.emptySet());
-    panel.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, Collections.emptySet());
-    panel.setFocusable(true);
-
-    RendererMouseInputAdapter mouseHandler = new RendererMouseInputAdapter(panel, () -> activeRenderer());
-    panel.addMouseListener(mouseHandler);
-    panel.addMouseMotionListener(mouseHandler);
-    panel.addMouseWheelListener(mouseHandler);
-
-    RendererKeyboardInputAdapter keyboardHandler = new RendererKeyboardInputAdapter(() -> activeRenderer());
-    panel.addKeyListener(keyboardHandler);
+    Component panel = SwingEmbedding.createFrameComponent(painter, this::activeFrame);
     
     GridBagConstraints renderedContentConstraints = new GridBagConstraints();
     renderedContentConstraints.fill = GridBagConstraints.BOTH;
@@ -261,12 +223,12 @@ public class WindowGUI extends JFrame implements WindowMutationEventListener {
     return panel;
   }
 
-  private GraphicalDocumentRenderer activeRenderer() {
+  private Frame activeFrame() {
     if (!(
       tabbedPane.getSelectedComponent() instanceof TabGUI tabGUI
-    )) return NO_OP_RENDERER;
+    )) return null;
 
-    return tabGUI.tab().getFrame().getRenderer();
+    return tabGUI.tab().getFrame();
   }
 
   public static WindowGUI create(

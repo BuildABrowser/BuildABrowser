@@ -1,0 +1,21 @@
+plugins {
+    id 'java-library'
+    id 'maven-publish'
+}
+
+dependencies {
+    api project(':Renderer')
+}
+
+base {
+    archivesName = 'EmbeddingSC'
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            artifactId = 'EmbeddingSC'
+            from components.java
+        }
+    }
+}

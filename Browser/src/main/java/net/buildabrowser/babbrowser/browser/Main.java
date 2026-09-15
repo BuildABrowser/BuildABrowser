@@ -18,7 +18,6 @@ import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
 import net.buildabrowser.babbrowser.browser.chrome.WindowSetGUI;
-import net.buildabrowser.babbrowser.browser.net.imp.PublicSuffixListImp;
 import net.buildabrowser.babbrowser.browser.uistate.Window;
 import net.buildabrowser.babbrowser.browser.uistate.Window.WindowOptions;
 import net.buildabrowser.babbrowser.browser.uistate.WindowSet;
@@ -26,6 +25,7 @@ import net.buildabrowser.babbrowser.browser.util.FileUtil;
 import net.buildabrowser.babbrowser.cookies.CookieStore;
 import net.buildabrowser.babbrowser.debugger.core.Debugger;
 import net.buildabrowser.babbrowser.debugger.swing.SwingDebugger;
+import net.buildabrowser.babbrowser.embedding.standardcommon.net.imp.PublicSuffixListImp;
 import net.buildabrowser.babbrowser.painter.core.CanvasCallbacks;
 import net.buildabrowser.babbrowser.painter.core.ComponentPainter;
 import net.buildabrowser.babbrowser.painter.core.PaintCanvas;

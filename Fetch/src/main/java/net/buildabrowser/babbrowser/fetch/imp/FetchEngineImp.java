@@ -167,7 +167,7 @@ public class FetchEngineImp implements FetchEngine {
 
   private FetchResponse fetchFile(FetchRequest request) {
     // The spec does not say how to implement file
-    return fetchConfig.backend().fetchFile(request);
+    return fetchConfig.backend().fetchFile(fetchConfig, request);
   }
   
   private FetchResponse httpFetch(FetchParams fetchParams, boolean makeCORSPreflight) {
@@ -286,7 +286,9 @@ public class FetchEngineImp implements FetchEngine {
     underlyingSource.start = controller -> {
       // TODO: The spec defines the stream as a pull source, but it's easier to implement as a push source for now
       // Come back to this later and correct it.
-      fetchConfig.backend().makeRequest(response, request, bytesOpt -> {
+      fetchConfig.backend().makeRequest(
+        fetchConfig, response, request,
+        bytesOpt -> {
         // Avoid race conditions from parallel execution
         // TODO: Is this fine to move to the fetch task queue?
         // Since the surrounding code is running in parallel, the CompletableFuture is not a problem

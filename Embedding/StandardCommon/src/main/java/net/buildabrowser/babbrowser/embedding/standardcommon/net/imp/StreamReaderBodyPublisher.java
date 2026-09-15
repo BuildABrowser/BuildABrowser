@@ -1,4 +1,4 @@
-package net.buildabrowser.babbrowser.browser.net.imp;
+package net.buildabrowser.babbrowser.embedding.standardcommon.net.imp;
 
 import java.io.IOException;
 import java.net.http.HttpRequest.BodyPublisher;

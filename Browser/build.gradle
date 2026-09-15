@@ -9,6 +9,7 @@ dependencies {
     implementation project(':PainterSkija')
     implementation project(':DebuggerSwing')
     implementation project(':CookiesSQLite')
+    implementation project(':Embedding:Swing')
 
     implementation 'com.github.BuildABrowser:JFlags:-SNAPSHOT'
 

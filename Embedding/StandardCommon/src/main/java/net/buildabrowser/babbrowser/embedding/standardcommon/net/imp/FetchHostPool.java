@@ -1,4 +1,4 @@
-package net.buildabrowser.babbrowser.browser.net.imp;
+package net.buildabrowser.babbrowser.embedding.standardcommon.net.imp;
 
 import static net.buildabrowser.babbrowser.common.util.CompatUtil.removeLast;
 

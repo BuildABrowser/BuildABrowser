@@ -13,6 +13,8 @@ public interface Frame {
 
   FrameAPIs frameAPIs();
 
+  RenderingEngine renderingEngine();
+
   GraphicalDocumentRenderer getRenderer();
 
   Navigable navigable();

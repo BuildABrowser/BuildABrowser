@@ -1,6 +1,7 @@
 package net.buildabrowser.babbrowser.fetch.mutable;
 
 import java.net.URI;
+import java.util.UUID;
 
 import net.buildabrowser.babbrowser.fetch.FetchClient;
 import net.buildabrowser.babbrowser.fetch.FetchRequest;
@@ -20,5 +21,7 @@ public interface MutableFetchRequest extends FetchRequest {
   void appendURL(URI url);
 
   void increaseRedirectCount();
+
+  void setRelatedNavigableUUID(UUID uuid);
   
 }

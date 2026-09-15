@@ -1,4 +1,4 @@
-package net.buildabrowser.babbrowser.browser.net.imp;
+package net.buildabrowser.babbrowser.embedding.standardcommon.net.imp;
 
 import java.io.File;
 import java.io.IOException;
@@ -22,11 +22,11 @@ import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import net.buildabrowser.babbrowser.browser.net.imp.FetchHostPool.QueuedRequest;
-import net.buildabrowser.babbrowser.browser.util.OSUtil;
 import net.buildabrowser.babbrowser.common.util.CommonUtil;
+import net.buildabrowser.babbrowser.embedding.standardcommon.net.imp.FetchHostPool.QueuedRequest;
 import net.buildabrowser.babbrowser.fetch.FetchBackend;
 import net.buildabrowser.babbrowser.fetch.FetchBody;
+import net.buildabrowser.babbrowser.fetch.FetchConfig;
 import net.buildabrowser.babbrowser.fetch.FetchRequest;
 import net.buildabrowser.babbrowser.fetch.FetchResponse;
 import net.buildabrowser.babbrowser.fetch.HeaderList;
@@ -42,9 +42,6 @@ public class FetchBackendImp implements FetchBackend {
 
   // TODO: Need to determine 
   private static final int MAX_CONNECTIONS = 10;
-  private static final String CHROME_UA_STRING
-    = "Mozilla/5.0 ($OS) AppleWebKit/537.36 (KHTML, like Gecko)"
-    + " Chrome/146.0.0.0 Safari/537.36";
 
   private static final Logger LOGGER = LoggerFactory.getLogger(FetchBackendImp.class);
 
@@ -64,6 +61,7 @@ public class FetchBackendImp implements FetchBackend {
 
   @Override
   public void makeRequest(
+    FetchConfig fetchConfig,
     MutableFetchResponse response,
     FetchRequest request,
     Consumer<Optional<ByteBuffer>> byteConsumer
@@ -81,11 +79,12 @@ public class FetchBackendImp implements FetchBackend {
     }
 
     if (hasStream) {
-      makeRequestNow(response, request, byteConsumer);
+      makeRequestNow(fetchConfig, response, request, byteConsumer);
     }
   }
 
   private void makeRequestNow(
+    FetchConfig fetchConfig,
     MutableFetchResponse response,
     FetchRequest request,
     Consumer<Optional<ByteBuffer>> byteConsumer
@@ -104,7 +103,7 @@ public class FetchBackendImp implements FetchBackend {
     BodyPublisher bodyPublisher = createBodyPublisher(request);
     HttpRequest.Builder httpRequestBuilder = HttpRequest.newBuilder(url)
       .method(request.method(), bodyPublisher)
-      .setHeader("User-Agent", chooseUserAgent(request))
+      .setHeader("User-Agent", fetchConfig.uaChooser().chooseUAString(request))
       .setHeader("Accept", "text/html, text/css, image/png, image/jpeg, */*")
       .setHeader("Accept-Encoding", String.join(", ", encodingRegistry.acceptedEncodings()))
       .setHeader("Sec-CH-UA", "\"BuildABrowser Test Program\";v=\"0\"")
@@ -136,20 +135,23 @@ public class FetchBackendImp implements FetchBackend {
         } else {
           decoder.done();
           decoder.close();
-          finishRequest(request);
+          finishRequest(fetchConfig, request);
           byteConsumer.accept(Optional.empty());
         }
       })).apply(responseInfo);
     }).exceptionally(e -> {
       LOGGER.error("An issue occured while handling a network packet!", e);
-      finishRequest(request);
+      finishRequest(fetchConfig, request);
       return null;
     });
     // TODO: Proper exception handling
   }
 
   @Override
-  public FetchResponse fetchFile(FetchRequest request) {
+  public FetchResponse fetchFile(
+    FetchConfig fetchConfig,
+    FetchRequest request
+  ) {
     // TODO: Improve security
     
     File file = CommonUtil.tryOrNull(() -> new File(URLUtil.stripFragment(request.url())));
@@ -192,7 +194,7 @@ public class FetchBackendImp implements FetchBackend {
     return new StreamReaderBodyPublisher(body, reader);
   }
 
-  private void finishRequest(FetchRequest request) {
+  private void finishRequest(FetchConfig fetchConfig, FetchRequest request) {
     String host = request.currentURL().getHost();
     synchronized (requestQueue) {
       FetchHostPool pool = requestQueue.get(host);
@@ -205,26 +207,12 @@ public class FetchBackendImp implements FetchBackend {
       }
       if (queued != null) {
         makeRequestNow(
+          fetchConfig,
           queued.response(),
           queued.request(),
           queued.byteConsumer());
       }
     }
-  }
-
-  private String chooseUserAgent(FetchRequest request) {
-    String osName = OSUtil.getOSName();
-    String uaString = switch (request.url().getHost()) {
-      // Unfortunately DDG captchas the user with the default UA (and captchas would require JS)
-      case "html.duckduckgo.com", "duckduckgo.com" -> CHROME_UA_STRING + " BABBrowser/0.1.0";
-      // Unfortunately, HN just shows a page showing "sorry" half the time when using a proper UA string
-      case "news.ycombinator.com" -> CHROME_UA_STRING;
-      case "whatismybrowser.com", "www.whatismybrowser.com" -> "BABBrowser/0.1.0 ($OS)";
-      case "buildabrowser.net", "frogfind.de" -> "Mozilla/5.0 ($OS) BABBrowser/0.1.0";
-      default -> "Mozilla/5.0 ($OS) BABBrowser/0.1.0 Firefox/149.0 (Not actually Firefox)";
-    };
-
-    return uaString.replace("$OS", osName);
   }
   
 }

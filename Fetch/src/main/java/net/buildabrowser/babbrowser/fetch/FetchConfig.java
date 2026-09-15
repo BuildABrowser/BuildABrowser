@@ -5,7 +5,8 @@ import net.buildabrowser.babbrowser.cookies.CookieStore;
 public record FetchConfig(
   FetchBackend backend,
   FetchPolicy policy,
-  CookieStore cookieStore
+  CookieStore cookieStore,
+  UAChooser uaChooser
 ) {
   
 }

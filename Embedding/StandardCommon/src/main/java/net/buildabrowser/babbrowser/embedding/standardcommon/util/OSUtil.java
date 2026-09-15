@@ -1,4 +1,4 @@
-package net.buildabrowser.babbrowser.browser.util;
+package net.buildabrowser.babbrowser.embedding.standardcommon.util;
 
 public final class OSUtil {
   

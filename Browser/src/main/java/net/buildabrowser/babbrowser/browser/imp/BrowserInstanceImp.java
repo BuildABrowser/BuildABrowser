@@ -2,24 +2,15 @@ package net.buildabrowser.babbrowser.browser.imp;
 
 import java.awt.Component;
 import java.net.URI;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import net.buildabrowser.babbrowser.browser.BrowserInstance;
-import net.buildabrowser.babbrowser.browser.clipboard.AWTClipboardProvider;
-import net.buildabrowser.babbrowser.browser.net.imp.FetchBackendImp;
+import net.buildabrowser.babbrowser.browser.net.UAChooserImp;
 import net.buildabrowser.babbrowser.browser.uistate.WindowSet;
 import net.buildabrowser.babbrowser.cookies.CookieStore;
-import net.buildabrowser.babbrowser.fetch.FetchBackend;
-import net.buildabrowser.babbrowser.fetch.FetchConfig;
-import net.buildabrowser.babbrowser.fetch.FetchPolicy;
-import net.buildabrowser.babbrowser.html.ua.UAUIFeatures;
-import net.buildabrowser.babbrowser.network.encoding.ContentEncodingRegistry;
+import net.buildabrowser.babbrowser.embedding.swing.SwingEmbedding;
 import net.buildabrowser.babbrowser.painter.core.ComponentPainter;
 import net.buildabrowser.babbrowser.renderer.RenderingEngine;
-import net.buildabrowser.babbrowser.renderer.clipboard.ClipboardProvider;
-import net.buildabrowser.babbrowser.renderer.content.input.VirtualKeyboard;
-import net.buildabrowser.babbrowser.renderer.loader.DocumentLoaderRegistry;
+import net.buildabrowser.babbrowser.renderer.RenderingEngineBuilder;
 
 public class BrowserInstanceImp implements BrowserInstance {
 
@@ -33,27 +24,15 @@ public class BrowserInstanceImp implements BrowserInstance {
   ) {
     this.windowSet = WindowSet.create(this);
 
-    ClipboardProvider<?> clipboardProvider = new AWTClipboardProvider();
-
-    DocumentLoaderRegistry loaderRegistry = DocumentLoaderRegistry.createDefault();
-    ContentEncodingRegistry registry = ContentEncodingRegistry.createDefault();
-    
-    ExecutorService httpExecutorService = Executors.newWorkStealingPool(16);
-    FetchBackend fetchBackend = new FetchBackendImp(registry, httpExecutorService);
-    FetchConfig fetchConfig = new FetchConfig(
-      fetchBackend, new FetchPolicy() {}, cookieStore);
-
-    UAUIFeatures uaUIFeatures = new UAUIFeaturesImp(windowSet);
-    RenderingEngine renderingEngine = RenderingEngine.create(
-      fetchConfig,
-      Executors::newVirtualThreadPerTaskExecutor,
-      painter,
-      loaderRegistry,
-      ClassLoader.getSystemClassLoader()::getResourceAsStream,
-      clipboardProvider,
-      _1 -> new VirtualKeyboard() {},
-      uaUIFeatures);
-    this.renderingEngine = renderingEngine;
+    RenderingEngineBuilder builder = RenderingEngineBuilder.create();
+    SwingEmbedding.configure(builder);
+    builder
+      .setPainter(painter)
+      .setCookieStore(cookieStore)
+      .setTabManager(new TabManagerImp(windowSet))
+      .setUAChooser(new UAChooserImp())
+      .setDownloadManager(new DownloadManagerImp());
+    this.renderingEngine = builder.build();
   }
 
   @Override

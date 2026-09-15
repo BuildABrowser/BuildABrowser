@@ -1,0 +1,38 @@
+plugins {
+    id 'java-library'
+    id 'maven-publish'
+}
+
+dependencies {
+    api project(':Embedding:StandardCommon')
+    api project(':Renderer')
+    implementation project(':CookiesSQLite')
+    implementation project(':PainterJava2D')
+
+    testImplementation 'com.github.taucher2003:t2003-logger-impl:1.0.2'
+    testImplementation 'com.github.taucher2003:t2003-logger-binder:1.0.2'
+}
+
+task runSample(type: JavaExec) {
+    group = "Execution"
+    description = "Test standalone embedding via sample program"
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'net.buildabrowser.babbrowser.embedding.swing.SwingEmbeddingTest'
+}
+
+base {
+    archivesName = 'EmbeddingSwing'
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            artifactId = 'EmbeddingSwing'
+            from components.java
+        }
+    }
+}
+
+test {
+    failOnNoDiscoveredTests = false;
+}

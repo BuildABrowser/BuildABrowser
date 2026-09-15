@@ -18,6 +18,7 @@ import net.buildabrowser.babbrowser.html.html.HTMLDocument;
 import net.buildabrowser.babbrowser.html.navigation.Navigable;
 import net.buildabrowser.babbrowser.html.navigation.UserNavigationInvolvement;
 import net.buildabrowser.babbrowser.html.ua.DownloadManager;
+import net.buildabrowser.babbrowser.html.util.HTMLFetchUtil;
 
 public final class DownloadUtil {
   
@@ -51,6 +52,7 @@ public final class DownloadUtil {
       request.appendURL(URI.create(urlString_));
       request.setClient(client);
       // TODO: Set other flags
+      request.setRelatedNavigableUUID(HTMLFetchUtil.relatedUUID(subject.nodeDocument()));
 
       DownloadManager downloadManager =
         nodeNavigable.uaNavigableOptions().uiFeatures().downloadManager();

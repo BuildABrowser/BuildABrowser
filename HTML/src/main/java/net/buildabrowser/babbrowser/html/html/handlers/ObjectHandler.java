@@ -14,6 +14,7 @@ import net.buildabrowser.babbrowser.html.html.HTMLDocument;
 import net.buildabrowser.babbrowser.html.html.HTMLObjectElement;
 import net.buildabrowser.babbrowser.html.html.HTMLObjectElement.ChildrenRepresentation;
 import net.buildabrowser.babbrowser.html.html.HTMLObjectElement.ObjectRepresentation;
+import net.buildabrowser.babbrowser.html.util.HTMLFetchUtil;
 
 public final class ObjectHandler {
 
@@ -64,6 +65,7 @@ public final class ObjectHandler {
       request.setClient(htmlDocument.relevantSettingsObject());
       // TODO: Set destination, credentials mode, initiator type
       request.setMode(RequestMode.NAVIGATE);
+      request.setRelatedNavigableUUID(HTMLFetchUtil.relatedUUID(htmlDocument));
 
       AtomicBoolean didRespond = new AtomicBoolean();
       FetchParameters parameters = new FetchParameters() {};

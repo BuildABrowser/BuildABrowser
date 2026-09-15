@@ -1,4 +1,4 @@
-package net.buildabrowser.babbrowser.browser.clipboard;
+package net.buildabrowser.babbrowser.embedding.swing.clipboard;
 
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;

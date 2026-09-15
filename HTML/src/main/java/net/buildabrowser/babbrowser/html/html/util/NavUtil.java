@@ -89,7 +89,7 @@ public final class NavUtil {
       default -> {
         // NOSPEC: Call UI layer instead of createNewTopLevelTraversable
         yield currentNavigable.uaNavigableOptions()
-          .uiFeatures().addTopLevelTraversable(currentNavigable);
+          .uiFeatures().tabManager().addTopLevelTraversable(currentNavigable);
       }
     };
   }

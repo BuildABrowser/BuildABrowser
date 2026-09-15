@@ -35,6 +35,7 @@ public record NavigationParams(
     request.setClient(sourceSnapshotParams.fetchClient());
     request.setRedirectMode(RedirectMode.MANUAL);
     request.setMode(RequestMode.NAVIGATE);
+    request.setRelatedNavigableUUID(navigable.uuid());
     // TODO: Check client
 
     if (documentResource instanceof PostResource postResource) {

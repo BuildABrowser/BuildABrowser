@@ -54,7 +54,8 @@ public abstract class DefaultLinkProcessor implements LinkProcessor {
       type,
       document.baseURL(),
       document.relevantSettingsObject(),
-      document);
+      document,
+      document.nodeNavigable().uuid());
   }
 
   private MutableFetchRequest createALinkRequest(LinkProcessingOptions options) {
@@ -64,6 +65,7 @@ public abstract class DefaultLinkProcessor implements LinkProcessor {
     if (url == null) return null;
     MutableFetchRequest request = HTMLFetchUtil.createPotentialCORSRequest(url);
     request.setClient(options.environment());
+    request.setRelatedNavigableUUID(options.relatedNavigableUUID());
     // TODO: Other spec stuff
     return request;
   }

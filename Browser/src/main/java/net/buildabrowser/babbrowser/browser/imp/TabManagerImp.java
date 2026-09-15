@@ -3,16 +3,13 @@ package net.buildabrowser.babbrowser.browser.imp;
 import net.buildabrowser.babbrowser.browser.uistate.Tab;
 import net.buildabrowser.babbrowser.browser.uistate.WindowSet;
 import net.buildabrowser.babbrowser.html.navigation.Navigable;
-import net.buildabrowser.babbrowser.html.ua.DownloadManager;
-import net.buildabrowser.babbrowser.html.ua.UAUIFeatures;
+import net.buildabrowser.babbrowser.html.ua.TabManager;
 
-public class UAUIFeaturesImp implements UAUIFeatures {
-
-  private final DownloadManager downloadManager = new DownloadManagerImp();
+public class TabManagerImp implements TabManager {
 
   private final WindowSet windowSet;
 
-  public UAUIFeaturesImp(
+  public TabManagerImp(
     WindowSet windowSet
   ) {
     this.windowSet = windowSet;
@@ -22,11 +19,6 @@ public class UAUIFeaturesImp implements UAUIFeatures {
   public Navigable addTopLevelTraversable(Navigable sourceNavigable) {
     Tab tab = windowSet.openTabAfter(sourceNavigable.uuid());
     return tab.getFrame().navigable();
-  }
-
-  @Override
-  public DownloadManager downloadManager() {
-    return this.downloadManager;
   }
   
 }

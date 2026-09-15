@@ -12,6 +12,9 @@ import net.buildabrowser.babbrowser.fetch.FetchParameters;
 import net.buildabrowser.babbrowser.fetch.FetchRequest;
 import net.buildabrowser.babbrowser.fetch.FetchResponse;
 import net.buildabrowser.babbrowser.fetch.mutable.MutableFetchRequest;
+import net.buildabrowser.babbrowser.html.html.HTMLDocument;
+import net.buildabrowser.babbrowser.html.scripting.Window;
+import net.buildabrowser.babbrowser.html.util.HTMLFetchUtil;
 import net.buildabrowser.babbrowser.painter.core.ImageLoader;
 import net.buildabrowser.babbrowser.painter.core.LoadedImage;
 import net.buildabrowser.babbrowser.painter.core.ResourceLoader;
@@ -101,6 +104,9 @@ public class ImageCacheImp implements ImageCache {
     fetchRequest.setMethod("GET");
     fetchRequest.appendURL(imageSource);
     fetchRequest.setClient(scriptingContext.environmentSettingsObject());
+    
+    HTMLDocument htmlDocument = ((Window) scriptingContext.globalObject()).associatedDocument();
+    fetchRequest.setRelatedNavigableUUID(HTMLFetchUtil.relatedUUID(htmlDocument));
 
     FetchParameters fetchParameters = new FetchParameters();
     fetchParameters.request = fetchRequest;

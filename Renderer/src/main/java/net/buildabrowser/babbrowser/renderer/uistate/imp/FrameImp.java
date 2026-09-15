@@ -30,11 +30,13 @@ public class FrameImp implements DebuggableFrame {
   private final Navigable navigable;
   private final GraphicalDocumentRenderer renderer;
   private final FrameAPIs frameAPIs;
+  private final RenderingEngine renderingEngine;
 
   private final List<FrameDebugger> attachedDebuggers = new ArrayList<>(1);
   private final List<DocumentChangeListener> attachedChangeListeners = new ArrayList<>(1);
 
   public FrameImp(RenderingEngine renderingEngine) {
+    this.renderingEngine = renderingEngine;
     this.frameAPIs = renderingEngine.newFrameAPIs(this);
     NavigableRendererPair navigableRendererPair = renderingEngine.createNavigable(
       this,
@@ -76,6 +78,11 @@ public class FrameImp implements DebuggableFrame {
   @Override
   public GraphicalDocumentRenderer getRenderer() {
     return this.renderer;
+  }
+
+  @Override
+  public RenderingEngine renderingEngine() {
+    return this.renderingEngine;
   }
   
   @Override
@@ -149,7 +156,7 @@ public class FrameImp implements DebuggableFrame {
 
   @Override
   public void removeRepaintListener(Runnable repaintListener) {
-    navigable.uaNavigableOptions().addRepaintListener(repaintListener);
+    navigable.uaNavigableOptions().removeRepaintListener(repaintListener);
   }
 
   @Override

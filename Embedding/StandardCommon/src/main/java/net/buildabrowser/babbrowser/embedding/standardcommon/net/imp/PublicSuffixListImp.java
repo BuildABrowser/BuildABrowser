@@ -1,4 +1,4 @@
-package net.buildabrowser.babbrowser.browser.net.imp;
+package net.buildabrowser.babbrowser.embedding.standardcommon.net.imp;
 
 import net.buildabrowser.babbrowser.cookies.PublicSuffixList;
 
