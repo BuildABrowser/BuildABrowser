@@ -23,20 +23,46 @@ subprojects {
 		useJUnitPlatform()
 	}
 
-	plugins.withId('java') {
+	subprojects {
 		plugins.withId('maven-publish') {
-			afterEvaluate {
+			plugins.withId('java') {
 				publishing {
 					publications {
-						if (findByName('mavenJava') == null) {
-							create('mavenJava', MavenPublication) {
-								from components.java
+						register('mavenJava', MavenPublication) {
+							from components.java
+						}
+					}
+				}
+			}
+
+			publishing {
+				publications.withType(MavenPublication).configureEach {
+					pom {
+						licenses {
+							license {
+								name = 'MIT'
+								url = 'https://opensource.org/license/mit'
+								distribution = 'repo'
 							}
 						}
 					}
 				}
 			}
 		}
+	}
+
+	subprojects {
+    plugins.withType(JavaPlugin).configureEach {
+			tasks.named('jar') {
+				from(rootProject.file('LICENSE.txt')) {
+						into('META-INF')
+				}
+
+				from(rootProject.file('licenses')) {
+						into('META-INF/licenses')
+				}
+			}
+    }
 	}
 
 	def desktopModules = [
@@ -71,4 +97,8 @@ subprojects {
 			targetCompatibility = JavaVersion.VERSION_24
 		}
 	}
+}
+
+allprojects {
+    version = '0.1.0'
 }

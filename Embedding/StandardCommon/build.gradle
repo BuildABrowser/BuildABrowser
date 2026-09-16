@@ -12,10 +12,7 @@ base {
 }
 
 publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            artifactId = 'EmbeddingSC'
-            from components.java
-        }
+    publications.named('mavenJava') {
+        artifactId = 'EmbeddingSC'
     }
 }

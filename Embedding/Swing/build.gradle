@@ -25,11 +25,8 @@ base {
 }
 
 publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            artifactId = 'EmbeddingSwing'
-            from components.java
-        }
+    publications.named('mavenJava') {
+        artifactId = 'EmbeddingSwing'
     }
 }
 
