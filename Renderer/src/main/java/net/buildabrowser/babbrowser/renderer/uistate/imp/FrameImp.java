@@ -2,13 +2,14 @@ package net.buildabrowser.babbrowser.renderer.uistate.imp;
 
 import java.io.IOException;
 import java.net.URI;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
 
 import net.buildabrowser.babbrowser.debugger.core.DebugContext;
 import net.buildabrowser.babbrowser.debugger.core.Debugger;
 import net.buildabrowser.babbrowser.debugger.core.FrameDebugger;
+import net.buildabrowser.babbrowser.dom.listener.DocumentChangeListener;
 import net.buildabrowser.babbrowser.html.events.WindowEventLoop;
 import net.buildabrowser.babbrowser.html.navigation.Navigable;
 import net.buildabrowser.babbrowser.html.navigation.NavigateParameters;
@@ -20,6 +21,7 @@ import net.buildabrowser.babbrowser.renderer.RenderingEngine;
 import net.buildabrowser.babbrowser.renderer.RenderingEngine.NavigableRendererPair;
 import net.buildabrowser.babbrowser.renderer.imp.DelegatingGraphicalDocumentRenderer;
 import net.buildabrowser.babbrowser.renderer.uistate.DebuggableFrame;
+import net.buildabrowser.babbrowser.renderer.uistate.FrameAPIs;
 import net.buildabrowser.babbrowser.renderer.uistate.event.BrowserEventDispatcher;
 import net.buildabrowser.babbrowser.renderer.uistate.event.FrameEventListener;
 
@@ -29,13 +31,19 @@ public class FrameImp implements DebuggableFrame {
 
   private final Navigable navigable;
   private final DelegatingGraphicalDocumentRenderer renderer;
+  private final FrameAPIs frameAPIs;
+  private final RenderingEngine renderingEngine;
 
-  private List<FrameDebugger> attachedDebuggers = new LinkedList<>();
+  private final List<FrameDebugger> attachedDebuggers = new ArrayList<>(1);
+  private final List<DocumentChangeListener> attachedChangeListeners = new ArrayList<>(1);
 
   public FrameImp(
     RenderingEngine renderingEngine
   ) throws IOException {
+    this.renderingEngine = renderingEngine;
+    this.frameAPIs = renderingEngine.newFrameAPIs(this);
     NavigableRendererPair navigableRendererPair = renderingEngine.createNavigable(
+      this,
       new DebuggableDocumentRendererEventListener() {
 
         @Override
@@ -57,6 +65,14 @@ public class FrameImp implements DebuggableFrame {
             debugger.update(debugContext);
           }
         }
+
+        @Override
+        public DocumentChangeListener newChangeListener(
+          DocumentChangeListener innerListener
+        ) {
+          return new FrameDebuggableDocumentChangeListener(
+            innerListener, attachedChangeListeners);
+        }
         
       });
       
@@ -68,6 +84,21 @@ public class FrameImp implements DebuggableFrame {
   @Override
   public GraphicalDocumentRenderer getRenderer() {
     return this.renderer;
+  }
+
+  @Override
+  public RenderingEngine renderingEngine() {
+    return this.renderingEngine;
+  }
+  
+  @Override
+  public Navigable navigable() {
+    return this.navigable;
+  }
+
+  @Override 
+  public FrameAPIs frameAPIs() {
+    return this.frameAPIs;
   }
 
   @Override
@@ -131,21 +162,24 @@ public class FrameImp implements DebuggableFrame {
 
   @Override
   public void removeRepaintListener(Runnable repaintListener) {
-    navigable.uaNavigableOptions().addRepaintListener(repaintListener);
+    navigable.uaNavigableOptions().removeRepaintListener(repaintListener);
   }
 
   @Override
   public void attachDebugger(Debugger debugger) {
     FrameDebugger frameDebugger = debugger.create();
     attachedDebuggers.add(frameDebugger);
+    attachedChangeListeners.add(frameDebugger.changeListener());
   }
 
   @Override
   public void detachDebugger(Debugger debugger) {
     ListIterator<FrameDebugger> debuggerIt = attachedDebuggers.listIterator();
     while (debuggerIt.hasNext()) {
-      if (debuggerIt.next().relatedDebugger() != debugger) {
+      FrameDebugger frameDebugger = debuggerIt.next();
+      if (frameDebugger.relatedDebugger() != debugger) {
         debuggerIt.remove();
+        attachedChangeListeners.remove(frameDebugger.changeListener());
       }
     }
   }

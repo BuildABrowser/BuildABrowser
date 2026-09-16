@@ -4,7 +4,7 @@ body, html {
 
 body { margin: 8px; }
 
-button {
+input, button {
   display: inline-block;
 }
 
@@ -13,8 +13,18 @@ img {
   display: inline-block;
 }
 
-input {
+object {
+  overflow: clip !important;
+}
+
+input, textarea {
   border: 1px solid black;
+  background-color: white;
+  color: black;
+}
+
+input:not([type=checkbox], [type=radio]) {
+  overflow: clip !important;
 }
 
 button,
@@ -58,6 +68,12 @@ option {
 
 section {
   display: block;
+}
+
+textarea {
+  display: inline-block;
+  overflow: auto;
+  text-wrap-mode: wrap;
 }
 
 table {

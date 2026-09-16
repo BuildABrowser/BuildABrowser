@@ -2,6 +2,7 @@ package net.buildabrowser.babbrowser.html.misc;
 
 import net.buildabrowser.babbrowser.dom.Element;
 import net.buildabrowser.babbrowser.dom.Node;
+import net.buildabrowser.babbrowser.dom.Text;
 import net.buildabrowser.babbrowser.dom.listener.AbstractDocumentChangeListener;
 import net.buildabrowser.babbrowser.dom.listener.DocumentChangeListener;
 import net.buildabrowser.babbrowser.fetch.FetchEngine;
@@ -9,7 +10,10 @@ import net.buildabrowser.babbrowser.html.html.FormAssociatedElement;
 import net.buildabrowser.babbrowser.html.html.HTMLDocument;
 import net.buildabrowser.babbrowser.html.html.HTMLElement;
 import net.buildabrowser.babbrowser.html.html.HTMLInputElement;
+import net.buildabrowser.babbrowser.html.html.HTMLObjectElement;
+import net.buildabrowser.babbrowser.html.html.HTMLTextAreaElement;
 import net.buildabrowser.babbrowser.html.html.LinkElement;
+import net.buildabrowser.babbrowser.html.html.handlers.ObjectHandler;
 import net.buildabrowser.babbrowser.html.link.LinkProcessor;
 
 public class ElementDocumentChangeListener extends AbstractDocumentChangeListener {
@@ -33,11 +37,21 @@ public class ElementDocumentChangeListener extends AbstractDocumentChangeListene
       // TODO: Also more cases that trigger the linked resource
       LinkProcessor.processLink(element, fetchEngine);
     } else if (
-      // TODO: Custom MetaElement tyype
+      // TODO: Custom MetaElement type
       node instanceof HTMLElement element
       && element.name().equals("meta")
     ) {
       handleMeta(element);
+    } else if (
+      node instanceof HTMLObjectElement element
+      && element.name().equals("object")
+    ) {
+      ObjectHandler.determineObjectRepresentation(element, fetchEngine);
+    } else if (
+      node instanceof Text text
+      && text.parentNode() instanceof HTMLTextAreaElement htmlTextAreaElement
+    ) {
+      htmlTextAreaElement.setValue(htmlTextAreaElement.innerText());
     }
 
     if (node instanceof FormAssociatedElement formAssociatedElement) {
@@ -78,6 +92,9 @@ public class ElementDocumentChangeListener extends AbstractDocumentChangeListene
     if (attrName.equals("value")) {
       // TODO: Need to check if old value was dirty
       element.setValue(newValue);
+    } else if (attrName.equals("checked")) {
+      // TODO: Check dirty checkedness
+      element.setChecked(newValue != null);
     }
   }
 

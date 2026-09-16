@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
-import net.buildabrowser.babbrowser.cssbase.parser.SeekableCSSTokenStream;
+import net.buildabrowser.babbrowser.cssbase.parser.CSSTokenStream;
 import net.buildabrowser.babbrowser.cssbase.property.CSSProperty;
 import net.buildabrowser.babbrowser.cssbase.property.CSSValue;
 import net.buildabrowser.babbrowser.cssbase.property.CSSValue.CSSFailure;
@@ -45,7 +45,7 @@ public class BackgroundParser implements PropertyValueParser {
   
   @Override
   @SuppressWarnings({"rawtypes", "unchecked"})
-  public CSSValue parse(SeekableCSSTokenStream stream) throws IOException {
+  public CSSValue parse(CSSTokenStream stream) throws IOException {
     CSSValue result = PropertyValueParserUtil.parseCommaRepeat(stream, this::parseLayer);
     if (result.isFailure()) return result;
 
@@ -100,11 +100,11 @@ public class BackgroundParser implements PropertyValueParser {
       propLayers.add(value);
     }
 
-    ManyResult valueList = new ManyResult(propLayers);
+    ManyResult valueList = ManyResult.createCommas(propLayers);
     propertySetter.setProperty(property, valueList);
   }
 
-  private CSSValue parseLayer(SeekableCSSTokenStream stream) throws IOException {
+  private CSSValue parseLayer(CSSTokenStream stream) throws IOException {
     CSSValue anyOrderResult = PropertyValueParserUtil.parseAnyOrder(stream, bgLayerParser);
     if (anyOrderResult.isFailure()) return anyOrderResult;
     CSSValue[] results = ((AnyOrderResult) anyOrderResult).values();
@@ -128,7 +128,7 @@ public class BackgroundParser implements PropertyValueParser {
       bgOrigin, bgClip, results[6]);
   }
 
-  private CSSValue parsePositionSize(SeekableCSSTokenStream stream) throws IOException {
+  private CSSValue parsePositionSize(CSSTokenStream stream) throws IOException {
     CSSValue positionValue = backgroundPositionParser.parseInternal(stream);
     if (positionValue.isFailure()) return positionValue;
     
@@ -149,6 +149,13 @@ public class BackgroundParser implements PropertyValueParser {
   private static record BackgroundPositionSizeValue(
     CSSValue position,
     CSSValue size
-  ) implements CSSValue {}
+  ) implements CSSValue {
+
+    @Override
+    public String serialize() {
+      return position.serialize() + " " + size.serialize();
+    }
+
+  }
   
 }

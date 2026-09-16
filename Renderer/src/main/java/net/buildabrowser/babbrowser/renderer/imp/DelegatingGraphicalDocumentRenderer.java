@@ -3,12 +3,12 @@ package net.buildabrowser.babbrowser.renderer.imp;
 import java.io.IOException;
 import java.util.Optional;
 
-import net.buildabrowser.babbrowser.cssbase.cssom.extra.InvalidationLevel;
 import net.buildabrowser.babbrowser.dom.listener.DocumentChangeListener;
 import net.buildabrowser.babbrowser.html.navigation.Navigable;
 import net.buildabrowser.babbrowser.painter.core.PaintCanvas;
 import net.buildabrowser.babbrowser.renderer.GraphicalDocumentRenderer;
 import net.buildabrowser.babbrowser.renderer.event.EventForwardingTarget;
+import net.buildabrowser.babbrowser.renderer.uistate.FrameAPIs;
 
 public class DelegatingGraphicalDocumentRenderer implements GraphicalDocumentRenderer {
 
@@ -60,7 +60,7 @@ public class DelegatingGraphicalDocumentRenderer implements GraphicalDocumentRen
   }
 
   @Override
-  public void onDocumentInvalidated(InvalidationLevel invalidationLevel) {
+  public void onDocumentInvalidated(short invalidationLevel) {
     activeRenderer().onDocumentInvalidated(invalidationLevel);
   }
 
@@ -81,6 +81,10 @@ public class DelegatingGraphicalDocumentRenderer implements GraphicalDocumentRen
 
   public void onInnerRendererChanged() {
     resize(width, height);
+  }
+  
+  public FrameAPIs frameAPIs() {
+    return activeRenderer().frameAPIs();
   }
 
   private GraphicalDocumentRenderer activeRenderer() {

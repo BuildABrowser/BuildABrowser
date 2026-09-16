@@ -10,11 +10,15 @@ public interface FetchBackend {
   
   // TODO: Also require a connection
   void makeRequest(
+    FetchConfig fetchConfig,
     MutableFetchResponse response, FetchRequest request,
     Consumer<Optional<ByteBuffer>> byteConsumer
   );
 
   // TODO: Better abstraction for this
-  FetchResponse fetchFile(FetchRequest request);
+  FetchResponse fetchFile(
+    FetchConfig fetchConfig,
+    FetchRequest request
+  );
 
 }

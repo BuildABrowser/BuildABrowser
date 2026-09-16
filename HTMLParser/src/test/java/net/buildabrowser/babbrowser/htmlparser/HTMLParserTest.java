@@ -153,6 +153,16 @@ public class HTMLParserTest {
   }
 
   @Test
+  @DisplayName("Can parse document with template element")
+  public void canParseDocumentWithTemplateElement() throws IOException {
+    Document document = HTMLParser.parse(new StringReader("<template></template>"));
+    assertTreeMatches(
+      testDocumentToHead(
+        testElement("template")),
+      document);
+  }
+
+  @Test
   @DisplayName("Can parse document with self-closing meta tag")
   public void canParseDocumentWithSelfClosingMetaTag() throws IOException {
     Document document = HTMLParser.parse(new StringReader("<meta/>"));
@@ -305,6 +315,17 @@ public class HTMLParserTest {
         testText("Text"),
         testElement("hr"),
         testText("Text 2")),
+      document);
+  }
+
+  @Test
+  @DisplayName("Can parse document with carriage returns")
+  public void canParseDocumentWithCarriageReturns() throws IOException {
+    Document document = HTMLParser.parse(new StringReader("<span>\r\r\n\n</span>"));
+    assertTreeMatches(
+      testDocumentToBody(
+        testElement("span",
+          testText("\n\n\n"))),
       document);
   }
 

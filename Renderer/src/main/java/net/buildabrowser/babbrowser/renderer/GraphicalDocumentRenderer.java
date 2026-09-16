@@ -1,9 +1,11 @@
 package net.buildabrowser.babbrowser.renderer;
 
 import net.buildabrowser.babbrowser.debugger.core.DebugContext;
+import net.buildabrowser.babbrowser.dom.listener.DocumentChangeListener;
 import net.buildabrowser.babbrowser.html.navigation.DocumentRenderer;
 import net.buildabrowser.babbrowser.painter.core.PaintCanvas;
 import net.buildabrowser.babbrowser.renderer.event.EventForwardingTarget;
+import net.buildabrowser.babbrowser.renderer.uistate.FrameAPIs;
 
 public interface GraphicalDocumentRenderer extends DocumentRenderer {
 
@@ -13,9 +15,15 @@ public interface GraphicalDocumentRenderer extends DocumentRenderer {
 
   EventForwardingTarget eventForwardingTarget();
 
+  FrameAPIs frameAPIs();
+
   interface DebuggableDocumentRendererEventListener extends DocumentRendererEventListener {
 
     void update(DebugContext debugContext);
+
+    DocumentChangeListener newChangeListener(
+      DocumentChangeListener innerListener
+    );
 
   }
 

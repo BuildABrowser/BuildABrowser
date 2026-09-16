@@ -8,7 +8,20 @@ import net.buildabrowser.babbrowser.renderer.fragment.LayoutFragment;
 
 public interface RendererDocumentChangeListener extends DocumentChangeListener {
   
+  default void onBoxFragmentAdded(
+    BoxFragment<?> fragment
+  ) {}
+
   default boolean onFragmentEvent(
+    Element element, Event event,
+    BoxFragment<?> refFragment,
+    LayoutFragment target,
+    boolean allowDefault
+  ) {
+    return allowDefault;
+  }
+
+  default boolean onFragmentEventEarly(
     Element element, Event event,
     BoxFragment<?> refFragment,
     LayoutFragment target,

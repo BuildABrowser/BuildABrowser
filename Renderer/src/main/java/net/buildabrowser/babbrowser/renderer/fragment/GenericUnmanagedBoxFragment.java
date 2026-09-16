@@ -18,7 +18,7 @@ public class GenericUnmanagedBoxFragment extends UnmanagedBoxFragment<GenericUnm
     super(
       width, height, inkWidth, inkHeight,
       firstBaseline, lastBaseline,
-      box);
+      box, null);
     this.boxPainter = UnreachableBoxPainter.create(box.element());
   }
 
@@ -32,6 +32,15 @@ public class GenericUnmanagedBoxFragment extends UnmanagedBoxFragment<GenericUnm
     // TODO: Make a proper UnreachableEventHandler
     throw new IllegalStateException(
       "Reached unreachable GenericUnmanagedBoxFragment#eventHandler!");
+  }
+
+  @Override
+  public GenericUnmanagedBoxFragment newCopy() {
+    return new GenericUnmanagedBoxFragment(
+      width(Measurement.CONTENT), height(Measurement.CONTENT),
+      inkWidth(Measurement.CONTENT), inkHeight(Measurement.CONTENT),
+      firstBaseline(Measurement.CONTENT), lastBaseline(Measurement.CONTENT),
+      box());
   }
   
 }

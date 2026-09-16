@@ -14,13 +14,13 @@ import org.junit.jupiter.api.Test;
 import net.buildabrowser.babbrowser.css.engine.styles.ActiveStyles;
 import net.buildabrowser.babbrowser.cssbase.property.CSSProperty;
 import net.buildabrowser.babbrowser.cssbase.property.CSSValue;
+import net.buildabrowser.babbrowser.cssbase.property.align.AlignContentValue;
+import net.buildabrowser.babbrowser.cssbase.property.align.AlignItemsValue;
+import net.buildabrowser.babbrowser.cssbase.property.align.JustifyContentValue;
 import net.buildabrowser.babbrowser.cssbase.property.display.OrderValue;
-import net.buildabrowser.babbrowser.cssbase.property.flex.AlignContentValue;
-import net.buildabrowser.babbrowser.cssbase.property.flex.AlignItemsValue;
 import net.buildabrowser.babbrowser.cssbase.property.flex.FlexDirectionValue;
 import net.buildabrowser.babbrowser.cssbase.property.flex.FlexGrowValue;
 import net.buildabrowser.babbrowser.cssbase.property.flex.FlexWrapValue;
-import net.buildabrowser.babbrowser.cssbase.property.flex.JustifyContentValue;
 import net.buildabrowser.babbrowser.cssbase.property.shared.LineStyleValue;
 import net.buildabrowser.babbrowser.cssbase.property.size.LengthValue;
 import net.buildabrowser.babbrowser.cssbase.property.size.LengthValue.LengthType;
@@ -104,8 +104,11 @@ public class FlexContentTest {
   public void canLayoutFlexboxWithTotalBasisGreaterThanWidthAndNoWrap() {
     ActiveStyles child12Styles = ActiveStyles.create();
     child12Styles.setProperty(CSSProperty.FLEX_BASIS, PercentageValue.create(40));
+    // The original test was written before automatic min-widths were added
+    child12Styles.setProperty(CSSProperty.MIN_WIDTH, LengthValue.ZERO);
     ActiveStyles child3Styles = ActiveStyles.create();
     child3Styles.setProperty(CSSProperty.FLEX_BASIS, PercentageValue.create(50));
+    child3Styles.setProperty(CSSProperty.MIN_WIDTH, LengthValue.ZERO);
 
     ElementBox child1 = flowBlockBox(child12Styles, List.of(new TestTextBox("Red")));
     ElementBox child2 = flowBlockBox(child12Styles, List.of(new TestTextBox("Green")));

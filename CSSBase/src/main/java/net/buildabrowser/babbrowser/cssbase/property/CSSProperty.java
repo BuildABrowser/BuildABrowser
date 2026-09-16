@@ -5,7 +5,10 @@ import java.util.List;
 
 import net.buildabrowser.babbrowser.cssbase.cssom.extra.InvalidationLevel;
 import net.buildabrowser.babbrowser.cssbase.property.PropertyValueParserUtil.ManyResult;
+import net.buildabrowser.babbrowser.cssbase.property.align.AlignContentValue;
+import net.buildabrowser.babbrowser.cssbase.property.align.AlignItemsValue;
 import net.buildabrowser.babbrowser.cssbase.property.align.GapValue;
+import net.buildabrowser.babbrowser.cssbase.property.align.JustifyContentValue;
 import net.buildabrowser.babbrowser.cssbase.property.background.BackgroundAttachmentValue;
 import net.buildabrowser.babbrowser.cssbase.property.background.BackgroundPositionValue;
 import net.buildabrowser.babbrowser.cssbase.property.background.BackgroundPositionValue.BackgroundPositionSide;
@@ -19,16 +22,15 @@ import net.buildabrowser.babbrowser.cssbase.property.display.DisplayValue;
 import net.buildabrowser.babbrowser.cssbase.property.display.DisplayValue.InnerDisplayValue;
 import net.buildabrowser.babbrowser.cssbase.property.display.DisplayValue.OuterDisplayValue;
 import net.buildabrowser.babbrowser.cssbase.property.display.OrderValue;
-import net.buildabrowser.babbrowser.cssbase.property.flex.AlignContentValue;
-import net.buildabrowser.babbrowser.cssbase.property.flex.AlignItemsValue;
 import net.buildabrowser.babbrowser.cssbase.property.flex.FlexDirectionValue;
 import net.buildabrowser.babbrowser.cssbase.property.flex.FlexGrowValue;
 import net.buildabrowser.babbrowser.cssbase.property.flex.FlexShrinkValue;
 import net.buildabrowser.babbrowser.cssbase.property.flex.FlexWrapValue;
-import net.buildabrowser.babbrowser.cssbase.property.flex.JustifyContentValue;
 import net.buildabrowser.babbrowser.cssbase.property.font.FontNameValue;
 import net.buildabrowser.babbrowser.cssbase.property.font.FontNamedSizeValue;
 import net.buildabrowser.babbrowser.cssbase.property.font.FontWeightValue;
+import net.buildabrowser.babbrowser.cssbase.property.grid.GridAutoFlowValue;
+import net.buildabrowser.babbrowser.cssbase.property.grid.GridAutoFlowValue.GridAutoFlowDirection;
 import net.buildabrowser.babbrowser.cssbase.property.overflow.OverflowValue;
 import net.buildabrowser.babbrowser.cssbase.property.position.PositionValue;
 import net.buildabrowser.babbrowser.cssbase.property.size.BoxSizingValue;
@@ -48,28 +50,28 @@ public enum CSSProperty {
   COLOR(nextId(), true, InvalidationLevel.PAINT, SRGBAColor.create(0, 0, 0, 255)),
 
   BACKGROUND_COLOR(nextId(), false, InvalidationLevel.PAINT, SRGBAColor.create(0, 0, 0, 0)),
-  BACKGROUND_IMAGE(nextId(), false, InvalidationLevel.PAINT, ManyResult.create(CSSValue.NONE)),
-  BACKGROUND_REPEAT(nextId(), false, InvalidationLevel.PAINT, ManyResult.create(BackgroundRepeatValue.create(
+  BACKGROUND_IMAGE(nextId(), false, InvalidationLevel.PAINT, ManyResult.createCommas(CSSValue.NONE)),
+  BACKGROUND_REPEAT(nextId(), false, InvalidationLevel.PAINT, ManyResult.createCommas(BackgroundRepeatValue.create(
     BackgroundAxisRepeatValue.REPEAT, BackgroundAxisRepeatValue.REPEAT))),
   // Unfortunately layout as stacking contexts (generated during layout) need regenerated
-  BACKGROUND_ATTACHMENT(nextId(), false, ManyResult.create(BackgroundAttachmentValue.SCROLL)),
-  BACKGROUND_POSITION(nextId(), false, InvalidationLevel.PAINT, ManyResult.create(BackgroundPositionValue.create(
+  BACKGROUND_ATTACHMENT(nextId(), false, ManyResult.createCommas(BackgroundAttachmentValue.SCROLL)),
+  BACKGROUND_POSITION(nextId(), false, InvalidationLevel.PAINT, ManyResult.createCommas(BackgroundPositionValue.create(
     BackgroundPositionSide.LEFT, PercentageValue.create(0),
     BackgroundPositionSide.TOP, PercentageValue.create(0)))),
-  BACKGROUND_CLIP(nextId(), false, InvalidationLevel.PAINT, ManyResult.create(VisualBoxValue.BORDER_BOX)),
-  BACKGROUND_ORIGIN(nextId(), false, InvalidationLevel.PAINT, ManyResult.create(VisualBoxValue.PADDING_BOX)),
-  BACKGROUND_SIZE(nextId(), false, InvalidationLevel.PAINT, ManyResult.create(
+  BACKGROUND_CLIP(nextId(), false, InvalidationLevel.PAINT, ManyResult.createCommas(VisualBoxValue.BORDER_BOX)),
+  BACKGROUND_ORIGIN(nextId(), false, InvalidationLevel.PAINT, ManyResult.createCommas(VisualBoxValue.PADDING_BOX)),
+  BACKGROUND_SIZE(nextId(), false, InvalidationLevel.PAINT, ManyResult.createCommas(
     SizedBackgroundSizeValue.create(CSSValue.AUTO, CSSValue.AUTO))),
   BACKGROUND(new CSSProperty[] {
     BACKGROUND_COLOR, BACKGROUND_IMAGE, BACKGROUND_REPEAT, BACKGROUND_ATTACHMENT,
     BACKGROUND_POSITION, BACKGROUND_CLIP, BACKGROUND_ORIGIN, BACKGROUND_SIZE }),
 
   WIDTH(nextId(), false, CSSValue.AUTO),
-  MIN_WIDTH(nextId(), false, LengthValue.ZERO),
+  MIN_WIDTH(nextId(), false, LengthValue.AUTO),
   MAX_WIDTH(nextId(), false, CSSValue.NONE),
 
   HEIGHT(nextId(), false, CSSValue.AUTO),
-  MIN_HEIGHT(nextId(), false, LengthValue.ZERO),
+  MIN_HEIGHT(nextId(), false, LengthValue.AUTO),
   MAX_HEIGHT(nextId(), false, CSSValue.NONE),
   
   BOX_SIZING(nextId(), false, BoxSizingValue.CONTENT_BOX),
@@ -88,7 +90,7 @@ public enum CSSProperty {
   LINE_HEIGHT(nextId(), true, LineHeightValue.NORMAL),
   TEXT_ALIGN(nextId(), true, TextAlignValue.START),
 
-  FONT_FAMILY(nextId(), true, new ManyResult(List.of(FontNameValue.create("sans-serif")))),
+  FONT_FAMILY(nextId(), true, ManyResult.createCommas(List.of(FontNameValue.create("sans-serif")))),
   FONT_WEIGHT(nextId(), true, FontWeightValue.create(400)),
   FONT_SIZE(nextId(), true, FontNamedSizeValue.MEDIUM),
   // TODO: There are still other properties to support...
@@ -99,6 +101,9 @@ public enum CSSProperty {
   PADDING_LEFT(nextId(), false, LengthValue.ZERO),
   PADDING_RIGHT(nextId(), false, LengthValue.ZERO),
   PADDING(new CSSProperty[] { PADDING_TOP, PADDING_BOTTOM, PADDING_LEFT, PADDING_RIGHT }),
+  // TODO: These need to respect writing direction once added
+  PADDING_INLINE(new CSSProperty[] { PADDING_LEFT, PADDING_RIGHT }),
+  PADDING_BLOCK(new CSSProperty[] { PADDING_TOP, PADDING_BOTTOM }),
 
   BORDER_TOP_WIDTH(nextId(), false, LengthValue.ZERO),
   BORDER_BOTTOM_WIDTH(nextId(), false, LengthValue.ZERO),
@@ -131,6 +136,9 @@ public enum CSSProperty {
   MARGIN_LEFT(nextId(), false, LengthValue.ZERO),
   MARGIN_RIGHT(nextId(), false, LengthValue.ZERO),
   MARGIN(new CSSProperty[] { MARGIN_TOP, MARGIN_BOTTOM, MARGIN_LEFT, MARGIN_RIGHT }),
+  // TODO: These need to respect writing direction once added
+  MARGIN_INLINE(new CSSProperty[] { MARGIN_LEFT, MARGIN_RIGHT }),
+  MARGIN_BLOCK(new CSSProperty[] { MARGIN_TOP, MARGIN_BOTTOM }),
 
   OUTLINE_WIDTH(nextId(), false, InvalidationLevel.PAINT, LengthValue.MEDIUM),
   OUTLINE_STYLE(nextId(), false, InvalidationLevel.PAINT, CSSValue.NONE),
@@ -159,10 +167,36 @@ public enum CSSProperty {
   FLEX_BASIS(nextId(), false, CSSValue.AUTO),
   FLEX(new CSSProperty[] { CSSProperty.FLEX_GROW, CSSProperty.FLEX_SHRINK, CSSProperty.FLEX_BASIS }),
   
-  JUSTIFY_CONTENT(nextId(), false, JustifyContentValue.FLEX_START),
+  JUSTIFY_CONTENT(nextId(), false, JustifyContentValue.NORMAL),
   ALIGN_ITEMS(nextId(), false, AlignItemsValue.STRETCH),
   ALIGN_SELF(nextId(), false, CSSValue.AUTO),
-  ALIGN_CONTENT(nextId(), false, AlignContentValue.STRETCH),
+  ALIGN_CONTENT(nextId(), false, AlignContentValue.NORMAL),
+
+  GRID_TEMPLATE_COLUMNS(nextId(), false, CSSValue.NONE),
+  GRID_TEMPLATE_ROWS(nextId(), false, CSSValue.NONE),
+  GRID_TEMPLATE_AREAS(nextId(), false, CSSValue.NONE),
+  GRID_TEMPLATE(new CSSProperty[] {
+    CSSProperty.GRID_TEMPLATE_ROWS, CSSProperty.GRID_TEMPLATE_COLUMNS, CSSProperty.GRID_TEMPLATE_AREAS}),
+  
+  GRID_AUTO_COLUMNS(nextId(), false, CSSValue.AUTO),
+  GRID_AUTO_ROWS(nextId(), false, CSSValue.AUTO),
+  GRID_AUTO_FLOW(nextId(), false, GridAutoFlowValue.create(
+    GridAutoFlowDirection.ROW, false)),
+  
+  GRID(new CSSProperty[] {
+    CSSProperty.GRID_TEMPLATE_ROWS, CSSProperty.GRID_TEMPLATE_COLUMNS, CSSProperty.GRID_TEMPLATE_AREAS,
+    CSSProperty.GRID_AUTO_ROWS, CSSProperty.GRID_AUTO_COLUMNS, CSSProperty.GRID_AUTO_FLOW}),
+  
+  GRID_ROW_START(nextId(), false, CSSValue.AUTO),
+  GRID_COLUMN_START(nextId(), false, CSSValue.AUTO),
+  GRID_ROW_END(nextId(), false, CSSValue.AUTO),
+  GRID_COLUMN_END(nextId(), false, CSSValue.AUTO),
+
+  GRID_ROW(new CSSProperty[] { CSSProperty.GRID_ROW_START, CSSProperty.GRID_ROW_END }),
+  GRID_COLUMN(new CSSProperty[] { CSSProperty.GRID_COLUMN_START, CSSProperty.GRID_COLUMN_END }),
+  GRID_AREA(new CSSProperty[] {
+    CSSProperty.GRID_ROW_START, CSSProperty.GRID_ROW_END,
+    CSSProperty.GRID_COLUMN_START, CSSProperty.GRID_COLUMN_END }),
 
   ROW_GAP(nextId(), false, GapValue.NORMAL),
   COLUMN_GAP(nextId(), false, GapValue.NORMAL),
@@ -190,9 +224,9 @@ public enum CSSProperty {
   private final boolean inherited;
   private final CSSValue initial;
   private final CSSProperty[] expansions;
-  private final InvalidationLevel invalidationLevel;
+  private final short invalidationLevel;
 
-  private CSSProperty(int id, boolean inherited, InvalidationLevel invalidationLevel, CSSValue initial) {
+  private CSSProperty(int id, boolean inherited, short invalidationLevel, CSSValue initial) {
     this.id = id;
     this.inherited = inherited;
     this.initial = initial;
@@ -217,6 +251,10 @@ public enum CSSProperty {
     return this.id;
   }
 
+  public String serialize() {
+    return CSSSerializerUtil.serializeEnum(this);
+  }
+
   public boolean inherited() {
     return this.inherited;
   }
@@ -231,15 +269,12 @@ public enum CSSProperty {
 
   public CSSProperty[] getExpansions() {
     if (this.equals(CSSProperty.ALL)) {
-      if (allExpansions == null) {
-        allExpansions = all();
-      }
-      return allExpansions;
+      return all();
     }
     return this.expansions;
   }
 
-  public InvalidationLevel invalidationLevel() {
+  public short invalidationLevel() {
     return this.invalidationLevel;
   }
 
@@ -257,18 +292,26 @@ public enum CSSProperty {
     return propertyIdCopy;
   }
 
+  public static CSSProperty getById(int id) {
+    return all()[id];
+  }
+
   private static int nextId() {
     return propertyId++;
   }
 
   private static CSSProperty[] all() {
+    if (allExpansions != null) {
+      return allExpansions;
+    }
+
     List<CSSProperty> allProperties = new ArrayList<>();
     for (CSSProperty property: CSSProperty.values()) {
       if (!property.hasExpansion()) {
         allProperties.add(property);
       }
     }
-    return allProperties.toArray(new CSSProperty[0]);
+    return allExpansions = allProperties.toArray(new CSSProperty[0]);
   }
 
 }

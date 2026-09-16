@@ -4,10 +4,12 @@ import net.buildabrowser.babbrowser.cssbase.property.PropertyContainer;
 import net.buildabrowser.babbrowser.cssbase.property.display.DisplayValue.InnerDisplayValue;
 import net.buildabrowser.babbrowser.cssbase.util.PropertiesUtil;
 import net.buildabrowser.babbrowser.html.html.HTMLElement;
+import net.buildabrowser.babbrowser.renderer.box.Box;
 import net.buildabrowser.babbrowser.renderer.box.BoxContent;
 import net.buildabrowser.babbrowser.renderer.box.ElementBox;
-import net.buildabrowser.babbrowser.renderer.context.ElementContext;
+import net.buildabrowser.babbrowser.renderer.context.RenderContext;
 import net.buildabrowser.babbrowser.renderer.layout.LayoutContext;
+import net.buildabrowser.babbrowser.renderer.layout.stacking.StackingContext;
 
 public class AnonymousElementBoxImp extends AbstractElementBoxImp {
 
@@ -16,7 +18,7 @@ public class AnonymousElementBoxImp extends AbstractElementBoxImp {
 
   public AnonymousElementBoxImp(
     PropertyContainer properties,
-    ElementBox parentBox,
+    Box parentBox,
     BoxLevel boxLevel
   ) {
     super(parentBox, boxLevel);
@@ -38,7 +40,7 @@ public class AnonymousElementBoxImp extends AbstractElementBoxImp {
   }
 
   @Override
-  public ElementContext context() {
+  public RenderContext context() {
     // TODO: Hopefully this is fine
     return ((ElementBox) parentBox()).context();
   }
@@ -68,6 +70,20 @@ public class AnonymousElementBoxImp extends AbstractElementBoxImp {
   @Override
   public PropertyContainer properties() {
     return this.properties;
+  }
+
+  @Override
+  public StackingContext stackingContext() {
+    StackingContext ownContext = super.stackingContext();
+    if (ownContext != null) {
+      return ownContext;
+    }
+
+    if (parentBox() instanceof ElementBox parentElBox) {
+      return parentElBox.stackingContext();
+    }
+
+    return null;
   }
   
 }

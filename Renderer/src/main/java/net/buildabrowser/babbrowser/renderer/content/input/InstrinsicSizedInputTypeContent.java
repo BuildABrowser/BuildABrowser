@@ -19,7 +19,7 @@ public class InstrinsicSizedInputTypeContent implements InputTypeContent {
     float intrinsicHeight = fontMetrics.height(); // TODO: Use line-height instead
     rootBox.alterDimensions(false, dimensions -> {
       dimensions.setIntrinsicWidth(intrinsicWidth);
-      dimensions.setInstrinsicHeight(intrinsicHeight);
+      dimensions.setIntrinsicHeight(intrinsicHeight);
     });
   }
 
@@ -30,10 +30,13 @@ public class InstrinsicSizedInputTypeContent implements InputTypeContent {
     LayoutConstraint heightConstraint
   ) {
     ElementBoxDimensions dimensions = rootBox.dimensions();
-    float usedWidth = LayoutUtil.constraintOrDim(widthConstraint, dimensions.intrinsicWidth());
-    float usedHeight = LayoutUtil.constraintOrDim(heightConstraint, dimensions.intrinsicHeight());
+    float usedWidth = LayoutUtil.clampedUsedWidth(
+      rootBox, widthConstraint, dimensions.intrinsicWidth());
+    float usedHeight = LayoutUtil.clampedUsedHeight(
+      rootBox, heightConstraint, dimensions.intrinsicHeight());
+
     float inkWidth = Math.max(usedWidth, dimensions.intrinsicWidth());
-    float inkHeight = Math.max(usedWidth, dimensions.intrinsicHeight());
+    float inkHeight = Math.max(usedHeight, dimensions.intrinsicHeight());
     FontMetrics fontMetrics = rootBox.layoutContext().font().metrics();
     float lastBaseline = fontMetrics.descent();
     FragmentFactory fragmentFactory = rootBox.layoutContext().global().fragmentFactory();
@@ -51,7 +54,7 @@ public class InstrinsicSizedInputTypeContent implements InputTypeContent {
     fragment.setLayerPos(layerX, layerY);
   }
 
-  private float convertACharacterWidthToPixels(FontMetrics fontMetrics, int size) {
+  public static float convertACharacterWidthToPixels(FontMetrics fontMetrics, int size) {
     // TODO: Proper way to determine avg and max
     float avg = fontMetrics.stringWidth("a");
     float max = fontMetrics.stringWidth("W");

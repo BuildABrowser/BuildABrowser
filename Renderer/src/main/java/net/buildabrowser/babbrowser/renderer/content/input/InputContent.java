@@ -6,6 +6,8 @@ import net.buildabrowser.babbrowser.html.html.HTMLInputElement;
 import net.buildabrowser.babbrowser.renderer.box.BoxContent;
 import net.buildabrowser.babbrowser.renderer.box.ElementBox;
 import net.buildabrowser.babbrowser.renderer.content.input.button.ButtonTypeContent;
+import net.buildabrowser.babbrowser.renderer.content.input.checkbox.CheckBoxTypeContent;
+import net.buildabrowser.babbrowser.renderer.content.input.checkbox.RadioBoxTypeContent;
 import net.buildabrowser.babbrowser.renderer.content.input.hidden.HiddenTypeContent;
 import net.buildabrowser.babbrowser.renderer.content.input.text.TextTypeContent;
 import net.buildabrowser.babbrowser.renderer.event.EventHandlerResponse;
@@ -41,7 +43,9 @@ public class InputContent implements BoxContent {
     LayoutConstraint widthConstraint,
     LayoutConstraint heightConstraint
   ) {
-    return innerContent(box).layout(box, widthConstraint, heightConstraint);
+    UnmanagedBoxFragment<?> fragment = innerContent(box).layout(box, widthConstraint, heightConstraint);
+    box.updatePositioningFragment(fragment);
+    return fragment;
   }
 
   @Override
@@ -53,11 +57,11 @@ public class InputContent implements BoxContent {
   }
 
   @Override
-  public <T extends BoxContent> EventHandlerResponse withFocusEventHandler(
+  public <T extends BoxContent> EventHandlerResponse withContentEventHandler(
     ElementBox box,
-    FocusEventHandlerFunc<T> withHandlerFunc
+    ContentEventHandlerFunc<T> withHandlerFunc
   ) {
-    return innerContent(box).withFocusEventHandler(box, withHandlerFunc);
+    return innerContent(box).withContentEventHandler(box, withHandlerFunc);
   }
 
   @Override
@@ -94,6 +98,8 @@ public class InputContent implements BoxContent {
       case "password" -> new TextTypeContent(element, true);
       case "submit" -> new ButtonTypeContent("Submit");
       case "button" -> new ButtonTypeContent("");
+      case "checkbox" -> new CheckBoxTypeContent();
+      case "radio" -> new RadioBoxTypeContent();
       default -> new TextTypeContent(element, false);
     });
   }

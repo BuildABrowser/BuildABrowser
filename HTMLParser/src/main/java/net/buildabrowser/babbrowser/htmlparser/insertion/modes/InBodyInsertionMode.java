@@ -15,6 +15,7 @@ import net.buildabrowser.babbrowser.htmlparser.shared.ParseContext;
 import net.buildabrowser.babbrowser.htmlparser.token.CommentToken;
 import net.buildabrowser.babbrowser.htmlparser.token.DoctypeToken;
 import net.buildabrowser.babbrowser.htmlparser.token.TagToken;
+import net.buildabrowser.babbrowser.htmlparser.tokenize.imp.TokenizeStates;
 
 public class InBodyInsertionMode implements InsertionMode {
 
@@ -61,9 +62,13 @@ public class InBodyInsertionMode implements InsertionMode {
 
   @Override
   public boolean emitEOFToken(ParseContext parseContext) {
-    // TODO: Follow spec
-    parseContext.stopParsing();
-    return false;
+    if (!parseContext.templateInsertionModes().isEmpty()) {
+      return InsertionModes.IN_TEMPLATE_INSERTION_MODE.emitEOFToken(parseContext);
+    } else {
+      // TODO: Report parse error
+      parseContext.stopParsing();
+      return false;
+    }
   }
 
   @Override
@@ -183,6 +188,15 @@ public class InBodyInsertionMode implements InsertionMode {
         tagToken.acknowledgeSelfClosingFlag();
         parseContext.setFramesetOk(false);
         return false;
+      case "textarea":
+        ParseElementUtil.insertAnHTMLElement(parseContext, tagToken);
+        parseContext.setIgnoreNextLineFeed(true);
+        parseContext.tokenizeContext().setTokenizeState(
+          TokenizeStates.RCDATA_STATE);
+        parseContext.setOriginalInsertionMode(parseContext.currentInsertionMode());
+        parseContext.setFramesetOk(false);
+        parseContext.setInsertionMode(InsertionModes.TEXT_INSERTION_MODE);
+        return false;
       default:
         ParseTextUtil.reconstructTheActiveFormattingElements(parseContext);
         ParseElementUtil.insertAnHTMLElement(parseContext, tagToken);
@@ -193,6 +207,8 @@ public class InBodyInsertionMode implements InsertionMode {
   private boolean emitEndTagToken(ParseContext parseContext, TagToken tagToken) {
     OpenElementStack stack = parseContext.openElementStack();
     switch (tagToken.name()) {
+      case "template":
+        return InsertionModes.IN_HEAD_INSERTION_MODE.emitTagToken(parseContext, tagToken);
       case "body":
         // TODO: Other stuff
         parseContext.setInsertionMode(InsertionModes.AFTER_BODY_INSERTION_MODE);

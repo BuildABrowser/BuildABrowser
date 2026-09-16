@@ -15,7 +15,7 @@ public class TestUnmanagedBoxFragment extends UnmanagedBoxFragment<TestUnmanaged
     super(
       width, height, width, height,
       0, 0,
-      box);
+      box, null);
     this.setPos(x, y);
   }
 
@@ -27,6 +27,11 @@ public class TestUnmanagedBoxFragment extends UnmanagedBoxFragment<TestUnmanaged
   @Override
   protected EventHandler<TestUnmanagedBoxFragment> eventHandler() {
     throw new UnsupportedOperationException("Cannot access event handler during testing!");
+  }
+
+  @Override
+  public TestUnmanagedBoxFragment newCopy() {
+    throw new UnsupportedOperationException("Unimplemented method 'newCopy'");
   }
   
 }

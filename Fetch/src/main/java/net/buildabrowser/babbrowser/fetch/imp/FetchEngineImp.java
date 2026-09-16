@@ -6,13 +6,14 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
 import net.buildabrowser.babbrowser.common.util.CommonUtil;
-import net.buildabrowser.babbrowser.fetch.FetchBackend;
 import net.buildabrowser.babbrowser.fetch.FetchBody;
+import net.buildabrowser.babbrowser.fetch.FetchConfig;
 import net.buildabrowser.babbrowser.fetch.FetchController;
 import net.buildabrowser.babbrowser.fetch.FetchDestinatation;
 import net.buildabrowser.babbrowser.fetch.FetchEngine;
@@ -39,16 +40,19 @@ import net.buildabrowser.babbrowser.stream.UnderlyingSource.ReadableStreamType;
 
 public class FetchEngineImp implements FetchEngine {
 
-  private final FetchBackend fetchBackend;
+  private static final List<String> REQUEST_BODY_HEADER_NAMES = List.of(
+    "Content-Encoding", "Content-Language", "Content-Location", "Content-Type");
 
-  public FetchEngineImp(FetchBackend fetchBackend) {
-    this.fetchBackend = fetchBackend;
+  private final FetchConfig fetchConfig;
+
+  public FetchEngineImp(FetchConfig fetchConfig) {
+    this.fetchConfig = fetchConfig;
   }
 
   @Override
   public FetchController fetch(FetchParameters fetchParameters) {
     // TODO: A ton of random stuff
-    FetchRequest request = fetchParameters.request;
+    MutableFetchRequest request = fetchParameters.request;
     FetchDestinatation taskDestination = null;
     if (request.client() != null) {
       taskDestination = request.client().fetchDestinatation();
@@ -58,6 +62,10 @@ public class FetchEngineImp implements FetchEngine {
       fetchParameters.processResponse,
       fetchParameters.processResponseConsumeBody,
       taskDestination, new FetchController());
+    if (request.body() instanceof ByteBuffer) {
+      request.setBody(
+        FetchImpUtil.safelyExtractABodyWithType(request.body()).body());
+    }
     mainFetch(fetchParams, false);
 
     return fetchParams.controller();
@@ -112,6 +120,9 @@ public class FetchEngineImp implements FetchEngine {
   private FetchResponse overrideFetch(
     OverrideFetchType fetchType, FetchParams fetchParams, boolean makeCORSPreflight
   ) {
+    FetchRequest request = fetchParams.request();
+    FetchResponse response = fetchConfig.policy().overrideResponse(request);
+    if (response != null) return response;
     return switch (fetchType) {
       case SCHEME_FETCH -> schemeFetch(fetchParams);
       case HTTP_FETCH -> httpFetch(fetchParams, makeCORSPreflight);
@@ -156,7 +167,7 @@ public class FetchEngineImp implements FetchEngine {
 
   private FetchResponse fetchFile(FetchRequest request) {
     // The spec does not say how to implement file
-    return fetchBackend.fetchFile(request);
+    return fetchConfig.backend().fetchFile(fetchConfig, request);
   }
   
   private FetchResponse httpFetch(FetchParams fetchParams, boolean makeCORSPreflight) {
@@ -201,6 +212,34 @@ public class FetchEngineImp implements FetchEngine {
     }
     request.increaseRedirectCount();
 
+    if (
+      response.status() != 303
+      && request.body() != null
+      && ((FetchBody) request.body()).source() == null
+    ) {
+      return FetchResponse.createNetworkError();
+    }
+
+    if (
+      ((response.status() == 301 || response.status() == 302)
+        && request.method().equals("POST"))
+      || (response.status() == 303
+        && !(request.method().equals("GET") || request.method().equals("HEAD")))
+    ) {
+      request.setMethod("GET");
+      request.setBody(null);
+      for (String headerName: REQUEST_BODY_HEADER_NAMES) {
+        request.headerList().delete(headerName);
+      }
+    }
+
+    // TODO: CORS stuff
+
+    if (request.body() != null) {
+      request.setBody(FetchImpUtil.safelyExtractABodyWithType(
+        ((FetchBody) request.body()).source()).body());
+    }
+
     // TODO: A ton of stuff
 
     request.appendURL(locationURL);
@@ -216,12 +255,21 @@ public class FetchEngineImp implements FetchEngine {
   private FetchResponse httpNetworkOrCacheFetch(
     FetchParams fetchParams, boolean isAuthenticationFetch, boolean isNewConnectionFetch
   ) {
+    FetchRequest request = fetchParams.request();
+    FetchRequest httpRequest = request; // TODO: Set properly
     // TODO: A ton of stuff
-    return httpNetworkFetch(fetchParams, isAuthenticationFetch, isNewConnectionFetch);
+    boolean includeCredentials = true; // TODO: Set properly
+    if (includeCredentials) {
+      FetchCookieUtil.appendRequestCookieHeader(fetchConfig, httpRequest);
+    }
+    return httpNetworkFetch(
+      fetchParams, includeCredentials, isNewConnectionFetch);
   }
 
   private FetchResponse httpNetworkFetch(
-    FetchParams fetchParams, boolean isAuthenticationFetch, boolean isNewConnectionFetch
+    FetchParams fetchParams,
+    boolean includeCredentials,
+    boolean forceNewConnection
   ) {
     // TODO: A ton of random stuff
     // TODO: Properly re-use connections
@@ -238,7 +286,9 @@ public class FetchEngineImp implements FetchEngine {
     underlyingSource.start = controller -> {
       // TODO: The spec defines the stream as a pull source, but it's easier to implement as a push source for now
       // Come back to this later and correct it.
-      fetchBackend.makeRequest(response, request, bytesOpt -> {
+      fetchConfig.backend().makeRequest(
+        fetchConfig, response, request,
+        bytesOpt -> {
         // Avoid race conditions from parallel execution
         // TODO: Is this fine to move to the fetch task queue?
         // Since the surrounding code is running in parallel, the CompletableFuture is not a problem
@@ -260,6 +310,11 @@ public class FetchEngineImp implements FetchEngine {
 
     // TODO: Need to handle 1xx
     CommonUtil.rethrowV(() -> receivedResponse.get());
+
+    if (includeCredentials) {
+      FetchCookieUtil.parseAndStoreResponseSetCookieHeaders(
+        fetchConfig, request, response);
+    }
 
     return response;
   }

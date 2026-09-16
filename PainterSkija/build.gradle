@@ -18,8 +18,14 @@ switch (OperatingSystem.current()) {
         project.ext.skijaNatives = "skija-windows-x64"
         break
     case OperatingSystem.MAC_OS:
-		project.ext.lwjglNatives = "natives-macos-arm64"
-        project.ext.skijaNatives = "skija-macos-arm64"
+        // I was unable to test Skija on macOS
+        if (System.getProperty("os.arch") == "aarch64") {
+            project.ext.lwjglNatives = "natives-macos-arm64"
+            project.ext.skijaNatives = "skija-macos-arm64"
+        } else {
+            project.ext.lwjglNatives = "natives-macos"
+            project.ext.skijaNatives = "skija-macos-x64"
+        }
         break
 }
 

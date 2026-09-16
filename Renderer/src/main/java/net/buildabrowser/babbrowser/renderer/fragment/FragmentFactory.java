@@ -47,6 +47,13 @@ public interface FragmentFactory {
     ElementBox box, UnmanagedBoxFragment<?> fragments
   );
 
+  FlexBoxFragment createGridBoxFragment(
+    float width, float height,
+    float inkWidth, float inkHeight,
+    float firstBaseline, float lastBaseline,
+    ElementBox box, UnmanagedBoxFragment<?> fragments
+  );
+
   TableBoxFragment createTableBoxFragment(
     float width, float height,
     float inkWidth, float inkHeight,
@@ -78,6 +85,27 @@ public interface FragmentFactory {
     float firstBaseline, float lastBaseline,
     ElementBox rootBox,
     UnmanagedBoxFragment<?> innerFragment
+  );
+
+  UnmanagedBoxFragment<?> createCheckBoxFragment(
+    float width, float height,
+    float inkWidth, float inkHeight,
+    float firstBaseline, float lastBaseline,
+    ElementBox rootBox
+  );
+
+  UnmanagedBoxFragment<?> createRadioBoxFragment(
+    float width, float height,
+    float inkWidth, float inkHeight,
+    float firstBaseline, float lastBaseline,
+    ElementBox rootBox
+  );
+
+  BaseInputFragment<?> createTextAreaBoxFragment(
+    float width, float height,
+    float inkWidth, float inkHeight,
+    float firstBaseline, float lastBaseline,
+    ElementBox box
   );
 
   ScrollBoxFragment createScrollBoxFragment(

@@ -76,11 +76,12 @@ public final class EventUtil {
       return EventHandlerResponse.UNHANDLED;
     }
     Element element = elementBox.element();
+    byte modifiers = mouseEvent.modifiers();
     Event event = switch (mouseEvent.event()) {
-      case DOWN -> PointerEvent.create("mousedown", posX, posY);
-      case UP -> PointerEvent.create("mouseup", posX, posY);
-      case CLICK -> PointerEvent.create("click", posX, posY);
-      case MOVE -> PointerEvent.create("mousemove", posX, posY);
+      case DOWN -> PointerEvent.create("mousedown", modifiers, posX, posY);
+      case UP -> PointerEvent.create("mouseup", modifiers, posX, posY);
+      case CLICK -> PointerEvent.create("click", modifiers, posX, posY);
+      case MOVE -> PointerEvent.create("mousemove", modifiers, posX, posY);
       default -> null;
     };
     
@@ -103,7 +104,8 @@ public final class EventUtil {
     BoxFragment<?> refFragment,
     LayoutFragment targetFragment
   ) {
-    if (event == null) {
+    // TODO: Proper handling for null element
+    if (event == null || element == null) {
       return EventHandlerResponse.UNHANDLED;
     }
 
@@ -114,9 +116,23 @@ public final class EventUtil {
       TaskSource.USER_INTERACTION,
       document.nodeNavigable().activeWindow(),
       () -> {
-        boolean allowDefault = EventDispatcher.dispatch(event, element);
-        allowDefault &= !contextPreventDefault;
         DocumentChangeListener changeListener = element.nodeDocument().changeListener();
+        boolean allowDefault = true;
+        if (
+          targetFragment != null
+          && changeListener instanceof RendererDocumentChangeListener rendererListener
+        ) {
+          allowDefault = rendererListener.onFragmentEventEarly(
+            element, event, refFragment, targetFragment, allowDefault);
+        }
+        if (allowDefault) {
+          allowDefault = changeListener.onElementEventEarly(
+            element, event, true);
+        }
+        if (allowDefault) {
+          allowDefault = EventDispatcher.dispatch(event, element);
+        }
+        allowDefault &= !contextPreventDefault;
         if (
           targetFragment != null
           && changeListener instanceof RendererDocumentChangeListener rendererListener

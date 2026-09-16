@@ -5,6 +5,7 @@ import net.buildabrowser.babbrowser.dom.Element;
 import net.buildabrowser.babbrowser.htmlparser.insertion.InsertionMode;
 import net.buildabrowser.babbrowser.htmlparser.insertion.InsertionModes;
 import net.buildabrowser.babbrowser.htmlparser.insertion.OpenElementStack;
+import net.buildabrowser.babbrowser.htmlparser.insertion.TemplateInsertionModeStack;
 import net.buildabrowser.babbrowser.htmlparser.shared.ParseContext;
 import net.buildabrowser.babbrowser.htmlparser.token.CommentToken;
 import net.buildabrowser.babbrowser.htmlparser.token.DoctypeToken;
@@ -14,6 +15,8 @@ import net.buildabrowser.babbrowser.htmlparser.tokenize.TokenizeContext;
 public class ParseContextImp implements ParseContext {
 
   private final OpenElementStack openElementStack = OpenElementStack.create();
+  private final TemplateInsertionModeStack templateInsertionModeStack
+    = TemplateInsertionModeStack.create();
 
   private final Document document;
   private final TokenizeContext tokenizeContext;
@@ -23,6 +26,7 @@ public class ParseContextImp implements ParseContext {
   private Element headElementPointer;
   private String lastTagTokenName;
   private boolean fosterParentingEnabled;
+  private boolean ignoreNextLineFeed;
 
   public ParseContextImp(Document document, TokenizeContext tokenizeContext) {
     this.document = document;
@@ -152,6 +156,21 @@ public class ParseContextImp implements ParseContext {
   @Override
   public TokenizeContext tokenizeContext() {
     return this.tokenizeContext;
+  }
+
+  @Override
+  public boolean ignoreNextLineFeed() {
+    return this.ignoreNextLineFeed;
+  }
+
+  @Override
+  public void setIgnoreNextLineFeed(boolean ignoreNextLineFeed) {
+    this.ignoreNextLineFeed = ignoreNextLineFeed;
+  }
+
+  @Override
+  public TemplateInsertionModeStack templateInsertionModes() {
+    return this.templateInsertionModeStack;
   }
   
 }

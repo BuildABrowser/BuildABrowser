@@ -15,11 +15,11 @@ import net.buildabrowser.babbrowser.painter.core.PaintBitMap;
 import net.buildabrowser.babbrowser.painter.core.PaintCanvas;
 import net.buildabrowser.babbrowser.painter.core.Painter;
 import net.buildabrowser.babbrowser.renderer.composite.CompositeLayer;
-import net.buildabrowser.babbrowser.renderer.composite.CompositeLayerEntry;
 import net.buildabrowser.babbrowser.renderer.fragment.BoxFragment;
 import net.buildabrowser.babbrowser.renderer.fragment.LayoutFragment.Measurement;
 import net.buildabrowser.babbrowser.renderer.fragment.scroll.ScrollBoxFragment;
-import net.buildabrowser.babbrowser.renderer.layout.StackingContextPosition;
+import net.buildabrowser.babbrowser.renderer.layout.stacking.StackingContextEntry;
+import net.buildabrowser.babbrowser.renderer.layout.stacking.StackingContextPosition;
 import net.buildabrowser.babbrowser.renderer.paint.VpIntersection;
 
 public class CompositeLayerImp implements CompositeLayer {
@@ -34,7 +34,7 @@ public class CompositeLayerImp implements CompositeLayer {
   private final int zIndex;
 
   // Unfortunately can't use the LayoutFragment's intrusive list, as it is already in use
-  private CompositeLayerEntry entries;
+  private StackingContextEntry entries;
   private int backingWidth, backingHeight;
   private int backingX, backingY;
   private PaintBitMap backingImage;
@@ -57,7 +57,7 @@ public class CompositeLayerImp implements CompositeLayer {
   }
 
   @Override
-  public void addEntries(CompositeLayerEntry entries) {
+  public void addEntries(StackingContextEntry entries) {
     this.entries = entries;
     this.backingWidth = backingWidth();
     this.backingHeight = backingHeight();
@@ -72,7 +72,8 @@ public class CompositeLayerImp implements CompositeLayer {
     int scrollY = scrollBoxFragment == null ? 0 : scrollBoxFragment.scrollY();
 
     vpIntersection.enterLayer(
-      position.vpX() - scrollX, position.vpY() - scrollY,
+      position.vpX() - scrollX,
+      position.vpY() - scrollY,
       vpi -> repaintSelf(vpi, scrollBoxFragment));
     repaintChildren(vpIntersection, scrollBoxFragment);
   }
@@ -189,7 +190,7 @@ public class CompositeLayerImp implements CompositeLayer {
   }
 
   @Override
-  public CompositeLayerEntry entries() {
+  public StackingContextEntry entries() {
     return this.entries;
   }
 
@@ -219,10 +220,10 @@ public class CompositeLayerImp implements CompositeLayer {
 
     // TODO: Also need to clip passed-through layers
     canvas.withClip(
-      position.vpX() + scrollBoxFragment.posX(Measurement.CONTENT) - scrollBoxFragment.posX(Measurement.BORDER),
-      position.vpY() + scrollBoxFragment.posY(Measurement.CONTENT) - scrollBoxFragment.posY(Measurement.BORDER),
-      scrollBoxFragment.width(Measurement.CONTENT),
-      scrollBoxFragment.height(Measurement.CONTENT),
+      position.vpX(),
+      position.vpY(),
+      scrollBoxFragment.width(Measurement.BORDER),
+      scrollBoxFragment.height(Measurement.BORDER),
       c -> drawInnerContent(c, vpIntersection, scrollBoxFragment, scrollX, scrollY));
 
     canvas.withTransform(
@@ -298,12 +299,14 @@ public class CompositeLayerImp implements CompositeLayer {
   private void forEachFragment(
     BiConsumer<BoxFragment<?>, VpIntersection> func, PaintCanvas canvas, VpIntersection vpIntersection
   ) {
-    CompositeLayerEntry nextEntry = entries;
+    StackingContextEntry nextEntry = entries;
     while (nextEntry != null) {
-      CompositeLayerEntry currentEntry = nextEntry;
+      StackingContextEntry currentEntry = nextEntry;
       nextEntry = nextEntry.next();
 
       BoxFragment<?> fragment = currentEntry.fragment();
+      CSSValue visibility = fragment.box().properties().get(CSSProperty.VISIBILITY);
+      if (!visibility.equals(VisibilityValue.VISIBLE)) continue;
       
       canvas.withTransform(
         t -> t.translate(currentEntry.offsetX(), currentEntry.offsetY()),
@@ -316,7 +319,7 @@ public class CompositeLayerImp implements CompositeLayer {
   private int backingWidth() {
     float minX = Integer.MAX_VALUE;
     float maxX = Integer.MIN_VALUE;
-    CompositeLayerEntry currentEntry = entries;
+    StackingContextEntry currentEntry = entries;
     while (currentEntry != null) {
       BoxFragment<?> fragment = currentEntry.fragment();
       float adjustedWidth = fragment.inkWidth(Measurement.PADDING);
@@ -331,7 +334,7 @@ public class CompositeLayerImp implements CompositeLayer {
   private int backingHeight() {
     float minY = Integer.MAX_VALUE;
     float maxY = Integer.MIN_VALUE;
-    CompositeLayerEntry currentEntry = entries;
+    StackingContextEntry currentEntry = entries;
     while (currentEntry != null) {
       BoxFragment<?> fragment = currentEntry.fragment();
       float adjustedHeight = fragment.inkHeight(Measurement.PADDING);

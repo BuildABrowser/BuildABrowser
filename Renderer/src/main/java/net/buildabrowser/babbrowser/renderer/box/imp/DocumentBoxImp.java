@@ -1,5 +1,9 @@
 package net.buildabrowser.babbrowser.renderer.box.imp;
 
+import java.util.List;
+
+import net.buildabrowser.babbrowser.debugger.core.DebugBox;
+import net.buildabrowser.babbrowser.debugger.core.DebugSnapshot;
 import net.buildabrowser.babbrowser.html.html.HTMLDocument;
 import net.buildabrowser.babbrowser.renderer.box.DocumentBox;
 import net.buildabrowser.babbrowser.renderer.box.ElementBox;
@@ -20,13 +24,40 @@ public class DocumentBoxImp extends AbstractBoxImp implements DocumentBox {
   }
 
   @Override
-  public ElementBox htmlBox() {
+  public ElementBox child() {
     return this.childBox;
   }
 
   @Override
   public void setChild(ElementBox child) {
     this.childBox = child;
+  }
+
+  // Debugger stuff
+
+  @Override
+  public HTMLDocument relatedNode() {
+    return this.document;
+  }
+
+  @Override
+  public List<DebugBox> childDebugBoxes() {
+    return List.of(childBox);
+  }
+
+  @Override
+  public DebugBox parentBox() {
+    return null;
+  }
+
+  @Override
+  public DebugSnapshot snapshotDebugInfo() {
+    return DebugSnapshot.builder().build();
+  }
+
+  @Override
+  public DebugBoxType debugBoxType() {
+    return DebugBoxType.DOCUMENT;
   }
   
 }

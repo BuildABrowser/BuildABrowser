@@ -4,18 +4,16 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 
 import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
 
 import net.buildabrowser.babbrowser.browser.uistate.Tab;
 import net.buildabrowser.babbrowser.browser.uistate.event.TabMutationEventListener;
+import net.buildabrowser.babbrowser.embedding.swing.SwingEmbedding;
 
 public class TabGUI extends JPanel implements TabMutationEventListener {
   
   private final Tab tab;
   private final TabButtonGUI tabButtonGUI;
   private final URLBarGUI urlBarGUI;
-
-  private boolean addedCallbacks = false;
 
   private TabGUI(Tab tab) {
     this.tab = tab;
@@ -45,15 +43,7 @@ public class TabGUI extends JPanel implements TabMutationEventListener {
   }
 
   public void activate(Component renderedContent) {
-    // TODO
-    if (!addedCallbacks) {
-      addedCallbacks = true;
-      tab.getFrame().addRepaintListener(
-        () -> SwingUtilities.invokeLater(() -> {
-          renderedContent.revalidate();
-          renderedContent.repaint();
-        }));
-    }
+    SwingEmbedding.notifyActivateFrame(renderedContent);
   }
 
   private void addURLBar() {

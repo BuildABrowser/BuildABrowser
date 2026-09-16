@@ -4,6 +4,7 @@ import net.buildabrowser.babbrowser.dom.Document;
 import net.buildabrowser.babbrowser.dom.Element;
 import net.buildabrowser.babbrowser.htmlparser.insertion.InsertionMode;
 import net.buildabrowser.babbrowser.htmlparser.insertion.OpenElementStack;
+import net.buildabrowser.babbrowser.htmlparser.insertion.TemplateInsertionModeStack;
 import net.buildabrowser.babbrowser.htmlparser.shared.imp.ParseContextImp;
 import net.buildabrowser.babbrowser.htmlparser.token.CommentToken;
 import net.buildabrowser.babbrowser.htmlparser.token.DoctypeToken;
@@ -54,6 +55,12 @@ public interface ParseContext {
   void stopParsing();
 
   TokenizeContext tokenizeContext();
+
+  boolean ignoreNextLineFeed();
+
+  void setIgnoreNextLineFeed(boolean ignoreNextLineFeed);
+
+  TemplateInsertionModeStack templateInsertionModes();
 
   public static ParseContext create(Document document, TokenizeContext tokenizeContext) {
     return new ParseContextImp(document, tokenizeContext);

@@ -1,14 +1,18 @@
 package net.buildabrowser.babbrowser.renderer.content.flow;
 
+import static net.buildabrowser.babbrowser.common.util.CompatUtil.isBlank;
+
 import net.buildabrowser.babbrowser.common.datastruct.IntrusiveList;
 import net.buildabrowser.babbrowser.cssbase.property.CSSProperty;
 import net.buildabrowser.babbrowser.cssbase.property.PropertyContainer;
 import net.buildabrowser.babbrowser.cssbase.property.text.TextWrapModeValue;
 import net.buildabrowser.babbrowser.cssbase.property.whitespace.WhiteSpaceCollapseValue;
+import net.buildabrowser.babbrowser.dom.Text;
 import net.buildabrowser.babbrowser.renderer.box.Box;
 import net.buildabrowser.babbrowser.renderer.box.ElementBox;
 import net.buildabrowser.babbrowser.renderer.box.ElementBox.BoxLevel;
 import net.buildabrowser.babbrowser.renderer.box.TextBox;
+import net.buildabrowser.babbrowser.renderer.content.common.TextWrapper;
 import net.buildabrowser.babbrowser.renderer.content.common.position.PositionLayout;
 import net.buildabrowser.babbrowser.renderer.content.common.position.PositionUtil;
 import net.buildabrowser.babbrowser.renderer.content.flow.InlineStagingArea.ManagedBoxEntryMarker;
@@ -18,6 +22,7 @@ import net.buildabrowser.babbrowser.renderer.content.flow.InlineStagingArea.Stag
 import net.buildabrowser.babbrowser.renderer.content.flow.InlineStagingArea.StagedLineBreak;
 import net.buildabrowser.babbrowser.renderer.content.flow.InlineStagingArea.StagedText;
 import net.buildabrowser.babbrowser.renderer.content.flow.InlineStagingArea.StagedUnmanagedBox;
+import net.buildabrowser.babbrowser.renderer.content.flow.mapping.MappingRLEBuffer;
 import net.buildabrowser.babbrowser.renderer.fragment.BoxFragment;
 import net.buildabrowser.babbrowser.renderer.fragment.FragmentFactory;
 import net.buildabrowser.babbrowser.renderer.fragment.LayoutFragment;
@@ -65,8 +70,10 @@ public class FlowInlineLayout {
   public void stageInline(LayoutContext parentContext, Box box) {
     InlineStagingArea stagingArea = activeInlineContext.stagingArea();
     if (box instanceof TextBox textBox) {
+      // TODO: Only trim HTML whitespace
+      boolean wasEmpty = isBlank(textBox.text());
       stagingArea.pushStagedElement(new StagedText(
-        parentContext, textBox, textBox.text(), null));
+        parentContext, textBox, textBox.text(), null, wasEmpty));
     } else if (box instanceof ElementBox elementBox) {
       // Might get computed twice for outer box, doesn't really matter
       LayoutConstraint widthConstraint = flowContext.blockLayout().activeContext().innerWidthConstraint();
@@ -184,8 +191,8 @@ public class FlowInlineLayout {
     FragmentFactory fragmentFactory = childBox.layoutContext().global().fragmentFactory();
     BoxFragment<?> newFragment = parentWidthConstraint.isPreLayoutConstraint() ?
       fragmentFactory.createGenericUnmanagedBox(
-        FlowUtil.constraintWidth(childBox, parentWidthConstraint),
-        FlowUtil.constraintHeight(childBox, parentHeightConstraint),
+        FlowUtil.constraintWidth(childBox, childWidthConstraint),
+        FlowUtil.constraintHeight(childBox, childHeightContraint),
         childBox) :
       childBox.layout(childWidthConstraint, childHeightContraint);
 
@@ -203,13 +210,19 @@ public class FlowInlineLayout {
     String text = stagedText.currentText();
     if (text.isEmpty()) return;
 
+    Text textNode = stagedText.boxRef().textNode();
+    MappingRLEBuffer mappingRLEBuffer = stagedText.sourceRunsRef() == null ?
+      null : stagedText.sourceRunsRef().clone();
+    activeInlineContext.lineBox().startText(
+      textNode, mappingRLEBuffer, stagedText.isEmpty());
+
     boolean autoWrap = parentProperties.get(CSSProperty.TEXT_WRAP_MODE).equals(TextWrapModeValue.WRAP);
-    FlowTextLayout.layoutText(layoutContext, stagedText, activeInlineContext, autoWrap);
+    TextWrapper.layoutText(layoutContext, activeInlineContext, textNode, text, autoWrap);
   }
 
   private void addBreakToInline() {
     InlineFormattingContext inlineContext = activeInlineContext;
-    inlineContext.lineBox().startText(null, null);
+    inlineContext.lineBox().startText(null, null, false);
     inlineContext.lineBox().appendText(
       "\u200B", 0, 0, 0);
     activeInlineContext.nextLine();

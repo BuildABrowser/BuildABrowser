@@ -1,5 +1,6 @@
 package net.buildabrowser.babbrowser.renderer.content.common;
 
+import static net.buildabrowser.babbrowser.renderer.content.common.SizingUtil.adjustConstraint;
 import static net.buildabrowser.babbrowser.renderer.content.common.SizingUtil.evaluateBaseSizeRaw;
 
 import net.buildabrowser.babbrowser.cssbase.property.CSSProperty;
@@ -22,20 +23,24 @@ public final class SizingHeightUtil {
     ElementBox refBox
   ) {
     return evaluateAdjustedHeightSize(
-      parentConstraint, refBox,
+      parentConstraint, refBox, CSSProperty.HEIGHT,
       refBox.properties().get(CSSProperty.HEIGHT));
   }
 
   public static LayoutConstraint evaluateAdjustedHeightSize(
     LayoutConstraint parentConstraint,
     ElementBox refBox,
+    CSSProperty refProperty,
     CSSValue sizeValue
   ) {
+    LayoutConstraint usedParentConstraint = adjustConstraint(
+      parentConstraint, refBox, refProperty);
     CalcEvaluation calcResult = CalcInterpreter.evaluateNode(sizeValue,
-      innerSizeValue -> evaluateAdjustedHeightSizeRaw(parentConstraint, refBox, innerSizeValue));
-    return calcResult.valueType().equals(CalcEvalType.LENGTH_PERCENTAGE) ?
+      innerSizeValue -> evaluateAdjustedHeightSizeRaw(usedParentConstraint, refBox, innerSizeValue));
+    LayoutConstraint result = calcResult.valueType().equals(CalcEvalType.LENGTH_PERCENTAGE) ?
       LayoutConstraint.of(calcResult.floatValue()) :
       LayoutConstraint.AUTO;
+    return subtractDecor(refBox, result);
   }
 
   private static LayoutConstraint evaluateBaseHeightSize(
@@ -67,13 +72,7 @@ public final class SizingHeightUtil {
     if (!constraint.isBounded()) return constraint;
     if (constraint.value() < 0) return LayoutConstraint.of(0);
 
-    CSSValue boxSizing = refBox.properties().get(CSSProperty.BOX_SIZING);
-    if (boxSizing.equals(BoxSizingValue.CONTENT_BOX)) return constraint;
-    assert boxSizing.equals(BoxSizingValue.BORDER_BOX);
-
-    float adjustedConstraint = Math.max(0,
-      constraint.value() - refBox.dimensions().decorHeight());
-    return LayoutConstraint.of(adjustedConstraint);
+    return constraint;
   }
 
   public static LayoutConstraint clampHeight(
@@ -85,21 +84,33 @@ public final class SizingHeightUtil {
     float adjustedConstraint = constraint.value();
 
     LayoutConstraint maxConstraint = evaluateAdjustedHeightSize(
-      parentConstraint, refBox,
+      parentConstraint, refBox, CSSProperty.MAX_HEIGHT,
       refBox.properties().get(CSSProperty.MAX_HEIGHT));
     if (maxConstraint.isBounded()) {
       adjustedConstraint = Math.min(adjustedConstraint, maxConstraint.value());
     }
 
     LayoutConstraint minConstraint = evaluateAdjustedHeightSize(
-      parentConstraint, refBox,
+      parentConstraint, refBox, CSSProperty.MIN_HEIGHT,
       refBox.properties().get(CSSProperty.MIN_HEIGHT));
 
-    assert minConstraint.isBounded() || !parentConstraint.isBounded();
     if (minConstraint.isBounded()) {
       adjustedConstraint = Math.max(adjustedConstraint, minConstraint.value());
     }
 
+    return LayoutConstraint.of(adjustedConstraint);
+  }
+
+  private static LayoutConstraint subtractDecor(
+    ElementBox refBox,
+    LayoutConstraint constraint
+  ) {
+    if (!constraint.isBounded()) return constraint;
+    CSSValue boxSizing = refBox.properties().get(CSSProperty.BOX_SIZING);
+    if (boxSizing.equals(BoxSizingValue.CONTENT_BOX)) return constraint;
+
+    float adjustedConstraint = Math.max(0,
+      constraint.value() - refBox.dimensions().decorHeight());
     return LayoutConstraint.of(adjustedConstraint);
   }
 

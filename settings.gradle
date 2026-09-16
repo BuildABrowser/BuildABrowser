@@ -2,13 +2,14 @@ import org.gradle.nativeplatform.internal.DefaultTargetMachineFactory
 
 rootProject.name = 'buildabrowser'
 include(
-  ':Common', ':Infra',
-  ':CSSBase', ':CSSEngine', ':Renderer',
-  ':PainterCore', ':PainterSkija', ':PainterJava2D',
-  ':DebuggerCore', ':DebuggerSwing',
-  ':DOM', ':HTML', ':HTMLParser',':Browser', ':Network',
-  ':A11YCore', ':A11YAccessKit',
-  ':Stream', ':Fetch')
+    ':Common', ':Infra',
+    ':CSSBase', ':CSSEngine', ':Renderer',
+    ':PainterCore', ':PainterSkija', ':PainterJava2D',
+    ':DebuggerCore', ':DebuggerSwing',
+    ':DOM', ':HTML', ':HTMLParser',':Browser', ':Network',
+    ':A11YCore', ':A11YAccessKit',
+    ':Stream', ':Fetch', ':Cookies', ':CookiesSQLite',
+    ':Embedding:StandardCommon', ':Embedding:Swing')
 
 // Copied from Brotli4J website (https://github.com/hyperxpro/Brotli4j/blob/main/LICENSE)
 // With modifications to resolve broken things

@@ -2,6 +2,7 @@ package net.buildabrowser.babbrowser.fetch;
 
 import java.net.URI;
 import java.util.List;
+import java.util.UUID;
 
 import net.buildabrowser.babbrowser.fetch.imp.MutableFetchRequestImp;
 import net.buildabrowser.babbrowser.fetch.mutable.MutableFetchRequest;
@@ -11,6 +12,10 @@ public interface FetchRequest {
   String method();
   
   URI url();
+
+  HeaderList headerList();
+
+  Object body();
 
   FetchClient client();
 
@@ -23,6 +28,10 @@ public interface FetchRequest {
   URI currentURL();
 
   int redirectCount();
+
+  // UA extensions
+  
+  UUID relatedNavigableUUID();
 
   static MutableFetchRequest createMutable() {
     return new MutableFetchRequestImp();

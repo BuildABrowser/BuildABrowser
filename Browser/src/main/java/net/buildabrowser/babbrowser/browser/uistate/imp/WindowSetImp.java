@@ -1,11 +1,18 @@
 package net.buildabrowser.babbrowser.browser.uistate.imp;
 
+import static net.buildabrowser.babbrowser.common.util.CompatUtil.getLast;
+
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.WeakHashMap;
 
 import net.buildabrowser.babbrowser.browser.BrowserInstance;
+import net.buildabrowser.babbrowser.browser.uistate.Tab;
 import net.buildabrowser.babbrowser.browser.uistate.Window;
 import net.buildabrowser.babbrowser.browser.uistate.Window.WindowOptions;
 import net.buildabrowser.babbrowser.browser.uistate.WindowSet;
@@ -19,6 +26,8 @@ public class WindowSetImp implements WindowSet {
   
   private final List<Window> windows = new ArrayList<>();
   private final BrowserEventDispatcher<WindowSetMutationEventListener> mutationEventDispatcher = BrowserEventDispatcher.create();
+
+  private final Map<UUID, WeakReference<Window>> tabWindowMappings = new WeakHashMap<>();
 
   public WindowSetImp(BrowserInstance browserInstance) {
     this.browserInstance = browserInstance;
@@ -35,6 +44,21 @@ public class WindowSetImp implements WindowSet {
   @Override
   public void open(URI url) {
     windows.get(0).openTab().navigate(url);
+  }
+
+  @Override
+  public Tab openTabAfter(UUID uuid) {
+    WeakReference<Window> maybeWindow = tabWindowMappings.get(uuid);
+    Window window = maybeWindow == null ? null : maybeWindow.get();
+    if (window != null) {
+      return window.openAfterTab(uuid);
+    } else if (windows.size() > 0) {
+      // TODO: These fallbacks might result in tab from a private window being
+      // opened in a normal window
+      return getLast(windows).openAfterTab(uuid);
+    } else {
+      return openWindow(new WindowOptions(false)).openTab();
+    }
   }
 
   @Override
@@ -63,6 +87,11 @@ public class WindowSetImp implements WindowSet {
   @Override
   public void removeWindowSetMutationEventListener(WindowSetMutationEventListener mutationListener) {
     mutationEventDispatcher.removeListener(mutationListener);
+  }
+
+  @Override
+  public void addTabReference(Window window, UUID tabId) {
+    tabWindowMappings.put(tabId, new WeakReference<>(window));
   }
   
   private void syncListener(WindowSetMutationEventListener mutationListener) {

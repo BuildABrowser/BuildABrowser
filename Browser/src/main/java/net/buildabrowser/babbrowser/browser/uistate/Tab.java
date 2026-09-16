@@ -2,6 +2,7 @@ package net.buildabrowser.babbrowser.browser.uistate;
 
 import java.io.Closeable;
 import java.net.URI;
+import java.util.UUID;
 
 import net.buildabrowser.babbrowser.browser.BrowserInstance;
 import net.buildabrowser.babbrowser.browser.uistate.event.TabMutationEventListener;
@@ -27,6 +28,10 @@ public interface Tab extends Closeable {
   void addTabMutationEventListener(TabMutationEventListener mutationListener, boolean sync);
   
   void removeTabMutationEventListener(TabMutationEventListener mutationListener);
+
+  default UUID uuid() {
+    return getFrame().uuid();
+  }
 
   static Tab create(BrowserInstance browserInstance) {
     return new TabImp(browserInstance);

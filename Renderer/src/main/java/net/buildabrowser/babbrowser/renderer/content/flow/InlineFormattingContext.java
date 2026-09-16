@@ -8,12 +8,13 @@ import java.util.List;
 import net.buildabrowser.babbrowser.common.datastruct.IntrusiveList;
 import net.buildabrowser.babbrowser.cssbase.property.PropertyContainer;
 import net.buildabrowser.babbrowser.renderer.box.ElementBox;
+import net.buildabrowser.babbrowser.renderer.content.common.TextWrapper.TextWrapTarget;
 import net.buildabrowser.babbrowser.renderer.content.flow.floatbox.FloatTracker;
 import net.buildabrowser.babbrowser.renderer.fragment.LayoutFragment;
 import net.buildabrowser.babbrowser.renderer.fragment.LineBoxFragment;
 import net.buildabrowser.babbrowser.renderer.layout.LayoutConstraint;
 
-public class InlineFormattingContext implements IntrusiveList<InlineFormattingContext> {
+public class InlineFormattingContext implements TextWrapTarget, IntrusiveList<InlineFormattingContext> {
  
   private final FlowContext flowContext;
   private final LayoutConstraint inlineConstraint;
@@ -78,12 +79,19 @@ public class InlineFormattingContext implements IntrusiveList<InlineFormattingCo
   }
 
   public void nextLine() {
+    nextLine(true);
+  }
+
+  @Override
+  public void nextLine(boolean isSoftWrap) {
     LineBox oldLineBox = this.activeLineBox;
+    activeLineBox.markPreserved();
     this.activeLineBox = activeLineBox.split();
     addLineToBox(oldLineBox);
     drainPositionedQueue();
   }
 
+  @Override
   public boolean fits(float itemSize, boolean forceFirst) {
     if (forceFirst && this.activeLineBox.totalWidth() == 0) {
       return true;
@@ -97,6 +105,18 @@ public class InlineFormattingContext implements IntrusiveList<InlineFormattingCo
         <= floatTracker.lineEndPos(inlineConstraint);
       default -> throw new UnsupportedOperationException("Unrecognized Layout Constraint: " + inlineConstraint);
     };
+  }
+
+  @Override
+  public boolean ignoreWhitespace() {
+    return
+      lineBox().isEmpty()
+      && lineBox().collapseWhiteSpace();
+  }
+
+  @Override
+  public void appendText(String text, int sourceIndex, float width, float height) {
+    lineBox().appendText(text, sourceIndex, width, height);
   }
 
   public void queuedPositioned(ElementBox box) {

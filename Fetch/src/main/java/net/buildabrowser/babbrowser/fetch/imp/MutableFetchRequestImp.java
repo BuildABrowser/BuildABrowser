@@ -6,19 +6,24 @@ import static net.buildabrowser.babbrowser.common.util.CompatUtil.getLast;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import net.buildabrowser.babbrowser.fetch.FetchClient;
+import net.buildabrowser.babbrowser.fetch.HeaderList;
 import net.buildabrowser.babbrowser.fetch.mutable.MutableFetchRequest;
 
 public class MutableFetchRequestImp implements MutableFetchRequest {
 
-  private List<URI> urlList = new ArrayList<>(4);
+  private final HeaderList headerList = HeaderList.create();
+  private final List<URI> urlList = new ArrayList<>(4);
 
-  private String method;
+  private String method = "GET";
+  private Object body; // Byte sequence or Body
   private FetchClient client;
   private RequestMode mode = RequestMode.NO_CORS;
   private RedirectMode redirectMode = RedirectMode.FOLLOW;
   private int redirectCount = 0;
+  private UUID relatedNavigableUUID;
 
   @Override
   public String method() {
@@ -38,6 +43,21 @@ public class MutableFetchRequestImp implements MutableFetchRequest {
   @Override
   public void appendURL(URI url) {
     urlList.add(url);
+  }
+
+  @Override
+  public HeaderList headerList() {
+    return this.headerList;
+  }
+
+  @Override
+  public Object body() {
+    return this.body;
+  }
+
+  @Override
+  public void setBody(Object body) {
+    this.body = body;
   }
 
   @Override
@@ -88,6 +108,16 @@ public class MutableFetchRequestImp implements MutableFetchRequest {
   @Override
   public void increaseRedirectCount() {
     this.redirectCount++;
+  }
+
+  @Override
+  public UUID relatedNavigableUUID() {
+    return this.relatedNavigableUUID;
+  }
+
+  @Override 
+  public void setRelatedNavigableUUID(UUID uuid) {
+    this.relatedNavigableUUID = uuid;
   }
 
 }

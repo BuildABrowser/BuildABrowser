@@ -2,6 +2,7 @@ package net.buildabrowser.babbrowser.browser.uistate;
 
 import java.io.Closeable;
 import java.net.URI;
+import java.util.UUID;
 
 import net.buildabrowser.babbrowser.browser.BrowserInstance;
 import net.buildabrowser.babbrowser.browser.uistate.Window.WindowOptions;
@@ -11,6 +12,8 @@ import net.buildabrowser.babbrowser.browser.uistate.imp.WindowSetImp;
 public interface WindowSet extends Closeable {
   
   void open(URI url);
+
+  Tab openTabAfter(UUID uuid);
   
   Window[] getWindows();
   
@@ -19,6 +22,8 @@ public interface WindowSet extends Closeable {
   void addWindowSetMutationEventListener(WindowSetMutationEventListener mutationListener, boolean sync);
   
   void removeWindowSetMutationEventListener(WindowSetMutationEventListener mutationListener);
+
+  void addTabReference(Window window, UUID tabId);
 
   static WindowSet create(BrowserInstance browserInstance) {
     return new WindowSetImp(browserInstance);

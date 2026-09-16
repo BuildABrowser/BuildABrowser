@@ -9,25 +9,32 @@ import net.buildabrowser.babbrowser.dom.Node;
 import net.buildabrowser.babbrowser.dom.events.FocusEvent;
 import net.buildabrowser.babbrowser.html.html.HTMLElement;
 import net.buildabrowser.babbrowser.html.input.FocusManagerContext;
-import net.buildabrowser.babbrowser.renderer.context.ElementContext;
+import net.buildabrowser.babbrowser.renderer.content.input.VirtualKeyboard;
+import net.buildabrowser.babbrowser.renderer.context.RenderContext;
 import net.buildabrowser.babbrowser.renderer.event.EventContext;
 import net.buildabrowser.babbrowser.renderer.event.EventUtil;
 
 public class HTMLFocusManagerContext implements FocusManagerContext {
 
   private final EventContext eventContext;
-  private final SlotFamily<HTMLElement, ElementContext> elementContexts;
+  private final VirtualKeyboard virtualKeyboard;
+  private final SlotFamily<HTMLElement, RenderContext> renderContexts;
 
   public HTMLFocusManagerContext(
     EventContext eventContext,
-    SlotFamily<HTMLElement, ElementContext> elementContexts
+    VirtualKeyboard virtualKeyboard,
+    SlotFamily<HTMLElement, RenderContext> renderContexts
   ) {
     this.eventContext = eventContext;
-    this.elementContexts = elementContexts;
+    this.virtualKeyboard = virtualKeyboard;
+    this.renderContexts = renderContexts;
   }
 
   @Override
   public void onFocusChanged(Node oldFocused, Node newFocused) {
+    if (oldFocused != newFocused) {
+      virtualKeyboard.close();
+    }
     if (oldFocused instanceof Element element) {
       eventContext.setPreventDefault(false);
       EventUtil.forwardElementEvent(eventContext, (FocusEvent) () -> "blur", element);
@@ -41,7 +48,7 @@ public class HTMLFocusManagerContext implements FocusManagerContext {
   @Override
   public FocusIgnore getIgnore(Node node) {
     if (!(node instanceof HTMLElement htmlElement)) return FocusIgnore.NONE;
-    PropertyContainer properties = elementContexts.get(htmlElement).properties();
+    PropertyContainer properties = renderContexts.get(htmlElement).properties();
     OuterDisplayValue outerDisplay = PropertiesUtil.outerDisplayValue(properties);
     return switch (outerDisplay) {
       case CONTENTS -> FocusIgnore.SELF;

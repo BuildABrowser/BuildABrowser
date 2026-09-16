@@ -1,75 +1,86 @@
 package net.buildabrowser.babbrowser.browser;
 
 import java.awt.Component;
+import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.concurrent.Executors;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
+import javax.swing.JDialog;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
 import net.buildabrowser.babbrowser.a11y.accesskit.AKA11YProvider;
 import net.buildabrowser.babbrowser.a11y.core.A11YProvider;
 import net.buildabrowser.babbrowser.browser.chrome.WindowSetGUI;
-import net.buildabrowser.babbrowser.browser.clipboard.AWTClipboardProvider;
-import net.buildabrowser.babbrowser.browser.net.imp.FetchBackendImp;
 import net.buildabrowser.babbrowser.browser.uistate.Window;
 import net.buildabrowser.babbrowser.browser.uistate.Window.WindowOptions;
 import net.buildabrowser.babbrowser.browser.uistate.WindowSet;
+import net.buildabrowser.babbrowser.browser.util.FileUtil;
+import net.buildabrowser.babbrowser.cookies.CookieStore;
 import net.buildabrowser.babbrowser.debugger.core.Debugger;
 import net.buildabrowser.babbrowser.debugger.swing.SwingDebugger;
-import net.buildabrowser.babbrowser.fetch.FetchBackend;
-import net.buildabrowser.babbrowser.network.encoding.ContentEncodingRegistry;
+import net.buildabrowser.babbrowser.embedding.standardcommon.net.imp.PublicSuffixListImp;
+import net.buildabrowser.babbrowser.painter.core.CanvasCallbacks;
 import net.buildabrowser.babbrowser.painter.core.ComponentPainter;
+import net.buildabrowser.babbrowser.painter.core.PaintCanvas;
 import net.buildabrowser.babbrowser.painter.java2d.Java2DPainter;
-import net.buildabrowser.babbrowser.painter.skija.SkijaAWTPainter;
-import net.buildabrowser.babbrowser.renderer.RenderingEngine;
-import net.buildabrowser.babbrowser.renderer.clipboard.ClipboardProvider;
-import net.buildabrowser.babbrowser.renderer.loader.DocumentLoaderRegistry;
 
 public class Main {
+
+  private static final long GRAPHICS_CHECK_TIMEOUT = 1500;
   
   public static void main(String[] args) throws IOException, URISyntaxException, InterruptedException {
-    System.setProperty("org.lwjgl.opengl.contextAPI", "GLX");
-    setLookAndFeel();
+    BrowserArguments arguments = BrowserArguments.parse(args);
+    if (arguments == null) return;
 
-    // TODO: Use a proper argument parser
-    boolean useJava2d = false;
-    boolean isSoftwareRendered = false;
-    for (String arg: args) {
-      useJava2d = useJava2d || arg.equals("--use-java2d");
-      isSoftwareRendered = isSoftwareRendered || arg.equals("--use-software-rendering");
+    if (!arguments.noRelaunch()) {
+      Relauncher.relaunchWithFlags(args);
+      return;
     }
 
-    ComponentPainter<Component> painter = useJava2d ?
-      new Java2DPainter() :
-      new SkijaAWTPainter(isSoftwareRendered, false);
+    System.setProperty("org.lwjgl.opengl.contextAPI", "GLX");
+    System.setProperty("apple.laf.useScreenMenuBar", "true");
+    setLookAndFeel();
+
+    URI profilePath = FileUtil.asDirectory(arguments.profilePath());
+    new File(profilePath.getSchemeSpecificPart()).mkdirs();
+
+    ComponentPainter<Component> painter = arguments.painter().get();
+      if (!testPainter(painter)) {
+        JOptionPane pane = new JOptionPane(
+          "Failed to initialize graphics backend. Falling back to Java2D - Your browsing experience will be significantly degraded.",
+          JOptionPane.ERROR_MESSAGE
+        );
+        JDialog dialog = pane.createDialog("Graphics Initialization Failed!");
+        dialog.setAlwaysOnTop(true);
+        dialog.setLocationRelativeTo(null);
+        dialog.setVisible(true);
+        
+        painter = new Java2DPainter();
+    }
 
     // TODO: Allow disabling a11y support
     A11YProvider a11yProvider = new AKA11YProvider();
-    ClipboardProvider<?> clipboardProvider = new AWTClipboardProvider();
+
+    CookieStore cookieStore = arguments.cookieStore().get(
+      profilePath, new PublicSuffixListImp());
+    
     Debugger debugger = new SwingDebugger();
 
-    DocumentLoaderRegistry loaderRegistry = DocumentLoaderRegistry.createDefault();
-    ContentEncodingRegistry registry = ContentEncodingRegistry.createDefault();
-    FetchBackend fetchBackend = new FetchBackendImp(registry);
-
-    RenderingEngine renderingEngine = RenderingEngine.create(
-      fetchBackend,
-      Executors::newVirtualThreadPerTaskExecutor,
-      painter,
-      a11yProvider,
-      loaderRegistry,
-      ClassLoader.getSystemClassLoader()::getResourceAsStream,
-      clipboardProvider);
-    BrowserInstance browserInstance = BrowserInstance.create(renderingEngine);
+    BrowserInstance browserInstance = BrowserInstance.create(
+      profilePath, painter, cookieStore, a11yProvider);
   
-    WindowSet windowSet = WindowSet.create(browserInstance);
+    WindowSet windowSet = browserInstance.windowSet();
     Window window = windowSet.openWindow(new WindowOptions(false));
-    for (String urlStr: args) {
-      if (urlStr.startsWith("--")) continue;
-      URI url = new URI(urlStr);
+    for (URI url: arguments.launchPaths()) {
       window.openTab().navigate(url);
     }
 
@@ -81,6 +92,46 @@ public class Main {
       UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
     } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException e) {
       throw new RuntimeException(e);
+    }
+  }
+
+  private static boolean testPainter(ComponentPainter<Component> painter) {
+    CompletableFuture<Boolean> future = new CompletableFuture<>();
+
+    SwingUtilities.invokeLater(() -> {
+      JFrame dummyFrame = new JFrame();
+      try {
+        Component dummyComponent = painter.createComponent(new CanvasCallbacks() {
+          @Override 
+          public void paint(PaintCanvas canvas) {
+            future.complete(true);
+            SwingUtilities.invokeLater(dummyFrame::dispose);
+          }
+        });
+
+        dummyFrame.setSize(10, 10);
+        dummyFrame.setUndecorated(true);
+        dummyFrame.add(dummyComponent);
+        dummyFrame.setVisible(true);
+
+        new Thread(() -> {
+          try {
+            Thread.sleep(GRAPHICS_CHECK_TIMEOUT);
+          } catch (InterruptedException e) {}
+          if (dummyFrame.isVisible()) {
+            dummyFrame.dispose();
+          }
+        }).start();
+      } catch (Throwable t) {
+        t.printStackTrace();
+        future.complete(false);
+      }
+    });
+
+    try {
+      return future.get(GRAPHICS_CHECK_TIMEOUT, TimeUnit.MILLISECONDS);
+    } catch (InterruptedException | ExecutionException | TimeoutException e) {
+      return false;
     }
   }
 

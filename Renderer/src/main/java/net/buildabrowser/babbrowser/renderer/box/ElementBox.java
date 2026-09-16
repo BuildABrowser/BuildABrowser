@@ -8,14 +8,14 @@ import net.buildabrowser.babbrowser.cssbase.property.PropertyContainer;
 import net.buildabrowser.babbrowser.html.html.HTMLElement;
 import net.buildabrowser.babbrowser.renderer.box.imp.AnonymousElementBoxImp;
 import net.buildabrowser.babbrowser.renderer.box.imp.ElementBoxImp;
-import net.buildabrowser.babbrowser.renderer.context.ElementContext;
+import net.buildabrowser.babbrowser.renderer.context.RenderContext;
 import net.buildabrowser.babbrowser.renderer.fragment.BoxFragment;
 import net.buildabrowser.babbrowser.renderer.fragment.UnmanagedBoxFragment;
 import net.buildabrowser.babbrowser.renderer.layout.LayoutConstraint;
 import net.buildabrowser.babbrowser.renderer.layout.LayoutContext;
-import net.buildabrowser.babbrowser.renderer.layout.StackingContext;
+import net.buildabrowser.babbrowser.renderer.layout.stacking.StackingContext;
 
-public interface ElementBox extends Box {
+public non-sealed interface ElementBox extends Box {
 
   PropertyContainer properties();
   
@@ -23,7 +23,7 @@ public interface ElementBox extends Box {
 
   HTMLElement element();
 
-  ElementContext context();
+  RenderContext context();
 
   Box parentBox();
 
@@ -40,9 +40,15 @@ public interface ElementBox extends Box {
   // TODO: I don't really like this method, but it is needed for order-modified fixup
   void sortChildren(Comparator<? super Box> comparator);
 
+  void startOverwrite();
+
+  void includeChild(Box box);
+
+  void endOverwrite();
+
   BoxLevel boxLevel();
 
-  void updateDetails(Box parentBox, BoxLevel boxLevel);
+  boolean updateDetails(Box parentBox, BoxLevel boxLevel);
 
   UnmanagedBoxFragment<?> layout(LayoutConstraint widthConstraint, LayoutConstraint heightConstraint);
 
@@ -72,7 +78,7 @@ public interface ElementBox extends Box {
   }
  
   public static ElementBox create(
-    ElementContext context,
+    RenderContext context,
     Box parentBox,
     BoxLevel boxLevel
   ) {
@@ -86,7 +92,7 @@ public interface ElementBox extends Box {
 
   public static ElementBox createAnonymous(
     PropertyContainer properties,
-    ElementBox parentBox,
+    Box parentBox,
     BoxLevel boxLevel
   ) {
     return new AnonymousElementBoxImp(properties, parentBox, boxLevel);

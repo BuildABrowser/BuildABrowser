@@ -12,7 +12,7 @@ import net.buildabrowser.babbrowser.renderer.fragment.BoxFragment;
 import net.buildabrowser.babbrowser.renderer.fragment.LayoutFragment.Measurement;
 import net.buildabrowser.babbrowser.renderer.fragment.UnmanagedBoxFragment;
 import net.buildabrowser.babbrowser.renderer.fragment.table.TableBoxFragment;
-import net.buildabrowser.babbrowser.renderer.layout.StackingContext;
+import net.buildabrowser.babbrowser.renderer.layout.stacking.StackingContext;
 import net.buildabrowser.babbrowser.renderer.paint.BoxPainter;
 import net.buildabrowser.babbrowser.renderer.paint.PaintUtil;
 import net.buildabrowser.babbrowser.renderer.paint.VpIntersection;
@@ -98,6 +98,7 @@ public class TableBoxPainter implements BoxPainter<TableBoxFragment> {
     Table table = tableFragment.table();
     for (TableRow row: table.rows()) {
       BoxFragment<?> rowFragment = row.rowBox().positioningFragment();
+      if (rowFragment == null) continue; // TODO: Why is this sometimes null?
       paintFragmentBackground(canvas, rowFragment, vpIntersection);
     }
   }
@@ -129,13 +130,14 @@ public class TableBoxPainter implements BoxPainter<TableBoxFragment> {
       if (cellFragment == null) return;
       if (cellFragment.box().stackingContext() != refContext) return;
       // TODO: Skip if context differs
-      canvas.withTransform(
-        t -> t.translate(
-          cellFragment.posX(Measurement.CONTENT),
-          cellFragment.posY(Measurement.CONTENT)),
-        c -> PaintUtil.maybePaintFragment(
-          cellFragment, c, vpIntersection,
-          (f, c2, vpi) -> f.withPainterV((p, f2) -> p.paint(f2, c, vpi))));
+
+      PaintUtil.maybePaintFgFragment(
+          cellFragment, canvas, vpIntersection,
+          (f, c, vpi) -> c.withTransform(
+            t -> t.translate(
+              cellFragment.posX(Measurement.CONTENT),
+              cellFragment.posY(Measurement.CONTENT)),
+            c2 -> f.withPainterV((p, f2) -> p.paint(f2, c2, vpi))));
     });
   }
 

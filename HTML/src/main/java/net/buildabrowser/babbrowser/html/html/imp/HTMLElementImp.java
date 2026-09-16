@@ -7,7 +7,9 @@ import net.buildabrowser.babbrowser.common.util.CommonUtil;
 import net.buildabrowser.babbrowser.cssbase.cssom.extra.Invalidatable;
 import net.buildabrowser.babbrowser.cssbase.cssom.extra.InvalidationLevel;
 import net.buildabrowser.babbrowser.dom.Document;
+import net.buildabrowser.babbrowser.dom.Element;
 import net.buildabrowser.babbrowser.dom.Node;
+import net.buildabrowser.babbrowser.dom.Text;
 import net.buildabrowser.babbrowser.dom.imp.ElementImp;
 import net.buildabrowser.babbrowser.html.events.WindowEventLoop;
 import net.buildabrowser.babbrowser.html.html.HTMLDocument;
@@ -20,6 +22,11 @@ public class HTMLElementImp extends ElementImp implements HTMLElement {
   private static final List<String> FOCUSABLE_ELEMENTS = List.of(
     "a", "area", "button", "frame", "iframe", "input", "object", "select", "textarea");
 
+  private static final short ADD_INVALIDATION =
+    InvalidationLevel.BOX
+    | InvalidationLevel.STYLE
+    | InvalidationLevel.STYLE_SELF;
+
   private SlotItem<?> slotItems;
  
   public HTMLElementImp(String name, String namespace, Node parentNode) {
@@ -27,13 +34,34 @@ public class HTMLElementImp extends ElementImp implements HTMLElement {
   }
 
   @Override
+  public String innerText() {
+    // TODO: Proper get the text steps
+    StringBuilder textBuilder = new StringBuilder();
+    traverseElementInnerText(this, textBuilder);
+    return textBuilder.toString();
+  }
+
+  private void traverseElementInnerText(
+    Element element,
+    StringBuilder textBuilder
+  ) {
+    element.forEachChild(child -> {
+      switch (child) {
+        case Element el -> traverseElementInnerText(el, textBuilder);
+        case Text text -> textBuilder.append(text.data());
+        default -> {}
+      }
+    });
+  }
+
+  @Override
   public Node appendChild(Node node) {
     super.appendChild(node);
 
     if (node instanceof Invalidatable invalidatable) {
-      invalidatable.invalidate(InvalidationLevel.BOX);
+      invalidatable.invalidate(ADD_INVALIDATION);
     }
-    invalidate(InvalidationLevel.BOX);
+    invalidate((short) (InvalidationLevel.BOX | InvalidationLevel.STYLE));
 
     return node;
   }
@@ -50,7 +78,7 @@ public class HTMLElementImp extends ElementImp implements HTMLElement {
     return eventLoop.getNavigable(htmlDocument);
   }
 
-  protected void invalidate(InvalidationLevel invalidationLevel) {
+  protected void invalidate(short invalidationLevel) {
     // For some reason IntrusiveList#forEach does not work here
     SlotItem<?> currentItem = slotItems;
     while (currentItem != null) {

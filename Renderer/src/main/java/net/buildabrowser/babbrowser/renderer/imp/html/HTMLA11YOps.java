@@ -9,16 +9,16 @@ import net.buildabrowser.babbrowser.cssbase.util.PropertiesUtil;
 import net.buildabrowser.babbrowser.dom.Element;
 import net.buildabrowser.babbrowser.dom.Node;
 import net.buildabrowser.babbrowser.html.html.HTMLElement;
-import net.buildabrowser.babbrowser.renderer.context.ElementContext;
+import net.buildabrowser.babbrowser.renderer.context.RenderContext;
 
 public class HTMLA11YOps implements A11YOps {
 
-  private final SlotFamily<HTMLElement, ElementContext> elementContexts;
+  private final SlotFamily<HTMLElement, RenderContext> renderContexts;
 
   public HTMLA11YOps(
-    SlotFamily<HTMLElement, ElementContext> elementContexts
+    SlotFamily<HTMLElement, RenderContext> elementContexts
   ) {
-    this.elementContexts = elementContexts;
+    this.renderContexts = elementContexts;
   }
 
   @Override
@@ -27,7 +27,7 @@ public class HTMLA11YOps implements A11YOps {
       node instanceof HTMLElement htmlElement
     )) return false;
 
-    ElementContext context = elementContexts.get(htmlElement);
+    RenderContext context = renderContexts.get(htmlElement);
     return PropertiesUtil.outerDisplayValue(context.properties())
       .equals(OuterDisplayValue.NONE);
   }
@@ -38,7 +38,7 @@ public class HTMLA11YOps implements A11YOps {
       node instanceof HTMLElement htmlElement
     )) return false;
 
-    ElementContext context = elementContexts.get(htmlElement);
+    RenderContext context = renderContexts.get(htmlElement);
     return PropertiesUtil.outerDisplayValue(context.properties())
       .equals(OuterDisplayValue.CONTENTS);
   }
@@ -49,7 +49,7 @@ public class HTMLA11YOps implements A11YOps {
       element instanceof HTMLElement htmlElement
     )) return false;
 
-    ElementContext context = elementContexts.get(htmlElement);
+    RenderContext context = renderContexts.get(htmlElement);
     return
       !context.properties().get(CSSProperty.OVERFLOW_X).equals(OverflowValue.VISIBLE)
       || !context.properties().get(CSSProperty.OVERFLOW_Y).equals(OverflowValue.VISIBLE);

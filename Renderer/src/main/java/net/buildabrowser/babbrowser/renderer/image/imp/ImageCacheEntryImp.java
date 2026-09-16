@@ -5,41 +5,53 @@ import java.lang.ref.WeakReference;
 import net.buildabrowser.babbrowser.common.datastruct.IntrusiveList;
 import net.buildabrowser.babbrowser.common.datastruct.SinglyLinkedList;
 import net.buildabrowser.babbrowser.cssbase.cssom.extra.Invalidatable;
-import net.buildabrowser.babbrowser.cssbase.cssom.extra.InvalidationLevel;
+import net.buildabrowser.babbrowser.painter.core.ImageLoader;
 import net.buildabrowser.babbrowser.painter.core.LoadedImage;
 
 public class ImageCacheEntryImp {
   
-  private LoadedImage loadedImage;
+  private boolean started;
+  private ImageLoader loader;
   private SinglyLinkedList<ImageCacheListener> listeners;
 
   public LoadedImage getImage() {
-    return this.loadedImage;
+    if (this.loader == null) return null;
+    return this.loader.currentImage();
   }
 
-  public void setLoadedImage(LoadedImage loadedImage) {
-    this.loadedImage = loadedImage;
+  public void markStarted() {
+    this.started = true;
+  }
+
+  public void setLoader(ImageLoader loader) {
+    this.loader = loader;
+  }
+
+  public void markUpdate() {
     fireListeners();
+  }
+
+  public void markDone() {
     this.listeners = null;
   }
 
-  public boolean ongoing() {
-    return this.listeners != null;
+  public boolean started() {
+    return this.started;
   }
 
   public void addListener(
     Invalidatable invalidatable,
-    InvalidationLevel invalidationLevel
+    short invalidationLevel
   ) {
     SinglyLinkedList<ImageCacheListener> currentEntry = listeners;
     while (currentEntry != null) {
       ImageCacheListener currentListener = currentEntry.item();
       currentEntry = currentEntry.next();
       Invalidatable existingInvalidatable = currentListener.invalidatable().get();
-      if (invalidatable == null) continue;
+      if (existingInvalidatable == null) continue;
       if (
         invalidatable == existingInvalidatable
-        && currentListener.invalidationLevel.equals(invalidationLevel)
+        && currentListener.invalidationLevel == invalidationLevel
       ) return;
     }
 
@@ -62,7 +74,7 @@ public class ImageCacheEntryImp {
 
   private static record ImageCacheListener(
     WeakReference<Invalidatable> invalidatable,
-    InvalidationLevel invalidationLevel
+    short invalidationLevel
   ) {
 
   }

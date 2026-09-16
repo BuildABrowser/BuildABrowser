@@ -1,6 +1,7 @@
 package net.buildabrowser.babbrowser.browser.uistate;
 
 import java.io.Closeable;
+import java.util.UUID;
 
 import net.buildabrowser.babbrowser.browser.BrowserInstance;
 import net.buildabrowser.babbrowser.browser.uistate.event.WindowMutationEventListener;
@@ -15,6 +16,8 @@ public interface Window extends Closeable {
   void addTab(Tab tab);
   
   Tab openTab();
+
+  Tab openAfterTab(UUID uuid);
 
   WindowSet relatedWindowSet();
   

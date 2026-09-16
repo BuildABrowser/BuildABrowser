@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 
-import com.aayushatharva.brotli4j.Brotli4jLoader;
 import com.aayushatharva.brotli4j.decoder.DecoderJNI;
 import com.aayushatharva.brotli4j.decoder.DecoderJNI.Status;
 
@@ -16,10 +15,6 @@ import net.buildabrowser.babbrowser.network.encoding.ContentEncodingRegistry.Chu
 public class BrotliContentDecoder implements ContentDecoder {
 
   private static final int BUFFER_SIZE = 4096;
-
-  static {
-    Brotli4jLoader.ensureAvailability() ;
-  }
 
   private final DecoderJNI.Wrapper decoder;
   private final ChunkHandler onChunk;

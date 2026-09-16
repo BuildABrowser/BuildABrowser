@@ -19,9 +19,10 @@ import net.buildabrowser.babbrowser.renderer.RenderingEngine;
 import net.buildabrowser.babbrowser.renderer.imp.html.HTMLGraphicalDocumentRendererImp;
 import net.buildabrowser.babbrowser.renderer.loader.DocumentLoader;
 import net.buildabrowser.babbrowser.renderer.logging.PerfLogging;
+import net.buildabrowser.babbrowser.renderer.uistate.Frame;
 import net.buildabrowser.babbrowser.stream.ReadRequest;
 import net.buildabrowser.babbrowser.stream.ReadableStream.ReadableStreamGetReaderOptions;
-import net.buildabrowser.babbrowser.stream.imp.ReadableStreamDefaultReaderImp;
+import net.buildabrowser.babbrowser.stream.ReadableStreamDefaultReader;
 
 public class HTMLDocumentLoader implements DocumentLoader {
 
@@ -29,6 +30,7 @@ public class HTMLDocumentLoader implements DocumentLoader {
   public HTMLDocument load(
     UANavigableOptions uaNavigableOptions,
     RenderingEngine renderingEngine,
+    Frame frame,
     NavigationParams navigationParams,
     SlotFamilyFamily slotFamilyFamily
   ) throws IOException {
@@ -44,7 +46,8 @@ public class HTMLDocumentLoader implements DocumentLoader {
     parseHTMLDocument(response, document);
 
     DocumentRenderer renderer = new HTMLGraphicalDocumentRendererImp(
-      document, navigationParams.navigable(), renderingEngine, slotFamilyFamily);
+      document, navigationParams.navigable(),
+      renderingEngine, frame, slotFamilyFamily);
     document.attachRenderer(renderer);
 
     return document;
@@ -57,7 +60,7 @@ public class HTMLDocumentLoader implements DocumentLoader {
     AtomicLong parseTime = new AtomicLong(0);
 
     ReadableStreamGetReaderOptions options = new ReadableStreamGetReaderOptions();
-    ReadableStreamDefaultReaderImp reader = (ReadableStreamDefaultReaderImp) response.body().stream().getReader(options);
+    ReadableStreamDefaultReader reader = (ReadableStreamDefaultReader) response.body().stream().getReader(options);
     // TODO: Use the normal reader's exposed methods instead, once implemented
     reader.read(new ReadRequest() {
 

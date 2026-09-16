@@ -1,12 +1,16 @@
 package net.buildabrowser.babbrowser.renderer.content.common;
 
+import net.buildabrowser.babbrowser.cssbase.property.CSSProperty;
 import net.buildabrowser.babbrowser.cssbase.property.CSSValue;
 import net.buildabrowser.babbrowser.cssbase.property.calc.CalcEvaluation;
 import net.buildabrowser.babbrowser.cssbase.property.calc.CalcEvaluation.CalcEvalType;
 import net.buildabrowser.babbrowser.cssbase.property.calc.CalcInterpreter;
 import net.buildabrowser.babbrowser.cssbase.property.size.LengthValue;
+import net.buildabrowser.babbrowser.cssbase.property.size.LengthValue.LengthType;
 import net.buildabrowser.babbrowser.cssbase.property.size.PercentageValue;
+import net.buildabrowser.babbrowser.renderer.box.ElementBox;
 import net.buildabrowser.babbrowser.renderer.layout.LayoutConstraint;
+import net.buildabrowser.babbrowser.renderer.layout.LayoutConstraint.LayoutConstraintType;
 import net.buildabrowser.babbrowser.renderer.layout.LayoutContext;
 import net.buildabrowser.babbrowser.renderer.layout.Viewport;
 
@@ -70,15 +74,43 @@ public final class SizingUtil {
     }
   }
 
+  static LayoutConstraint adjustConstraint(
+    LayoutConstraint refConstraint,
+    ElementBox refBox,
+    CSSProperty refProperty
+  ) {
+    if (!(
+      refConstraint.type().equals(LayoutConstraintType.MIN_CONTENT)
+    )) return refConstraint;
+
+    if (!refBox.isReplaced()) {
+      return refConstraint;
+    }
+    
+    if (!(
+      refProperty.equals(CSSProperty.WIDTH)
+      || refProperty.equals(CSSProperty.MAX_WIDTH)
+      || refProperty.equals(CSSProperty.HEIGHT)
+      || refProperty.equals(CSSProperty.MAX_HEIGHT)
+    )) return refConstraint;
+
+    return LayoutConstraint.of(0);
+  }
+
   private static LayoutConstraint evaluateLengthBaseSize(
     LayoutContext layoutContext,
     LengthValue lengthValue
   ) {
+
+    if (LengthType.FR.equals(lengthValue.dimension())) {
+      return LayoutConstraint.AUTO;
+    }
+
     Viewport viewport = layoutContext.global().viewport();
     double baseValue = lengthValue.value().doubleValue();
     double sizeResult = baseValue == 0 ? 0 : baseValue * switch (lengthValue.dimension()) {
       case EM -> layoutContext.font().metrics().size();
-      case REM -> layoutContext.global().rootMetrics().size();
+      case REM -> layoutContext.rootMetrics().size();
       case EX -> layoutContext.font().metrics().xHeight() / 2f;
       case CH -> layoutContext.font().metrics().stringWidth("0"); // TODO: Check inline direction
 

@@ -5,6 +5,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.URI;
 import java.util.concurrent.ExecutorService;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import net.buildabrowser.babbrowser.a11y.core.A11YProvider;
@@ -18,11 +19,14 @@ import net.buildabrowser.babbrowser.html.navigation.DocumentRenderer.DocumentRen
 import net.buildabrowser.babbrowser.html.navigation.Navigable;
 import net.buildabrowser.babbrowser.html.navigation.util.TraversableUtil;
 import net.buildabrowser.babbrowser.html.scripting.Window;
+import net.buildabrowser.babbrowser.html.ua.UAUIFeatures;
 import net.buildabrowser.babbrowser.painter.core.Painter;
 import net.buildabrowser.babbrowser.renderer.RenderingEngine;
 import net.buildabrowser.babbrowser.renderer.clipboard.ClipboardProvider;
+import net.buildabrowser.babbrowser.renderer.content.input.VirtualKeyboard;
 import net.buildabrowser.babbrowser.renderer.loader.DocumentLoaderRegistry;
 import net.buildabrowser.babbrowser.renderer.uistate.Frame;
+import net.buildabrowser.babbrowser.renderer.uistate.FrameAPIs;
 
 public class RenderingEngineImp implements RenderingEngine {
 
@@ -35,6 +39,8 @@ public class RenderingEngineImp implements RenderingEngine {
   private final DocumentLoaderRegistry documentLoaderRegistry;
   private final ResourceResolver resourceResolver;
   private final ClipboardProvider<?> clipboardProvider;
+  private final Function<Frame, VirtualKeyboard> virtualKeyboardFactory;
+  private final UAUIFeatures uaUIFeatures;
 
   public RenderingEngineImp(
     FetchEngine fetchEngine,
@@ -43,7 +49,9 @@ public class RenderingEngineImp implements RenderingEngine {
     A11YProvider a11yProvider,
     DocumentLoaderRegistry documentLoaderRegistry,
     ResourceResolver resourceResolver,
-    ClipboardProvider<?> clipboardProvider
+    ClipboardProvider<?> clipboardProvider,
+    Function<Frame, VirtualKeyboard> virtualKeyboardFactory,
+    UAUIFeatures uaUIFeatures
   ) {
     this.fetchEngine = fetchEngine;
     this.threadGroupSupplier = threadGroupSupplier;
@@ -52,6 +60,8 @@ public class RenderingEngineImp implements RenderingEngine {
     this.documentLoaderRegistry = documentLoaderRegistry;
     this.resourceResolver = resourceResolver;
     this.clipboardProvider = clipboardProvider;
+    this.virtualKeyboardFactory = virtualKeyboardFactory;
+    this.uaUIFeatures = uaUIFeatures;
     RenderingEngineInit.init(resourceResolver);
   }
 
@@ -62,12 +72,13 @@ public class RenderingEngineImp implements RenderingEngine {
 
   @Override
   public NavigableRendererPair createNavigable(
+    Frame frame,
     DocumentRendererEventListener eventListener
   ) throws IOException {
     Navigable navigable = TraversableUtil.createNewTopLevelTraversable(
       new UANavigableOptionsImp(
         fetchEngine, threadGroupSupplier, documentLoaderRegistry,
-        this, eventListener, slotFamilyFamily));
+        this, frame, eventListener, uaUIFeatures, slotFamilyFamily));
 
     // TODO: Where does this code actually go?
     Window window = navigable.activeDocument().browsingContext().activeWindow();
@@ -92,6 +103,12 @@ public class RenderingEngineImp implements RenderingEngine {
   @Override
   public ClipboardProvider<?> clipboardProvider() {
     return this.clipboardProvider;
+  }
+
+  @Override
+  public FrameAPIs newFrameAPIs(Frame frame) {
+    return new FrameAPIs(
+      virtualKeyboardFactory.apply(frame));
   }
 
   @Override

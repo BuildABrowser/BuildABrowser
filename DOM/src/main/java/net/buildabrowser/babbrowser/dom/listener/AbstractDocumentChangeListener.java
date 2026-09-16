@@ -1,5 +1,7 @@
 package net.buildabrowser.babbrowser.dom.listener;
 
+import java.net.URI;
+
 import net.buildabrowser.babbrowser.cssbase.cssom.CSSStyleSheet;
 import net.buildabrowser.babbrowser.dom.Element;
 import net.buildabrowser.babbrowser.dom.Node;
@@ -46,11 +48,25 @@ public abstract class AbstractDocumentChangeListener implements DocumentChangeLi
     if (nextListener == null) return allowDefault;
     return nextListener.onElementEvent(element, event, allowDefault);
   }
+
+  @Override
+  public boolean onElementEventEarly(
+    Element element, Event event, boolean allowDefault
+  ) {
+    if (nextListener == null) return allowDefault;
+    return nextListener.onElementEventEarly(element, event, allowDefault);
+  }
   
   @Override
   public void onSelectionChanged() {
     if (nextListener == null) return;
     nextListener.onSelectionChanged();
+  }
+
+  @Override
+  public void onURLChanged(URI prevURL, URI newURL) {
+    if (nextListener == null) return;
+    nextListener.onURLChanged(prevURL, newURL);
   }
 
   protected DocumentChangeListener nextListener() {

@@ -29,8 +29,9 @@ public final class FlexHypotheticalSizeDetermination {
       ElementBoxDimensions itemDimensions = itemBox.dimensions();
       
       CSSValue flexBasis = determineUsedBasis(item, isVertical);
+      CSSProperty refProperty = isVertical ? CSSProperty.HEIGHT : CSSProperty.WIDTH;
       LayoutConstraint basisConstraint = FlexUtil.evaluateFlexBasis(
-        itemBox, mainSize, flexBasis, isVertical);
+        itemBox, mainSize, refProperty, flexBasis, isVertical);
       if (basisConstraint.isBounded()) {
         item.setBaseSize(basisConstraint.value());
         continue;
@@ -43,15 +44,17 @@ public final class FlexHypotheticalSizeDetermination {
         && itemCrossSize.isBounded()
         && itemDimensions.intrinsicRatio() != -1
       ) {
-        // TODO: Ensure this is supposed to be division
-        item.setBaseSize(itemCrossSize.value() / itemDimensions.intrinsicRatio());
+        float transferredSize = isVertical ?
+          itemCrossSize.value() / itemDimensions.intrinsicRatio() :
+          itemCrossSize.value() * itemDimensions.intrinsicRatio();
+        item.setBaseSize(transferredSize);
         continue;
       }
 
       // Bit hacky, but refConstraint tells us if the value would resolve given finite space
       LayoutConstraint refConstraint = FlexUtil.evaluateFlexBasis(
         itemBox, LayoutConstraint.of(1),
-        flexBasis, isVertical);
+        refProperty, flexBasis, isVertical);
       boolean dependsOnAvailableSpace = refConstraint.isBounded();
 
       // TODO: This currently only handles !isVertical, and lets other cases fall through
@@ -98,17 +101,19 @@ public final class FlexHypotheticalSizeDetermination {
       // I can't think of any other !isVertical cases
       assert isVertical;
 
-      float fitContent = !crossSize.isBounded() ?
-        EBDimensionsUtil.preferredWidthConstraint(itemBox) :
+      // TODO: There is a cache bug if the itemCrossSize.isBounded() is removed
+      float fitContent = !crossSize.isBounded() || itemCrossSize.isBounded() ?
+        0f :
         Math.min(
           EBDimensionsUtil.preferredWidthConstraint(itemBox),
           Math.max(EBDimensionsUtil.preferredMinWidthConstraint(itemBox), crossSize.value()));
 
-      // TODO: The guard should only apply for auto?
-      LayoutConstraint usedCrossSize = !itemCrossSize.isBounded() ?
-        LayoutConstraint.of(fitContent) :
-        itemCrossSize;
-      
+      LayoutConstraint usedCrossSize =
+        itemCrossSize.isBounded() ? itemCrossSize :
+        crossSize.type().equals(LayoutConstraintType.MIN_CONTENT) ? LayoutConstraint.MIN_CONTENT :
+        crossSize.isBounded() ? LayoutConstraint.of(fitContent) :
+        LayoutConstraint.AUTO;
+
       UnmanagedBoxFragment<?> fragmentAtCross = itemBox.layout(usedCrossSize, LayoutConstraint.AUTO);
       item.setBaseSize(fragmentAtCross.height(Measurement.CONTENT));
     }

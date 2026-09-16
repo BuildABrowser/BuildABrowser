@@ -10,21 +10,26 @@ import java.util.function.Supplier;
 import net.buildabrowser.babbrowser.common.datastruct.SlotFamilyFamily;
 import net.buildabrowser.babbrowser.fetch.FetchEngine;
 import net.buildabrowser.babbrowser.html.html.RenderableDocument;
+import net.buildabrowser.babbrowser.html.html.util.DownloadUtil;
 import net.buildabrowser.babbrowser.html.navigation.DocumentRenderer.DocumentRendererEventListener;
 import net.buildabrowser.babbrowser.html.navigation.NavigationParams;
 import net.buildabrowser.babbrowser.html.navigation.UANavigableOptions;
+import net.buildabrowser.babbrowser.html.ua.UAUIFeatures;
 import net.buildabrowser.babbrowser.renderer.RenderingEngine;
 import net.buildabrowser.babbrowser.renderer.loader.DocumentLoader;
 import net.buildabrowser.babbrowser.renderer.loader.DocumentLoaderRegistry;
+import net.buildabrowser.babbrowser.renderer.uistate.Frame;
 
 public class UANavigableOptionsImp implements UANavigableOptions {
 
   private final List<Runnable> repaintListeners = new LinkedList<>();
 
+  private final UAUIFeatures uaUIFeatures;
   private final FetchEngine fetchEngine;
   private final Supplier<ExecutorService> threadGroupSupplier;
   private final DocumentLoaderRegistry documentLoaderRegistry;
   private final RenderingEngine renderingEngine;
+  private final Frame frame;
   private final DocumentRendererEventListener eventListener;
   private final SlotFamilyFamily slotFamilyFamily;
 
@@ -33,14 +38,18 @@ public class UANavigableOptionsImp implements UANavigableOptions {
     Supplier<ExecutorService> threadGroupSupplier,
     DocumentLoaderRegistry documentLoaderRegistry,
     RenderingEngine renderingEngine,
+    Frame frame,
     DocumentRendererEventListener eventListener,
+    UAUIFeatures uaUIFeatures,
     SlotFamilyFamily slotFamilyFamily
   ) {
     this.fetchEngine = fetchEngine;
     this.threadGroupSupplier = threadGroupSupplier;
     this.documentLoaderRegistry = documentLoaderRegistry;
     this.renderingEngine = renderingEngine;
+    this.frame = frame;
     this.eventListener = eventListener;
+    this.uaUIFeatures = uaUIFeatures;
     this.slotFamilyFamily = slotFamilyFamily;
   }
 
@@ -59,9 +68,20 @@ public class UANavigableOptionsImp implements UANavigableOptions {
     NavigationParams navigationParams
   ) throws IOException {
     // TODO: Use the correct mime
-    DocumentLoader documentLoader = documentLoaderRegistry.getByMimeType("text/html");
+    DocumentLoader documentLoader = documentLoaderRegistry.getByMimeType(
+      navigationParams.response().headerList().get("Content-Type"));
+    if (documentLoader == null) {
+      DownloadUtil.handleAsDownload(
+        navigationParams.response(),
+        navigationParams.navigable(),
+        null, // TODO: Set the ID
+        null);
+      return null;
+    }
+
     RenderableDocument document = documentLoader.load(
-      this, renderingEngine, navigationParams, slotFamilyFamily);
+      this, renderingEngine, frame,
+      navigationParams, slotFamilyFamily);
     requestRepaint();
     return document;
   }
@@ -69,6 +89,11 @@ public class UANavigableOptionsImp implements UANavigableOptions {
   @Override
   public DocumentRendererEventListener eventListener() {
     return this.eventListener;
+  }
+
+  @Override
+  public UAUIFeatures uiFeatures() {
+    return this.uaUIFeatures;
   }
 
   @Override

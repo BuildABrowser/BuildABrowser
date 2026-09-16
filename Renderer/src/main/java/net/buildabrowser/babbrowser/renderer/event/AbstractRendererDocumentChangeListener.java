@@ -15,6 +15,15 @@ public class AbstractRendererDocumentChangeListener
   }
 
   @Override
+  public void onBoxFragmentAdded(
+    BoxFragment<?> fragment
+  ) {
+    if (nextListener() instanceof RendererDocumentChangeListener nextListener) {
+      nextListener.onBoxFragmentAdded(fragment);
+    }
+  }
+
+  @Override
   public boolean onFragmentEvent(
     Element element, Event event,
     BoxFragment<?> refFragment,
@@ -23,6 +32,21 @@ public class AbstractRendererDocumentChangeListener
   ) {
     if (nextListener() instanceof RendererDocumentChangeListener nextListener) {
       return nextListener.onFragmentEvent(
+        element, event, refFragment, target, allowDefault);
+    }
+
+    return allowDefault;
+  }
+
+  @Override
+  public boolean onFragmentEventEarly(
+    Element element, Event event,
+    BoxFragment<?> refFragment,
+    LayoutFragment target,
+    boolean allowDefault
+  ) {
+    if (nextListener() instanceof RendererDocumentChangeListener nextListener) {
+      return nextListener.onFragmentEventEarly(
         element, event, refFragment, target, allowDefault);
     }
 

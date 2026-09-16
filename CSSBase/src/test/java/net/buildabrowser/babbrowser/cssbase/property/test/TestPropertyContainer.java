@@ -41,12 +41,12 @@ public class TestPropertyContainer implements PropertyContainer, MutableProperty
   }
 
   @Override
-  public CSSValue getProperty(PropertyContainer parent, CSSProperty property) {
-    return valueMap.get(property);
+  public boolean wasInherited(CSSProperty property) {
+    return false;
   }
 
   @Override
-  public boolean wasInherited(CSSProperty property) {
+  public boolean wasSet(CSSProperty property) {
     return false;
   }
 

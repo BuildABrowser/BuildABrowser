@@ -17,7 +17,14 @@ public class HTMLButtonElementImp extends HTMLElementImp implements HTMLButtonEl
   }
 
   @Override
+  public boolean disabled() {
+    return hasAttribute("disabled");
+  }
+
+  @Override
   public void activate(PointerEvent event) {
+    // TODO: Proper way to block event
+    if (disabled()) return;
     if (formOwner == null) return;
     // TODO: Check if document is fully active
     if (FormSubmissionAlgorithm.isSubmitButton(this)) {
@@ -35,11 +42,15 @@ public class HTMLButtonElementImp extends HTMLElementImp implements HTMLButtonEl
 
   @Override
   public String value() {
+    String valueAttr = getAttribute("value");
+    if (valueAttr != null) {
+      return valueAttr;
+    }
     return "";
   }
 
   @Override
-  public HTMLFormElement formOwner() {
+  public HTMLFormElement form() {
     return this.formOwner;
   }
 

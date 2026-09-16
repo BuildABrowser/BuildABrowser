@@ -12,7 +12,7 @@ import net.buildabrowser.babbrowser.common.util.CommonUtil;
 import net.buildabrowser.babbrowser.cssbase.cssom.CSSRuleList;
 import net.buildabrowser.babbrowser.cssbase.cssom.CSSStyleSheet;
 import net.buildabrowser.babbrowser.cssbase.cssom.Declaration;
-import net.buildabrowser.babbrowser.cssbase.cssom.StyleRule;
+import net.buildabrowser.babbrowser.cssbase.cssom.rule.StyleRule;
 import net.buildabrowser.babbrowser.cssbase.selector.ComplexSelector;
 import net.buildabrowser.babbrowser.cssbase.selector.TypeSelector;
 import net.buildabrowser.babbrowser.cssbase.tokens.ColonToken;
@@ -42,12 +42,14 @@ public class CSSParserTest {
       IdentToken.create("p"), LCBracketToken.create(), IdentToken.create("color"),
       ColonToken.create(), IdentToken.create("red"), RCBracketToken.create()
     );
+    List<ComplexSelector> selectors = List.of(
+      ComplexSelector.create(List.of(TypeSelector.create("p"))));
     Assertions.assertEquals(CSSStyleSheet.create(CSSRuleList.create(List.of(
       new StyleRule(
+        selectors, selectors,
         List.of(
-          ComplexSelector.create(List.of(TypeSelector.create("p")))),
-        List.of(
-          Declaration.create(TEST_SOURCE, "color", List.of(IdentToken.create("red")), false))
+          Declaration.create(TEST_SOURCE, "color", List.of(IdentToken.create("red")), false)),
+        List.of()
       )
     ))), styleSheet);
   }

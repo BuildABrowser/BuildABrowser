@@ -10,9 +10,11 @@ import net.buildabrowser.babbrowser.dom.listener.DocumentChangeListener;
 import net.buildabrowser.babbrowser.fetch.FetchClient;
 import net.buildabrowser.babbrowser.html.html.HTMLDocument;
 import net.buildabrowser.babbrowser.html.html.HTMLElement;
+import net.buildabrowser.babbrowser.html.html.SubmittableElementSet;
 import net.buildabrowser.babbrowser.html.input.FocusManager;
 import net.buildabrowser.babbrowser.html.navigation.BrowsingContext;
 import net.buildabrowser.babbrowser.html.navigation.DocumentRenderer;
+import net.buildabrowser.babbrowser.html.navigation.HTMLDocumentRenderer;
 import net.buildabrowser.babbrowser.html.navigation.Navigable;
 import net.buildabrowser.babbrowser.html.navigation.UANavigableOptions;
 import net.buildabrowser.babbrowser.html.selection.Selection;
@@ -24,8 +26,9 @@ public class HTMLDocumentImp extends DocumentImp implements HTMLDocument {
   private final Navigable nodeNavigable; // TODO: Hack because the proper way is NPE-prone
   private final FocusManager focusManager;
   private final Selection selection;
+  private final SubmittableElementSet submittableElements;
 
-  private DocumentRenderer renderer;
+  private HTMLDocumentRenderer renderer;
   private boolean willDeclarativelyRefresh;
   private HTMLElement titleElement;
 
@@ -39,6 +42,7 @@ public class HTMLDocumentImp extends DocumentImp implements HTMLDocument {
     this.nodeNavigable= nodeNavigable;
     this.focusManager = FocusManager.create(this);
     this.selection = Selection.create(this);
+    this.submittableElements = SubmittableElementSet.create();
   }
 
   @Override
@@ -68,7 +72,7 @@ public class HTMLDocumentImp extends DocumentImp implements HTMLDocument {
   }
 
   @Override
-  public DocumentRenderer renderer() {
+  public HTMLDocumentRenderer renderer() {
     return this.renderer;
   }
 
@@ -76,7 +80,7 @@ public class HTMLDocumentImp extends DocumentImp implements HTMLDocument {
   public void attachRenderer(DocumentRenderer renderer) {
     // TODO: Might be good for Renderer to be an intrusive list in the future
     // (say we need a web renderer and PDF renderer)
-    this.renderer = renderer;
+    this.renderer = (HTMLDocumentRenderer) renderer;
 
     syncStylesheets(renderer.changeListener());
     syncNodes(renderer.changeListener(), this);
@@ -133,6 +137,19 @@ public class HTMLDocumentImp extends DocumentImp implements HTMLDocument {
   @Override
   public UANavigableOptions uaNavigableOptions() {
     return this.uaNavigableOptions;
+  }
+
+  @Override
+  public void setURL(URI url) {
+    URI oldURL = url();
+    super.setURLRaw(url);
+    if (renderer == null) return;
+    renderer.changeListener().onURLChanged(oldURL, url);
+  }
+
+  @Override
+  public SubmittableElementSet unownedSubmittableElements() {
+    return this.submittableElements;
   }
 
   private void syncStylesheets(DocumentChangeListener changeListener) {

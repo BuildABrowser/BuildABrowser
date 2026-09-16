@@ -4,7 +4,7 @@ import net.buildabrowser.babbrowser.painter.core.PaintCanvas;
 import net.buildabrowser.babbrowser.renderer.fragment.BoxFragment;
 import net.buildabrowser.babbrowser.renderer.fragment.LayoutFragment.Measurement;
 import net.buildabrowser.babbrowser.renderer.fragment.flexbox.FlexBoxFragment;
-import net.buildabrowser.babbrowser.renderer.layout.StackingContext;
+import net.buildabrowser.babbrowser.renderer.layout.stacking.StackingContext;
 import net.buildabrowser.babbrowser.renderer.paint.BoxPainter;
 import net.buildabrowser.babbrowser.renderer.paint.PaintUtil;
 import net.buildabrowser.babbrowser.renderer.paint.VpIntersection;
@@ -15,10 +15,12 @@ public class FlexBoxPainter implements BoxPainter<FlexBoxFragment> {
   @Override
   public void paint(FlexBoxFragment fragment, PaintCanvas canvas, VpIntersection vpIntersection) {
     StackingContext refContext = fragment.box().stackingContext();
-    BoxFragment<?> nextChild = fragment.fragments();
+    BoxFragment<?> nextChild = fragment.innerFragment();
     while (nextChild != null) {
-      PaintUtil.maybePaintFragment(nextChild, canvas, vpIntersection,
-        (f, c, vpi) -> paintChild(f, c, vpi, refContext));
+      PaintUtil.maybePaintBgFragment(nextChild, canvas, vpIntersection,
+        (f, c, vpi) -> paintChildBg(f, c, vpi, refContext));
+      PaintUtil.maybePaintFgFragment(nextChild, canvas, vpIntersection,
+        (f, c, vpi) -> paintChildFg(f, c, vpi, refContext));
       nextChild = (BoxFragment<?>) nextChild.next();
     }
   }
@@ -28,16 +30,27 @@ public class FlexBoxPainter implements BoxPainter<FlexBoxFragment> {
     ElementBackgroundPainter.paintBackground(canvas, fragment, vpIntersection);
   }
 
-  private void paintChild(BoxFragment<?> child, PaintCanvas canvas, VpIntersection vpIntersection, StackingContext refContext) {
+  private void paintChildFg(
+    BoxFragment<?> child,
+    PaintCanvas canvas,
+    VpIntersection vpIntersection,
+    StackingContext refContext
+  ) {
     if (child.box().stackingContext() != refContext) return;
     
     canvas.withTransform(
-      t -> t.translate(child.posX(Measurement.BORDER), child.posY(Measurement.BORDER)),
-      c -> child.withPainterV((p, f) -> p.paintBackground(f, c, vpIntersection)));
-
-    canvas.withTransform(
       t -> t.translate(child.posX(Measurement.CONTENT), child.posY(Measurement.CONTENT)),
       c -> child.withPainterV((p, f) -> p.paint(f, c, vpIntersection)));
+  }
+
+
+
+  private void paintChildBg(BoxFragment<?> child, PaintCanvas canvas, VpIntersection vpIntersection, StackingContext refContext) {
+    if (child.box().stackingContext() != refContext) return;
+
+    canvas.withTransform(
+      t -> t.translate(child.posX(Measurement.BORDER), child.posY(Measurement.BORDER)),
+      c -> child.withPainterV((p, f) -> p.paintBackground(f, c, vpIntersection)));
   }
 
 }

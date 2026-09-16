@@ -2,8 +2,8 @@ package net.buildabrowser.babbrowser.renderer.content.flexbox;
 
 import net.buildabrowser.babbrowser.cssbase.property.CSSProperty;
 import net.buildabrowser.babbrowser.cssbase.property.CSSValue;
-import net.buildabrowser.babbrowser.cssbase.property.flex.AlignContentValue;
-import net.buildabrowser.babbrowser.cssbase.property.flex.AlignItemsValue;
+import net.buildabrowser.babbrowser.cssbase.property.align.AlignContentValue;
+import net.buildabrowser.babbrowser.cssbase.property.align.AlignItemsValue;
 import net.buildabrowser.babbrowser.renderer.box.ElementBox;
 import net.buildabrowser.babbrowser.renderer.box.ElementBoxDimensions;
 import net.buildabrowser.babbrowser.renderer.content.common.SizingHeightUtil;
@@ -17,15 +17,16 @@ public final class FlexUtil {
   public static LayoutConstraint evaluateFlexBasis(
     ElementBox box,
     LayoutConstraint parentMainSize,
+    CSSProperty refProperty,
     CSSValue flexBasis,
     boolean isVertical
   ) {
     if (isVertical) {
       return SizingHeightUtil.evaluateAdjustedHeightSize(
-        parentMainSize, box, flexBasis);
+        parentMainSize, box, refProperty, flexBasis);
     } else {
       return SizingWidthUtil.evaluateWidthSize(
-        parentMainSize, box, flexBasis);
+        parentMainSize, box, refProperty, flexBasis);
     }
   }
 
@@ -56,17 +57,21 @@ public final class FlexUtil {
 
     CSSValue alignItemsValue = FlexCrossSizeDetermination.getItemAlignment(rootBox, itemBox);
     CSSValue alignContentValue = rootBox.properties().get(CSSProperty.ALIGN_CONTENT);
+    boolean isContentStretch =
+      alignContentValue.equals(AlignContentValue.STRETCH) 
+      || alignContentValue.equals(AlignContentValue.NORMAL);
+    CSSProperty crossProperty = isVertical ? CSSProperty.WIDTH : CSSProperty.HEIGHT;
     if (
       alignItemsValue.equals(AlignItemsValue.STRETCH)
-      && alignContentValue.equals(AlignContentValue.STRETCH)
-      && !crossSize.isBounded()
+      && isContentStretch
+      && itemBox.properties().get(crossProperty).equals(CSSValue.AUTO)
       && parentCrossSize.isBounded()
     ) {
       ElementBoxDimensions dimensions = itemBox.dimensions();
       float[] margin = dimensions.getComputedMargin();
       float decorSize = isVertical ?
-        dimensions.decorHeight() + margin[0] + margin[1] :
-        dimensions.decorWidth() + margin[2] + margin[3];
+        dimensions.decorWidth() + margin[2] + margin[3] :
+        dimensions.decorHeight() + margin[0] + margin[1];
       return LayoutConstraint.of(
         Math.max(0, parentCrossSize.value() - decorSize));
     }

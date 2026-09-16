@@ -6,6 +6,8 @@ import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Set;
 
+import com.aayushatharva.brotli4j.Brotli4jLoader;
+
 import net.buildabrowser.babbrowser.network.encoding.decoders.BrotliContentDecoder;
 import net.buildabrowser.babbrowser.network.encoding.decoders.DeflateContentDecoder;
 import net.buildabrowser.babbrowser.network.encoding.decoders.GzipContentDecoder;
@@ -29,7 +31,9 @@ public interface ContentEncodingRegistry {
     ContentEncodingRegistry registry = new ContentEncodingRegistryImp();
     registry.registerDecoder("gzip", GzipContentDecoder::new);
     registry.registerDecoder("deflate", DeflateContentDecoder::new);
-    registry.registerDecoder("br", BrotliContentDecoder::new);
+    if (Brotli4jLoader.isAvailable()) {
+      registry.registerDecoder("br", BrotliContentDecoder::new);
+    }
     return registry;
   }
 

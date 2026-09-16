@@ -7,6 +7,7 @@ import java.util.concurrent.ExecutorService;
 import net.buildabrowser.babbrowser.fetch.FetchEngine;
 import net.buildabrowser.babbrowser.html.html.RenderableDocument;
 import net.buildabrowser.babbrowser.html.navigation.DocumentRenderer.DocumentRendererEventListener;
+import net.buildabrowser.babbrowser.html.ua.UAUIFeatures;
 
 public interface UANavigableOptions {
 
@@ -19,6 +20,8 @@ public interface UANavigableOptions {
   ) throws IOException;
 
   DocumentRendererEventListener eventListener();
+
+  UAUIFeatures uiFeatures();
 
   void requestRepaint();
 
