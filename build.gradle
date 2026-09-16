@@ -2,10 +2,9 @@ plugins {
 	id 'ru.vyarus.animalsniffer' version '2.0.1' apply false
 }
 
-import org.gradle.nativeplatform.internal.DefaultTargetMachineFactory
-
 subprojects {
 	apply plugin: 'java'
+	apply plugin: 'maven-publish'
 
 	repositories {
 		maven { url 'https://jitpack.io' }
@@ -22,6 +21,22 @@ subprojects {
 
 	tasks.withType(Test).configureEach {
 		useJUnitPlatform()
+	}
+
+	plugins.withId('java') {
+		plugins.withId('maven-publish') {
+			afterEvaluate {
+				publishing {
+					publications {
+						if (findByName('mavenJava') == null) {
+							create('mavenJava', MavenPublication) {
+								from components.java
+							}
+						}
+					}
+				}
+			}
+		}
 	}
 
 	def desktopModules = [
