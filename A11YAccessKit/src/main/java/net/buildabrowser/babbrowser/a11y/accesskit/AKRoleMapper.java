@@ -29,7 +29,7 @@ public final class AKRoleMapper {
       case DELETION -> AKRole.CONTENT_DELETION;
       case DIALOG -> AKRole.DIALOG;
       case DIRECTORY -> AKRole.LIST;
-      case DOCUMENT -> AKRole.DOCUMENT;
+      case DOCUMENT -> AKRole.ROOT_WEB_AREA;
       case EMPHASIS -> AKRole.EMPHASIS;
       case FEED -> AKRole.FEED;
       case FIGURE -> AKRole.FIGURE;
@@ -42,7 +42,7 @@ public final class AKRoleMapper {
       case IMAGE -> AKRole.IMAGE;
       case IMG -> AKRole.IMAGE;
       case INSERTION -> AKRole.CONTENT_INSERTION;
-      case LINK -> AKRole.LINK;
+      case LINK -> AKRole.GENERIC_CONTAINER;
       case LIST -> AKRole.LIST;
       case LISTBOX -> AKRole.LIST_BOX;
       case LISTITEM -> AKRole.LIST_ITEM;
@@ -99,8 +99,7 @@ public final class AKRoleMapper {
       case TREEITEM -> AKRole.TREE_ITEM;
 
       // TODO: Label is semantically incorrect, but AccessKit removed StaticText
-      // (and text run is ignored)
-      case STATICTEXT -> AKRole.LABEL;
+      case STATICTEXT -> AKRole.TEXT_RUN;
       
       default -> throw new UnsupportedOperationException("Unsupported role: " + role);
     };

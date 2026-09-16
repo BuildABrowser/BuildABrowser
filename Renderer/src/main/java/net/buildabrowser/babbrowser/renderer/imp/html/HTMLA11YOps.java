@@ -28,8 +28,10 @@ public class HTMLA11YOps implements A11YOps {
     )) return false;
 
     RenderContext context = renderContexts.get(htmlElement);
-    return PropertiesUtil.outerDisplayValue(context.properties())
-      .equals(OuterDisplayValue.NONE);
+    return
+      context.properties() != null
+      && PropertiesUtil.outerDisplayValue(context.properties())
+        .equals(OuterDisplayValue.NONE);
   }
 
   @Override

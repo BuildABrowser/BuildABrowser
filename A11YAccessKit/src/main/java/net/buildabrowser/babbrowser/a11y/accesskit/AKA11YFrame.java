@@ -7,11 +7,16 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import net.buildabrowser.ak4j.AK4J;
 import net.buildabrowser.ak4j.AK4JHandle;
+import net.buildabrowser.ak4j.AKAction;
+import net.buildabrowser.ak4j.AKActionRequest;
 import net.buildabrowser.ak4j.AKCallbacks;
 import net.buildabrowser.ak4j.AKRole;
+import net.buildabrowser.ak4j.AKTextSelection;
+import net.buildabrowser.babbrowser.a11y.core.A11YFocusManager;
 import net.buildabrowser.babbrowser.a11y.core.A11YFrame;
 import net.buildabrowser.babbrowser.a11y.core.A11YOps;
 import net.buildabrowser.babbrowser.a11y.core.AriaCallbacks;
+import net.buildabrowser.babbrowser.a11y.core.aom.AriaEvent;
 import net.buildabrowser.babbrowser.a11y.core.html.HTMLAriaTraversal;
 import net.buildabrowser.babbrowser.dom.Node;
 
@@ -21,12 +26,18 @@ public class AKA11YFrame implements A11YFrame, AKCallbacks {
 
   private final AK4JHandle ak4jHandle;
   private final A11YOps ops;
+  private final AKNodeRegistry nodeRegistry;
+  private final AKA11YFocusManager focusManager;
+  private boolean isFirstRun = true;
 
   private volatile boolean activated;
 
   public AKA11YFrame(A11YOps ops) throws IOException {
     this.ak4jHandle = AK4J.init(this);
     this.ops = ops;
+    this.nodeRegistry = new AKNodeRegistry();
+    this.focusManager = new AKA11YFocusManager(
+      nodeRegistry);
   }
 
   public MemorySegment onActivation(AK4JHandle ak4jHandle) {
@@ -39,7 +50,19 @@ public class AKA11YFrame implements A11YFrame, AKCallbacks {
     return createFakeUpdate(ak4jHandle);
   }
 
-  public void onAction(AK4JHandle ak4jHandle) {}
+  @Override
+  public void onAction(
+    AK4JHandle ak4jHandle,
+    AKActionRequest actionRequest
+  ) {
+    switch (actionRequest.action()) {
+      case AKAction.SET_TEXT_SELECTION -> {
+        focusManager.focusNodeByAriaId(actionRequest.nodeId());
+        focusManager.updateTextSelection((AKTextSelection) actionRequest.data());
+      }
+      default -> {System.out.println("NOPE: " + actionRequest.action());}
+    }
+  }
 
   public void onDeactivation(AK4JHandle ak4jHandle) {
     this.activated = false;
@@ -49,14 +72,22 @@ public class AKA11YFrame implements A11YFrame, AKCallbacks {
   @Override
   public void update(Node node) {
     if (!activated) return;
+
+    focusManager.update(node);
+    long focusId = focusManager.focusedNodeId();
+
+    if (isFirstRun) {
+      ak4jHandle.adapter().setFocus(true);
+      isFirstRun = false;
+    }
     
     Arena scope = Arena.ofAuto();
-    MemorySegment tree = ak4jHandle.createTree(0, scope);
     // TODO: Determine capacity
     MemorySegment rootNode = ak4jHandle.nodes().create(AKRole.WINDOW, scope);
-    MemorySegment update = ak4jHandle.createTreeUpdate(tree, 128, 0, scope);
+    MemorySegment update = ak4jHandle.createTreeUpdate(MemorySegment.NULL, 128, focusId, scope);
+    nodeRegistry.restart(); // TODO: Not great to regenerate the registry every time
     AriaCallbacks<MemorySegment> callbacks = new AKAriaCallbacks(
-      ak4jHandle, update, scope);
+      ak4jHandle, nodeRegistry, focusManager, update, scope);
     HTMLAriaTraversal.traverse(rootNode, node, callbacks, ops);
     ak4jHandle.pushTreeUpdateNode(update, 0, rootNode);
     MemorySegment oldUpdate = queuedUpdate.getAndSet(update);
@@ -69,6 +100,16 @@ public class AKA11YFrame implements A11YFrame, AKCallbacks {
       // AccessKit will dispose for us
       return currentUpdate;
     });
+  }
+
+  @Override
+  public A11YFocusManager a11yFocusManager() {
+    return this.focusManager;
+  }
+
+  @Override
+  public void fireNodeEvent(long nodeId, AriaEvent event) {
+    // TODO: Relay event
   }
 
   @Override
@@ -89,6 +130,7 @@ public class AKA11YFrame implements A11YFrame, AKCallbacks {
   private MemorySegment createFakeUpdate(AK4JHandle ak4jHandle) {
     Arena scope = Arena.ofAuto();
     MemorySegment tree = ak4jHandle.createTree(0, scope);
+    ak4jHandle.setTreeToolkitName(tree, "web", scope);
     MemorySegment update = ak4jHandle.createTreeUpdate(tree, 1, 0, scope);
     
     MemorySegment rootNode = ak4jHandle.nodes().create(AKRole.WINDOW, scope);

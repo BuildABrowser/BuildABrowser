@@ -5,32 +5,72 @@ import java.lang.foreign.MemorySegment;
 
 import net.buildabrowser.ak4j.AK4JHandle;
 import net.buildabrowser.ak4j.AKRole;
+import net.buildabrowser.ak4j.AKTextSelection;
+import net.buildabrowser.ak4j.AKTextSelection.AKTextPosition;
+import net.buildabrowser.ak4j.util.TextRunUtil;
 import net.buildabrowser.babbrowser.a11y.core.AriaCallbacks;
-import net.buildabrowser.babbrowser.a11y.core.aom.AriaEvent;
 import net.buildabrowser.babbrowser.a11y.core.aom.AriaProperty;
 import net.buildabrowser.babbrowser.a11y.core.aom.AriaRole;
+import net.buildabrowser.babbrowser.dom.Element;
+import net.buildabrowser.babbrowser.dom.Node;
+import net.buildabrowser.babbrowser.dom.Text;
 
 public class AKAriaCallbacks implements AriaCallbacks<MemorySegment> {
 
   private final AK4JHandle ak4jHandle;
+  private final AKNodeRegistry nodeRegistry;
+  private final AKA11YFocusManager focusManager;
   private final MemorySegment treeUpdate;
-  private final Arena arena;
+  private final Arena scope;
 
   public AKAriaCallbacks(
     AK4JHandle ak4jHandle,
+    AKNodeRegistry nodeRegistry,
+    AKA11YFocusManager focusManager,
     MemorySegment treeUpdate,
-    Arena arena
+    Arena scope
   ) {
     this.ak4jHandle = ak4jHandle;
+    this.nodeRegistry = nodeRegistry;
+    this.focusManager = focusManager;
     this.treeUpdate = treeUpdate;
-    this.arena = arena;
+    this.scope = scope;
   }
 
   @Override
-  public MemorySegment visitNode(MemorySegment parent, long nodeId, AriaRole role) {
+  public MemorySegment visitNode(MemorySegment parent, long nodeId, Node node, AriaRole role) {
     AKRole mappedRole = AKRoleMapper.map(role);
+    nodeRegistry.pushNode(nodeId, node);
     ak4jHandle.nodes().pushChild(parent, nodeId);
-    return ak4jHandle.nodes().create(mappedRole, arena);
+
+    MemorySegment nodePtr = ak4jHandle.nodes().create(mappedRole, scope);
+
+    if (node instanceof Element element) {
+      ak4jHandle.nodes().setHTMLTag(nodePtr, element.name(), scope);
+    }
+
+    if (
+      nodeId == focusManager.focusedNodeId()
+      && focusManager.textSelection() != null
+    ) {
+      ak4jHandle.nodes().setTextSelection(
+        nodePtr, focusManager.textSelection(), scope);
+    } else if (nodeId == focusManager.focusedNodeId()) {
+      Node child = node.firstChild();
+      while (child != null) {
+        if (child instanceof Text text && text.toString().trim().length() > 0) {
+          ak4jHandle.nodes().setTextSelection(
+            nodePtr,
+            new AKTextSelection(
+              new AKTextPosition(child.ariaId(), 0),
+              new AKTextPosition(child.ariaId(), 0)), scope);
+          break;
+        }
+        child = child.nextSibling();
+      }
+    }
+
+    return nodePtr;
   }
 
   @Override
@@ -45,15 +85,10 @@ public class AKAriaCallbacks implements AriaCallbacks<MemorySegment> {
 
   @Override
   public void visitText(MemorySegment node, String value) {
-    ak4jHandle.nodes().setValue(node, value, arena);
-  }
-
-  @Override
-  public void onNodeEvent(long nodeId, AriaEvent event) {}
-
-  @Override
-  public void onFocusChanged(long focusId) {
-    
+    byte[] lengths = new byte[value.length()];
+    int lengthsLength = TextRunUtil.getTextLengths(value, lengths);
+    ak4jHandle.nodes().setValue(node, value, scope);
+    ak4jHandle.nodes().setCharacterLengths(node, lengths, lengthsLength, scope);
   }
   
 }

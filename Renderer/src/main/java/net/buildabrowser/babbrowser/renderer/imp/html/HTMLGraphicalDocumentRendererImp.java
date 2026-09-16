@@ -126,6 +126,9 @@ public class HTMLGraphicalDocumentRendererImp implements GraphicalDocumentRender
       document, documentBox, renderContexts);
     documentBox.setChild(fakeRootContext.box());
 
+    a11yFrame.a11yFocusManager().attachCallbacks(
+      new HTMLA11YFocusManagerCallbacks(document, a11yFrame));
+
     FetchEngine fetchEngine = navigable.uaNavigableOptions().fetchEngine();
     
     DocumentChangeListener innerChangeListener = new RenderDocumentChangeListener(

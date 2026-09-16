@@ -29,7 +29,7 @@ public final class HTMLAriaTraversal {
       return;
     }
 
-    T nodeRepr = callbacks.visitNode(parentNodeRepr, node.ariaId(), role);
+    T nodeRepr = callbacks.visitNode(parentNodeRepr, node.ariaId(), node, role);
     if (node instanceof Text text) {
       callbacks.visitText(nodeRepr, text.data().trim());
     }
@@ -57,7 +57,7 @@ public final class HTMLAriaTraversal {
     // TODO: Also check if a generic can be ignored
     boolean simpleIgnore =
       role == null
-      || (node instanceof Text text && text.data().isBlank());  
+      || (node instanceof Text text && text.data().trim().length() == 0);  
     if (simpleIgnore) return true;
 
     if (!(

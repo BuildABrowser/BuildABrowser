@@ -11,6 +11,16 @@ include(
     ':Stream', ':Fetch', ':Cookies', ':CookiesSQLite',
     ':Embedding:StandardCommon', ':Embedding:Swing')
 
+def localAk4j = file('../AK4J')
+
+if (localAk4j.exists()) {
+    includeBuild(localAk4j) {
+        dependencySubstitution {
+            substitute module('com.github.BuildABrowser:AK4J') using project(':lib')
+        }
+    }
+}
+
 // Copied from Brotli4J website (https://github.com/hyperxpro/Brotli4j/blob/main/LICENSE)
 // With modifications to resolve broken things
 

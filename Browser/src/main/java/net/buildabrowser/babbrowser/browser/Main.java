@@ -46,6 +46,7 @@ public class Main {
       return;
     }
 
+    System.setProperty("javax.accessibility.assistive_technologies", "");
     System.setProperty("org.lwjgl.opengl.contextAPI", "GLX");
     System.setProperty("apple.laf.useScreenMenuBar", "true");
     setLookAndFeel();
