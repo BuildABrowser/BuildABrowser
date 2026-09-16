@@ -4,10 +4,12 @@ import java.lang.foreign.Arena;
 import java.lang.foreign.MemorySegment;
 
 import net.buildabrowser.ak4j.AK4JHandle;
+import net.buildabrowser.ak4j.AKAction;
 import net.buildabrowser.ak4j.AKRole;
 import net.buildabrowser.ak4j.AKTextSelection;
 import net.buildabrowser.ak4j.AKTextSelection.AKTextPosition;
 import net.buildabrowser.ak4j.util.TextRunUtil;
+import net.buildabrowser.babbrowser.a11y.core.A11YOps;
 import net.buildabrowser.babbrowser.a11y.core.AriaCallbacks;
 import net.buildabrowser.babbrowser.a11y.core.aom.AriaProperty;
 import net.buildabrowser.babbrowser.a11y.core.aom.AriaRole;
@@ -20,6 +22,7 @@ public class AKAriaCallbacks implements AriaCallbacks<MemorySegment> {
   private final AK4JHandle ak4jHandle;
   private final AKNodeRegistry nodeRegistry;
   private final AKA11YFocusManager focusManager;
+  private final A11YOps ops;
   private final MemorySegment treeUpdate;
   private final Arena scope;
 
@@ -27,12 +30,14 @@ public class AKAriaCallbacks implements AriaCallbacks<MemorySegment> {
     AK4JHandle ak4jHandle,
     AKNodeRegistry nodeRegistry,
     AKA11YFocusManager focusManager,
+    A11YOps ops,
     MemorySegment treeUpdate,
     Arena scope
   ) {
     this.ak4jHandle = ak4jHandle;
     this.nodeRegistry = nodeRegistry;
     this.focusManager = focusManager;
+    this.ops = ops;
     this.treeUpdate = treeUpdate;
     this.scope = scope;
   }
@@ -47,6 +52,11 @@ public class AKAriaCallbacks implements AriaCallbacks<MemorySegment> {
 
     if (node instanceof Element element) {
       ak4jHandle.nodes().setHTMLTag(nodePtr, element.name(), scope);
+
+      if (isActivatable(element)) {
+        ak4jHandle.nodes().addAction(nodePtr, AKAction.FOCUS);
+        ak4jHandle.nodes().addAction(nodePtr, AKAction.CLICK);
+      }
     }
 
     if (
@@ -89,6 +99,10 @@ public class AKAriaCallbacks implements AriaCallbacks<MemorySegment> {
     int lengthsLength = TextRunUtil.getTextLengths(value, lengths);
     ak4jHandle.nodes().setValue(node, value, scope);
     ak4jHandle.nodes().setCharacterLengths(node, lengths, lengthsLength, scope);
+  }
+
+  private boolean isActivatable(Element element) {
+    return ops.isActivatable(element);
   }
   
 }

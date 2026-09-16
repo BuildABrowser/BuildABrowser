@@ -5,6 +5,9 @@ import java.lang.foreign.Arena;
 import java.lang.foreign.MemorySegment;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import net.buildabrowser.ak4j.AK4J;
 import net.buildabrowser.ak4j.AK4JHandle;
 import net.buildabrowser.ak4j.AKAction;
@@ -21,6 +24,8 @@ import net.buildabrowser.babbrowser.a11y.core.html.HTMLAriaTraversal;
 import net.buildabrowser.babbrowser.dom.Node;
 
 public class AKA11YFrame implements A11YFrame, AKCallbacks {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(AKA11YFrame.class);
 
   private final AtomicReference<MemorySegment> queuedUpdate = new AtomicReference<>();
 
@@ -60,7 +65,14 @@ public class AKA11YFrame implements A11YFrame, AKCallbacks {
         focusManager.focusNodeByAriaId(actionRequest.nodeId());
         focusManager.updateTextSelection((AKTextSelection) actionRequest.data());
       }
-      default -> {System.out.println("NOPE: " + actionRequest.action());}
+      case AKAction.CLICK -> {
+        focusManager.focusNodeByAriaId(actionRequest.nodeId());
+        Node focusedNode = focusManager.focusedNode();
+        if (focusedNode == null) return;
+        if (!ops.isActivatable(focusedNode)) return;
+        ops.activate(focusedNode);
+      }
+      default -> LOGGER.warn("Unimplemented Action Request {}", actionRequest.action());
     }
   }
 
@@ -87,7 +99,7 @@ public class AKA11YFrame implements A11YFrame, AKCallbacks {
     MemorySegment update = ak4jHandle.createTreeUpdate(MemorySegment.NULL, 128, focusId, scope);
     nodeRegistry.restart(); // TODO: Not great to regenerate the registry every time
     AriaCallbacks<MemorySegment> callbacks = new AKAriaCallbacks(
-      ak4jHandle, nodeRegistry, focusManager, update, scope);
+      ak4jHandle, nodeRegistry, focusManager, ops, update, scope);
     HTMLAriaTraversal.traverse(rootNode, node, callbacks, ops);
     ak4jHandle.pushTreeUpdateNode(update, 0, rootNode);
     MemorySegment oldUpdate = queuedUpdate.getAndSet(update);

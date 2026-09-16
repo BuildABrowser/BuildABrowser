@@ -11,4 +11,8 @@ public interface A11YOps {
 
   boolean hasSemanticMeaning(Element element);
 
+  boolean isActivatable(Node node);
+
+  void activate(Node focusedNode);
+
 }

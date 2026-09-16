@@ -110,7 +110,8 @@ public class HTMLGraphicalDocumentRendererImp implements GraphicalDocumentRender
     EventContext eventContext = EventContext.create();
     this.documentBox = DocumentBox.create(document);
     this.renderContexts = slotFamilyFamily.createSlotFamily(ElementContextImp::new);
-    this.a11yFrame = renderingEngine.a11yProvider().createFrame(new HTMLA11YOps(renderContexts));
+    this.a11yFrame = renderingEngine.a11yProvider().createFrame(
+      new HTMLA11YOps(eventContext, renderContexts));
     this.fakeRootContext = new FakeRootContextImp(renderContexts.familyId(), documentBox);
     this.boxGenerator = BoxGenerator.create(renderContexts);
     this.uaStyleSheets = renderingEngine.uaStyleSheets();
