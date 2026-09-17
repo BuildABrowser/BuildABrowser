@@ -13,7 +13,7 @@ public class SkijaClipShapeSpec implements ClipShapeSpec {
 
   @Override
   public ClipShapeSpec addPoint(float x, float y) {
-    points.add(new Point(x, y));
+    points.add(new Point(x + 0.05f, y + 0.05f));
     return this;
   }
 

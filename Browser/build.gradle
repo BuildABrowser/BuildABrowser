@@ -29,7 +29,8 @@ application {
         '-XX:G1PeriodicGCInterval=3000',
         '-XX:+G1PeriodicGCInvokesConcurrent',
         '-Djava.net.preferIPv4Stack=true',
-        '-XX:CICompilerCount=2'
+        '-XX:CICompilerCount=2',
+        '-Dawt.useSystemAAFontSettings=lcd'
     ]
 
     if (jvmVersion < 25) {

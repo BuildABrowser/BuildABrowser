@@ -5,7 +5,9 @@ import java.util.Deque;
 import java.util.function.Consumer;
 
 import io.github.humbleui.skija.Canvas;
+import io.github.humbleui.skija.Image;
 import io.github.humbleui.skija.Matrix44;
+import io.github.humbleui.skija.SamplingMode;
 import io.github.humbleui.types.Rect;
 import net.buildabrowser.babbrowser.painter.core.ClipShapeSpec;
 import net.buildabrowser.babbrowser.painter.core.FontMetrics;
@@ -118,8 +120,12 @@ public class SkijaPaintCanvas implements PaintCanvas {
 
   @Override
   public void drawImage(float x, float y, float w, float h, LoadedImage image) {
-    Rect rect = Rect.makeXYWH(x, y, w, h);
-    canvas.drawImageRect(((SkijaLoadedImage) image).image(), rect, rawPaint);
+    Image skiaImage = ((SkijaLoadedImage) image).image();
+
+    Rect src = Rect.makeWH(skiaImage.getWidth(), skiaImage.getHeight());
+    Rect dst = Rect.makeXYWH(x, y, w, h);
+
+    canvas.drawImageRect(skiaImage, src, dst, SamplingMode.LINEAR, rawPaint, true);
   }
 
   @Override

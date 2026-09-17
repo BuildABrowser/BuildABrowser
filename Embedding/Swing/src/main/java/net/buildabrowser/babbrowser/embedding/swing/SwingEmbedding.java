@@ -22,6 +22,7 @@ import net.buildabrowser.babbrowser.renderer.RenderingEngine;
 import net.buildabrowser.babbrowser.renderer.RenderingEngineBuilder;
 import net.buildabrowser.babbrowser.renderer.clipboard.ClipboardProvider;
 import net.buildabrowser.babbrowser.renderer.imp.NoOpGraphicalDocumentRenderer;
+import net.buildabrowser.babbrowser.renderer.paint.painterwrap.PaintCanvasWrapper;
 import net.buildabrowser.babbrowser.renderer.uistate.Frame;
 
 public final class SwingEmbedding {
@@ -90,7 +91,7 @@ public final class SwingEmbedding {
       public void paint(PaintCanvas canvas) {
         GraphicalDocumentRenderer activeRenderer = activateFrame(activeFrameSupplier);
         if (activeRenderer == null) return;
-        activeRenderer.draw(canvas);
+        activeRenderer.draw(new PaintCanvasWrapper(canvas, 1f, 1f));
       }
 
       private GraphicalDocumentRenderer activateFrame(Supplier<Frame> activeFrameSupplier) {

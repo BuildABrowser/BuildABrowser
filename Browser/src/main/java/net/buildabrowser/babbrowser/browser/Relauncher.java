@@ -52,6 +52,7 @@ public final class Relauncher {
     command.add("-Djava.net.preferIPv4Stack=true");
     command.add("-XX:CICompilerCount=2");
     command.add("--add-opens=java.desktop/sun.font=ALL-UNNAMED");
+    command.add("-Dawt.useSystemAAFontSettings=lcd");
 
     int jvmFeature = Runtime.version().feature();
     if (jvmFeature < 25) {

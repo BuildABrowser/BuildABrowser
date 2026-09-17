@@ -21,6 +21,7 @@ import net.buildabrowser.babbrowser.renderer.fragment.scroll.ScrollBoxFragment;
 import net.buildabrowser.babbrowser.renderer.layout.stacking.StackingContextEntry;
 import net.buildabrowser.babbrowser.renderer.layout.stacking.StackingContextPosition;
 import net.buildabrowser.babbrowser.renderer.paint.VpIntersection;
+import net.buildabrowser.babbrowser.renderer.paint.painterwrap.PaintCanvasWrapper;
 
 public class CompositeLayerImp implements CompositeLayer {
 
@@ -148,7 +149,8 @@ public class CompositeLayerImp implements CompositeLayer {
     this.backingX = overscrollX;
     this.backingY = overscrollY;
 
-    backingImage.withCanvas(canvas -> canvas.saveTransform(c -> {
+    // TODO: Get target scaling?
+    backingImage.withCanvas(canvas -> new PaintCanvasWrapper(canvas, 1f, 1f).saveTransform(c -> {
       // TODO: These paint checks aren't cool
       if (entries == null) return;
       forEachFragment((fragment, vpi) -> {
@@ -317,12 +319,12 @@ public class CompositeLayerImp implements CompositeLayer {
   }
 
   private int backingWidth() {
-    float minX = Integer.MAX_VALUE;
-    float maxX = Integer.MIN_VALUE;
+    float minX = Float.POSITIVE_INFINITY;
+    float maxX = Float.NEGATIVE_INFINITY;
     StackingContextEntry currentEntry = entries;
     while (currentEntry != null) {
       BoxFragment<?> fragment = currentEntry.fragment();
-      float adjustedWidth = fragment.inkWidth(Measurement.PADDING);
+      float adjustedWidth = fragment.inkWidth(Measurement.BORDER);
       minX = Math.min(minX, currentEntry.offsetX());
       maxX = Math.max(maxX, currentEntry.offsetX() + adjustedWidth);
       currentEntry = currentEntry.next();
@@ -332,12 +334,12 @@ public class CompositeLayerImp implements CompositeLayer {
   }
 
   private int backingHeight() {
-    float minY = Integer.MAX_VALUE;
-    float maxY = Integer.MIN_VALUE;
+    float minY = Float.POSITIVE_INFINITY;
+    float maxY = Float.NEGATIVE_INFINITY;
     StackingContextEntry currentEntry = entries;
     while (currentEntry != null) {
       BoxFragment<?> fragment = currentEntry.fragment();
-      float adjustedHeight = fragment.inkHeight(Measurement.PADDING);
+      float adjustedHeight = fragment.inkHeight(Measurement.BORDER);
       minY = Math.min(minY, currentEntry.offsetY());
       maxY = Math.max(maxY, currentEntry.offsetY() + adjustedHeight);
       currentEntry = currentEntry.next();

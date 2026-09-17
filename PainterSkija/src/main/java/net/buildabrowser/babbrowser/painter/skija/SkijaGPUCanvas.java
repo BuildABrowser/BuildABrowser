@@ -10,6 +10,7 @@ import org.lwjgl.opengl.awt.GLData;
 
 import io.github.humbleui.skija.BackendRenderTarget;
 import io.github.humbleui.skija.Canvas;
+import io.github.humbleui.skija.ColorSpace;
 import io.github.humbleui.skija.ColorType;
 import io.github.humbleui.skija.DirectContext;
 import io.github.humbleui.skija.FramebufferFormat;
@@ -101,7 +102,7 @@ public class SkijaGPUCanvas extends AWTGLCanvas {
       renderTarget,
       SurfaceOrigin.BOTTOM_LEFT,
       ColorType.RGBA_8888,
-      io.github.humbleui.skija.ColorSpace.getDisplayP3(),
+      ColorSpace.getSRGB(),
       new SurfaceProps(PixelGeometry.RGB_H));
   }
 
