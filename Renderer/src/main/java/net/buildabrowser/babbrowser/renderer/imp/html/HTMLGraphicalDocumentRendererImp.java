@@ -27,6 +27,7 @@ import net.buildabrowser.babbrowser.painter.core.PaintCanvas;
 import net.buildabrowser.babbrowser.painter.core.Painter;
 import net.buildabrowser.babbrowser.painter.core.ResourceLoader;
 import net.buildabrowser.babbrowser.renderer.GraphicalDocumentRenderer;
+import net.buildabrowser.babbrowser.renderer.RendererTransformOptions;
 import net.buildabrowser.babbrowser.renderer.RenderingEngine;
 import net.buildabrowser.babbrowser.renderer.box.BoxGenerator;
 import net.buildabrowser.babbrowser.renderer.box.DocumentBox;
@@ -91,6 +92,7 @@ public class HTMLGraphicalDocumentRendererImp implements GraphicalDocumentRender
 
   // TODO: Switch to AtomicInteger? Synchronize?
   private int width, height;
+  private RendererTransformOptions transformOptions;
 
   public HTMLGraphicalDocumentRendererImp(
     HTMLDocument document,
@@ -217,11 +219,13 @@ public class HTMLGraphicalDocumentRendererImp implements GraphicalDocumentRender
       !needsPaint
       || documentBox.child() == null
       || width <= 0 || height <= 0
+      || this.transformOptions == null
     ) return;
 
     long paintStartTime = System.currentTimeMillis();
     
-    compositeLayers.updateRendering(width, height);
+    compositeLayers.updateRendering(
+      width, height, transformOptions);
     documentBox.child().context().validate();
     this.invalidationLevel = InvalidationLevel.NONE;
     
@@ -233,9 +237,14 @@ public class HTMLGraphicalDocumentRendererImp implements GraphicalDocumentRender
   }
 
   @Override
-  public void draw(PaintCanvas canvas) {
+  public void draw(
+    PaintCanvas canvas,
+    RendererTransformOptions transformOptions
+  ) {
     long windowPaintStartTime = System.currentTimeMillis();
-    compositeLayers.draw(canvas, width, height);
+    compositeLayers.draw(
+      canvas, width, height,
+      transformOptions);
     PerfLogging.logWindowPaintTime(windowPaintStartTime);
   }
 
@@ -245,11 +254,25 @@ public class HTMLGraphicalDocumentRendererImp implements GraphicalDocumentRender
   }
 
   @Override
-  public void resize(int width, int height) {
-    if (
+  public void resize(
+    int width, int height,
+    RendererTransformOptions transformOptions
+  ) {
+    boolean paintChanged = !transformOptions.equals(this.transformOptions);
+    if (paintChanged) {
+      this.invalidationLevel |= InvalidationLevel.PAINT;
+    }
+
+    boolean vpChanged =
       this.width == width
       && this.height == height
-    ) return;
+      && this.transformOptions != null
+      // There may be more transformOptions in the future, which are not compared
+      && this.transformOptions.vpScaleX() == transformOptions.vpScaleX()
+      && this.transformOptions.vpScaleY() == transformOptions.vpScaleY();
+    this.transformOptions = transformOptions;
+    if (vpChanged) return;
+
     this.width = width;
     this.height = height;
     this.invalidationLevel |= InvalidationLevel.STYLE;
@@ -316,7 +339,8 @@ public class HTMLGraphicalDocumentRendererImp implements GraphicalDocumentRender
 
     HTMLLayout.doLayout(rootBox, width, height);
     
-    compositeLayers.regenerate(rootBox.stackingContext());
+    compositeLayers.regenerate(
+      rootBox.stackingContext(), transformOptions);
   }
 
   private GlobalLayoutContext createGlobalLayoutContext() {

@@ -30,7 +30,7 @@ public class SkijaCommandList implements SkijaPaintBitMap {
   }
 
   @Override
-  public void draw(Canvas canvas, Paint paint, int x, int y) {
+  public void draw(Canvas canvas, Paint paint, float x, float y) {
     canvas.save();
     canvas.translate(x, y);
     canvas.drawPicture(picture);

@@ -12,6 +12,7 @@ import net.buildabrowser.babbrowser.cssbase.property.position.ZIndexValue;
 import net.buildabrowser.babbrowser.renderer.box.Box;
 import net.buildabrowser.babbrowser.renderer.box.ElementBox;
 import net.buildabrowser.babbrowser.renderer.box.ElementBox.BoxLevel;
+import net.buildabrowser.babbrowser.renderer.composite.CompositeLayerOptions;
 import net.buildabrowser.babbrowser.renderer.content.common.position.AbsolutePositionUtil;
 import net.buildabrowser.babbrowser.renderer.content.common.position.PositionUtil;
 import net.buildabrowser.babbrowser.renderer.fragment.BoxFragment;
@@ -20,6 +21,7 @@ import net.buildabrowser.babbrowser.renderer.fragment.scroll.ScrollBoxFragment;
 import net.buildabrowser.babbrowser.renderer.layout.ScrollPort;
 import net.buildabrowser.babbrowser.renderer.layout.Viewport;
 import net.buildabrowser.babbrowser.renderer.layout.stacking.LayerGenerator;
+import net.buildabrowser.babbrowser.renderer.layout.stacking.LayerGeneratorContext;
 import net.buildabrowser.babbrowser.renderer.layout.stacking.StackingContext;
 import net.buildabrowser.babbrowser.renderer.layout.stacking.StackingContextEntry;
 import net.buildabrowser.babbrowser.renderer.layout.stacking.StackingContextPosition;
@@ -131,20 +133,23 @@ public class StackingContextImp implements StackingContext {
   }
 
   @Override
-  public <T> T createLayer(LayerGenerator<T> layerGenerator) {
+  public <T> T createLayer(
+    LayerGenerator<T> layerGenerator,
+    LayerGeneratorContext context
+  ) {
     assert insets != null;
     StackingContextPosition ownPosition = StackingContextPosition.root();
     Viewport viewport = relatedBox.layoutContext().global().viewport();
     ScrollPort scrollPort = new ScrollPort(
       ownPosition, viewport.width(), viewport.height());
-    T layer = createLayer(layerGenerator, ownPosition);
+    T layer = createLayer(layerGenerator, context, ownPosition);
     SinglyLinkedList<StackingContext> childContext = childContexts;
     while (childContext != null) {
       StackingContextPosition childPosition = positionChild(
         ownPosition, childContext.item());
       childContext.item().addLayer(
         child -> layerGenerator.addChild(layer, child),
-        layerGenerator, childPosition, scrollPort);
+        layerGenerator, context, childPosition, scrollPort);
       childContext = childContext.next();
     }
 
@@ -155,6 +160,7 @@ public class StackingContextImp implements StackingContext {
   public <T> void addLayer(
     Consumer<T> addFunc,
     LayerGenerator<T> layerGenerator,
+    LayerGeneratorContext context,
     StackingContextPosition parentPosition,
     ScrollPort scrollPort
   ) {
@@ -165,18 +171,19 @@ public class StackingContextImp implements StackingContext {
     ScrollPort childScrollPort = determineChildScrollPort(
       ownPosition, scrollPort);
     
-    T ownLayer = createLayer(layerGenerator, ownPosition);
+    T ownLayer = createLayer(layerGenerator, context, ownPosition);
     addFunc.accept(ownLayer);
     SinglyLinkedList<StackingContext> childContext = childContexts;
     while (childContext != null) {
       StackingContextPosition childPosition = positionChild(
         ownPosition, childContext.item());
       if (isPassthrough) {
-        childContext.item().addLayer(addFunc, layerGenerator, childPosition, childScrollPort);
+        childContext.item().addLayer(
+          addFunc, layerGenerator, context, childPosition, childScrollPort);
       } else {
         childContext.item().addLayer(
           child -> layerGenerator.addChild(ownLayer, child),
-          layerGenerator, childPosition, childScrollPort);
+          layerGenerator, context, childPosition, childScrollPort);
       }
       childContext = childContext.next();
     }
@@ -184,9 +191,13 @@ public class StackingContextImp implements StackingContext {
 
   private <T> T createLayer(
     LayerGenerator<T> layerGenerator,
+    LayerGeneratorContext context,
     StackingContextPosition position
   ) {
-    T layer = layerGenerator.createLayer(position, zIndexOrder, entries);
+    CompositeLayerOptions options = new CompositeLayerOptions(
+      context.refScalingX(), context.refScalingY());
+    T layer = layerGenerator.createLayer(
+      position, options, zIndexOrder, entries);
     this.position = position;
     return layer;
   }

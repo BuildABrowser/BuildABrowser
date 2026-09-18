@@ -32,10 +32,12 @@ public interface CompositeLayer {
 
   static CompositeLayer create(
     Painter painter,
+    CompositeLayerOptions compositeLayerOptions,
     StackingContextPosition position,
     int zIndex
   ) {
-    return new CompositeLayerImp(painter, position, zIndex);
+    return new CompositeLayerImp(
+      painter, compositeLayerOptions, position, zIndex);
   }
 
 }

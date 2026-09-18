@@ -18,11 +18,11 @@ import net.buildabrowser.babbrowser.painter.core.ComponentPainter;
 import net.buildabrowser.babbrowser.painter.core.PaintCanvas;
 import net.buildabrowser.babbrowser.painter.java2d.Java2DPainter;
 import net.buildabrowser.babbrowser.renderer.GraphicalDocumentRenderer;
+import net.buildabrowser.babbrowser.renderer.RendererTransformOptions;
 import net.buildabrowser.babbrowser.renderer.RenderingEngine;
 import net.buildabrowser.babbrowser.renderer.RenderingEngineBuilder;
 import net.buildabrowser.babbrowser.renderer.clipboard.ClipboardProvider;
 import net.buildabrowser.babbrowser.renderer.imp.NoOpGraphicalDocumentRenderer;
-import net.buildabrowser.babbrowser.renderer.paint.painterwrap.PaintCanvasWrapper;
 import net.buildabrowser.babbrowser.renderer.uistate.Frame;
 
 public final class SwingEmbedding {
@@ -70,6 +70,7 @@ public final class SwingEmbedding {
     ComponentPainter<Component> painter,
     Supplier<Frame> activeFrameSupplier
   ) {
+    RendererTransformOptions transformOptions = new RendererTransformOptions(1f, 1f);
     AtomicReference<Component> currentComponent = new AtomicReference<>();
     Runnable repaintListener = () -> SwingUtilities.invokeLater(
       () -> notifyActivateFrame(currentComponent.get()));
@@ -84,14 +85,16 @@ public final class SwingEmbedding {
 
         if (activeRenderer == null) return;
         // TODO: Make renderer accept float instead?
-        activeRenderer.resize((int) Math.ceil(width), (int) Math.ceil(height));
+        activeRenderer.resize(
+          (int) Math.ceil(width), (int) Math.ceil(height),
+          transformOptions);
       }
 
       @Override
       public void paint(PaintCanvas canvas) {
         GraphicalDocumentRenderer activeRenderer = activateFrame(activeFrameSupplier);
         if (activeRenderer == null) return;
-        activeRenderer.draw(new PaintCanvasWrapper(canvas, 1f, 1f));
+        activeRenderer.draw(canvas, transformOptions);
       }
 
       private GraphicalDocumentRenderer activateFrame(Supplier<Frame> activeFrameSupplier) {

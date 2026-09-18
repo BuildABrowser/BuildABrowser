@@ -31,12 +31,12 @@ public class RendererKeyboardInputAdapter implements KeyListener {
 
   @Override
   public void keyPressed(KeyEvent e) {
-    fireKeyEvent(KeyboardEventType.KEY_UP, e);
+    fireKeyEvent(KeyboardEventType.KEY_DOWN, e);
   }
 
   @Override
   public void keyReleased(KeyEvent e) {
-    fireKeyEvent(KeyboardEventType.KEY_DOWN, e);
+    fireKeyEvent(KeyboardEventType.KEY_UP, e);
   }
 
   private void fireKeyEvent(KeyboardEventType type, KeyEvent e) {
@@ -84,7 +84,7 @@ public class RendererKeyboardInputAdapter implements KeyListener {
 
   public static byte getModifiers(InputEvent e) {
     byte modifiers = (byte) (
-      (e.isAltDown() ? ModifierUtil.MODIFIER_SHIFT : 0)
+      (e.isAltDown() ? ModifierUtil.MODIFIER_ALT : 0)
       + (e.isControlDown() ? ModifierUtil.MODIFIER_CTRL : 0)
       + (e.isMetaDown() ? ModifierUtil.MODIFIER_META : 0)
       + (e.isShiftDown() ? ModifierUtil.MODIFIER_SHIFT : 0)

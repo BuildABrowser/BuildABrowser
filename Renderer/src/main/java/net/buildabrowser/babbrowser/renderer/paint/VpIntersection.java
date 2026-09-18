@@ -5,8 +5,8 @@ import java.util.function.Consumer;
 public class VpIntersection {
   
   private final int vpW, vpH;
-  private int bufferVpX, bufferVpY;
-  private int bufferX, bufferY;
+  private float bufferVpX, bufferVpY;
+  private float bufferX, bufferY;
   private int bufferW, bufferH;
 
   public VpIntersection(float vpW, float vpH) {
@@ -24,19 +24,19 @@ public class VpIntersection {
     return this.vpH;
   }
 
-  public int bufferVpX() {
+  public float bufferVpX() {
     return this.bufferVpX;
   }
 
-  public int bufferVpY() {
+  public float bufferVpY() {
     return this.bufferVpY;
   }
 
-  public int bufferX() {
+  public float bufferX() {
     return this.bufferX;
   }
 
-  public int bufferY() {
+  public float bufferY() {
     return this.bufferY;
   }
 
@@ -52,7 +52,7 @@ public class VpIntersection {
     float x, float y,
     Consumer<VpIntersection> elFunc
   ) {
-    int oldBufferVpX = bufferVpX, oldBufferVpY = bufferVpY;
+    float oldBufferVpX = bufferVpX, oldBufferVpY = bufferVpY;
     bufferVpX += x;
     bufferVpY += y;
     elFunc.accept(this);
@@ -63,11 +63,11 @@ public class VpIntersection {
     float x, float y, float w, float h,
     Consumer<VpIntersection> elFunc
   ) {
-    int oldBufferX = bufferX, oldBufferY = bufferY;
+    float oldBufferX = bufferX, oldBufferY = bufferY;
     int oldBufferW = bufferW, oldBufferH = bufferH;
     // TODO: More precise rounding
-    bufferX = (int) Math.floor(x);
-    bufferY = (int) Math.floor(y);
+    bufferX = x;
+    bufferY = y;
     bufferW = (int) Math.ceil(w);
     bufferH = (int) Math.ceil(h);
     elFunc.accept(this);

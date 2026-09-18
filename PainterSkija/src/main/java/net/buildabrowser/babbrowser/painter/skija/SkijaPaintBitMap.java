@@ -6,6 +6,6 @@ import net.buildabrowser.babbrowser.painter.core.PaintBitMap;
 
 public interface SkijaPaintBitMap extends PaintBitMap {
 
-  void draw(Canvas canvas, Paint paint, int x, int y);
+  void draw(Canvas canvas, Paint paint, float x, float y);
 
 }

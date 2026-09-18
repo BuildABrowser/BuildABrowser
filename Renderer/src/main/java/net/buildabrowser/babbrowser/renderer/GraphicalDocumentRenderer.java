@@ -9,9 +9,15 @@ import net.buildabrowser.babbrowser.renderer.uistate.FrameAPIs;
 
 public interface GraphicalDocumentRenderer extends DocumentRenderer {
 
-  void resize(int width, int height);
+  void resize(
+    int width, int height,
+    RendererTransformOptions transformOptions
+  );
 
-  void draw(PaintCanvas context);
+  void draw(
+    PaintCanvas context,
+    RendererTransformOptions transformOptions
+  );
 
   EventForwardingTarget eventForwardingTarget();
 

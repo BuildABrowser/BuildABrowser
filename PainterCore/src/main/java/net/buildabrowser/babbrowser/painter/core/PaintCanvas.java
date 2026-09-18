@@ -26,7 +26,7 @@ public interface PaintCanvas {
 
   void drawImage(float x, float y, float w, float h, LoadedImage image);
 
-  void drawBitMap(int x, int y, PaintBitMap bitMap); 
+  void drawBitMap(float x, float y, PaintBitMap bitMap); 
 
   FontMetrics fontMetrics();
 

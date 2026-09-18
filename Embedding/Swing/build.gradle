@@ -6,8 +6,7 @@ plugins {
 dependencies {
     api project(':Embedding:StandardCommon')
     api project(':Renderer')
-    implementation project(':CookiesSQLite')
-    implementation project(':PainterJava2D')
+    api project(':PainterJava2D')
 
     testImplementation 'com.github.taucher2003:t2003-logger-impl:1.0.2'
     testImplementation 'com.github.taucher2003:t2003-logger-binder:1.0.2'

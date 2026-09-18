@@ -2,6 +2,7 @@ package net.buildabrowser.babbrowser.renderer.composite.imp;
 
 import net.buildabrowser.babbrowser.painter.core.Painter;
 import net.buildabrowser.babbrowser.renderer.composite.CompositeLayer;
+import net.buildabrowser.babbrowser.renderer.composite.CompositeLayerOptions;
 import net.buildabrowser.babbrowser.renderer.layout.stacking.LayerGenerator;
 import net.buildabrowser.babbrowser.renderer.layout.stacking.StackingContextEntry;
 import net.buildabrowser.babbrowser.renderer.layout.stacking.StackingContextPosition;
@@ -17,10 +18,12 @@ public class CompositeLayerGeneratorImp implements LayerGenerator<CompositeLayer
   @Override
   public CompositeLayer createLayer(
     StackingContextPosition position,
+    CompositeLayerOptions compositeLayerOptions,
     int zIndexOrder,
     StackingContextEntry entries
   ) {
-    CompositeLayer layer = CompositeLayer.create(painter, position, zIndexOrder);
+    CompositeLayer layer = CompositeLayer.create(
+      painter, compositeLayerOptions, position, zIndexOrder);
     layer.addEntries(entries);
     return layer;
   }

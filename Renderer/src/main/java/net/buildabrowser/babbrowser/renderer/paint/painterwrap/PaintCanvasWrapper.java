@@ -95,12 +95,12 @@ public class PaintCanvasWrapper implements PaintCanvas {
 
   @Override
   public void drawImage(float x, float y, float w, float h, LoadedImage image) {
-    innerCanvas.drawImage(snapX(x), snapY(y), snapW(x, w), snapH(y, h), image);
+    innerCanvas.drawImage(x, y, w, h, image);
   }
 
   @Override
-  public void drawBitMap(int x, int y, PaintBitMap bitMap) {
-    innerCanvas.drawBitMap(x, y, bitMap);
+  public void drawBitMap(float x, float y, PaintBitMap bitMap) {
+    innerCanvas.drawBitMap(snapX(x), snapY(y), bitMap);
   }
 
   @Override

@@ -15,6 +15,7 @@ import net.buildabrowser.babbrowser.painter.core.PaintBitMap;
 import net.buildabrowser.babbrowser.painter.core.PaintCanvas;
 import net.buildabrowser.babbrowser.painter.core.Painter;
 import net.buildabrowser.babbrowser.renderer.composite.CompositeLayer;
+import net.buildabrowser.babbrowser.renderer.composite.CompositeLayerOptions;
 import net.buildabrowser.babbrowser.renderer.fragment.BoxFragment;
 import net.buildabrowser.babbrowser.renderer.fragment.LayoutFragment.Measurement;
 import net.buildabrowser.babbrowser.renderer.fragment.scroll.ScrollBoxFragment;
@@ -31,22 +32,25 @@ public class CompositeLayerImp implements CompositeLayer {
   private final BitSet activeChildren = new BitSet();
 
   private final Painter backingPainter;
+  private final CompositeLayerOptions compositeLayerOptions;
   private final StackingContextPosition position;
   private final int zIndex;
 
   // Unfortunately can't use the LayoutFragment's intrusive list, as it is already in use
   private StackingContextEntry entries;
   private int backingWidth, backingHeight;
-  private int backingX, backingY;
+  private float backingX, backingY;
   private PaintBitMap backingImage;
   private boolean sorted;
 
   public CompositeLayerImp(
     Painter painter,
+    CompositeLayerOptions compositeLayerOptions,
     StackingContextPosition position,
     int zIndex
   ) {
     this.backingPainter = painter;
+    this.compositeLayerOptions = compositeLayerOptions;
     this.position = position;
     this.zIndex = zIndex;
   }
@@ -104,14 +108,14 @@ public class CompositeLayerImp implements CompositeLayer {
     int overscrollWidth = Math.min(backingWidth, vpIntersection.vpWidth() * OVERSCROLL_FACTOR);
     int overscrollHeight = Math.min(backingHeight, vpIntersection.vpHeight() * OVERSCROLL_FACTOR);
     
-    int xPast = Math.max(0, -vpIntersection.bufferVpX());
-    int yPast = Math.max(0, -vpIntersection.bufferVpY());
+    float xPast = Math.max(0, -vpIntersection.bufferVpX());
+    float yPast = Math.max(0, -vpIntersection.bufferVpY());
     
-    int overscrollXUnclamped = xPast - Math.max(0, (overscrollWidth - vpIntersection.vpWidth()) / 2);
-    int overscrollYUnclamped = yPast - Math.max(0, (overscrollHeight - vpIntersection.vpHeight()) / 2);
+    float overscrollXUnclamped = xPast - Math.max(0, (overscrollWidth - vpIntersection.vpWidth()) / 2);
+    float overscrollYUnclamped = yPast - Math.max(0, (overscrollHeight - vpIntersection.vpHeight()) / 2);
     
-    int overscrollX = mathClamp(overscrollXUnclamped, 0, backingWidth - overscrollWidth);
-    int overscrollY = mathClamp(overscrollYUnclamped, 0, backingHeight - overscrollHeight);
+    float overscrollX = mathClamp(overscrollXUnclamped, 0, backingWidth - overscrollWidth);
+    float overscrollY = mathClamp(overscrollYUnclamped, 0, backingHeight - overscrollHeight);
     
     float vpOverscrollX = vpIntersection.bufferVpX() + overscrollX;
     float vpOverscrollY = vpIntersection.bufferVpY() + overscrollY;
@@ -138,7 +142,7 @@ public class CompositeLayerImp implements CompositeLayer {
 
   private void makeBackingImage(
     VpIntersection vpIntersection,
-    int overscrollX, int overscrollY,
+    float overscrollX, float overscrollY,
     int overscrollWidth, int overscrollHeight
   ) {
     this.backingImage = backingPainter.createPaintBitMap(
@@ -150,7 +154,11 @@ public class CompositeLayerImp implements CompositeLayer {
     this.backingY = overscrollY;
 
     // TODO: Get target scaling?
-    backingImage.withCanvas(canvas -> new PaintCanvasWrapper(canvas, 1f, 1f).saveTransform(c -> {
+    backingImage.withCanvas(canvas -> new PaintCanvasWrapper(
+      canvas,
+      compositeLayerOptions.refScalingX(),
+      compositeLayerOptions.refScalingY()
+    ).saveTransform(c -> {
       // TODO: These paint checks aren't cool
       if (entries == null) return;
       forEachFragment((fragment, vpi) -> {

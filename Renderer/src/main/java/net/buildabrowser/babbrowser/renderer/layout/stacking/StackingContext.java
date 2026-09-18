@@ -34,11 +34,15 @@ public interface StackingContext {
     ChildPositionFunc<T> positionFunc
   );
 
-  <T> T createLayer(LayerGenerator<T> layerGenerator);
+  <T> T createLayer(
+    LayerGenerator<T> layerGenerator,
+    LayerGeneratorContext context
+  );
 
   <T> void addLayer(
     Consumer<T> addFunc,
     LayerGenerator<T> layerGenerator,
+    LayerGeneratorContext context,
     StackingContextPosition parentPosition,
     ScrollPort scrollPort
   );

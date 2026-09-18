@@ -149,9 +149,9 @@ public class J2DPaintCanvas implements PaintCanvas {
   }
 
   @Override
-  public void drawBitMap(int x, int y, PaintBitMap bitMap) {
+  public void drawBitMap(float x, float y, PaintBitMap bitMap) {
     BufferedImage image = ((J2DBitMap) bitMap).image();
-    graphics.drawImage(image, x, y, (int) image.getWidth(), image.getHeight(), null);
+    graphics.drawImage(image, (int) x, (int) y, (int) image.getWidth(), image.getHeight(), null);
   }
 
   @Override

@@ -26,8 +26,8 @@ public class SkijaBitMap implements SkijaPaintBitMap {
   }
 
   @Override
-  public void draw(Canvas canvas, Paint paint, int x, int y) {
-    surface.draw(canvas, x, y, paint);
+  public void draw(Canvas canvas, Paint paint, float x, float y) {
+    surface.draw(canvas, (int) x, (int) y, paint);
   }
   
 }
