@@ -161,7 +161,6 @@ public final class FlowBoxPainterUtils {
       (f, c, vpi) -> c.withPaintAndTransform(
         paint -> {
           if (parentBox == null) return;
-          paint.setFont(parentBox.layoutContext().font());
           paint.setColor(PropertiesUtil.textColor(parentBox.properties()));
         },
         t -> t.translate(

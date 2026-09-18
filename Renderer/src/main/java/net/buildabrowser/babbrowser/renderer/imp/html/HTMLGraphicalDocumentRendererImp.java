@@ -20,12 +20,8 @@ import net.buildabrowser.babbrowser.html.html.handlers.ObjectLoader;
 import net.buildabrowser.babbrowser.html.misc.ElementDocumentChangeListener;
 import net.buildabrowser.babbrowser.html.navigation.HTMLDocumentRenderer;
 import net.buildabrowser.babbrowser.html.navigation.Navigable;
-import net.buildabrowser.babbrowser.painter.core.FontLoader;
-import net.buildabrowser.babbrowser.painter.core.FontLoader.FontOptions;
-import net.buildabrowser.babbrowser.painter.core.LoadedFont;
 import net.buildabrowser.babbrowser.painter.core.PaintCanvas;
 import net.buildabrowser.babbrowser.painter.core.Painter;
-import net.buildabrowser.babbrowser.painter.core.ResourceLoader;
 import net.buildabrowser.babbrowser.renderer.GraphicalDocumentRenderer;
 import net.buildabrowser.babbrowser.renderer.RenderingEngine;
 import net.buildabrowser.babbrowser.renderer.api.FrameAPIs;
@@ -46,7 +42,8 @@ import net.buildabrowser.babbrowser.renderer.image.ImageCache;
 import net.buildabrowser.babbrowser.renderer.imp.RenderCSSMatcherContext;
 import net.buildabrowser.babbrowser.renderer.imp.RenderDocumentChangeListener;
 import net.buildabrowser.babbrowser.renderer.layout.FontCache;
-import net.buildabrowser.babbrowser.renderer.layout.FontWordWidthCache;
+import net.buildabrowser.babbrowser.renderer.layout.FontLoader;
+import net.buildabrowser.babbrowser.renderer.layout.FontWordCache;
 import net.buildabrowser.babbrowser.renderer.layout.GlobalLayoutContext;
 import net.buildabrowser.babbrowser.renderer.layout.HTMLLayout;
 import net.buildabrowser.babbrowser.renderer.layout.LayoutConstraint;
@@ -56,12 +53,15 @@ import net.buildabrowser.babbrowser.renderer.layout.Viewport;
 import net.buildabrowser.babbrowser.renderer.logging.PerfLogging;
 import net.buildabrowser.babbrowser.renderer.style.StyleCache;
 import net.buildabrowser.babbrowser.renderer.style.StyleGenerator;
+import net.buildabrowser.babbrowser.textshaping.core.FontFamily;
+import net.buildabrowser.babbrowser.textshaping.core.FontOptions;
+import net.buildabrowser.babbrowser.textshaping.core.LoadedFont;
 
 public class HTMLGraphicalDocumentRendererImp implements GraphicalDocumentRenderer, HTMLDocumentRenderer {
 
   // TODO: Allow specifying the FragmentFactory when instantiating the RenderingEngine instance
   private final FragmentFactory fragmentFactory = FragmentFactory.createDefault();
-  private final FontWordWidthCache fontWordWidthCache = FontWordWidthCache.create();
+  private final FontWordCache fontWordWidthCache = FontWordCache.create();
   private final StyleCache styleCache = StyleCache.create();
 
   private final HTMLDocument document;
@@ -146,11 +146,14 @@ public class HTMLGraphicalDocumentRendererImp implements GraphicalDocumentRender
       eventContext, document, compositeLayers, renderContexts,
       eventForwardingTarget);
 
+    FontLoader fontLoader = FontLoader.create(
+      painter.resourceLoader().fontResourceLoader(),
+      renderingEngine.textShaperLoader());
     this.scriptingContext = ScriptingContext.create(
       fetchEngine,
       document.browsingContext().realm().hostDefined());
     this.imageCache = ImageCache.create(scriptingContext, painter.resourceLoader());
-    this.fontCache = FontCache.create(painter.resourceLoader().fontLoader());
+    this.fontCache = FontCache.create(fontLoader);
     this.objectLoader = new HTMLObjectLoader(imageCache, renderContexts);
 
     VirtualKeyboard keyboard = frameAPIs.virtualKeyboard();
@@ -319,10 +322,8 @@ public class HTMLGraphicalDocumentRendererImp implements GraphicalDocumentRender
   }
 
   private GlobalLayoutContext createGlobalLayoutContext() {
-    ResourceLoader resourceLoader = painter.resourceLoader();
-    FontLoader fontLoader = resourceLoader.fontLoader();
     this.rootFont = fontCache.load(
-      new FontOptions(List.of(fontLoader.sansSerif()), 16, 400));
+      new FontOptions(List.of(FontFamily.SANS_SERIF), 16, 400));
 
     Viewport viewport = new Viewport(0, 0, width, height);
     GlobalLayoutContext globalLayoutContext = new GlobalLayoutContext(

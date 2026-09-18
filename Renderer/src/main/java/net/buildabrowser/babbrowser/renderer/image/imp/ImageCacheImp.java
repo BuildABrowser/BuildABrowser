@@ -131,8 +131,7 @@ public class ImageCacheImp implements ImageCache {
 
     ImageLoader imageLoader = resourceLoader.progressivelyLoadImage(
       response.headerList().get("Content-Type"),
-      new ImageCacheImageCallbacks(imageEntry, scriptingContext.globalObject()),
-      scriptingContext.globalObject()::runInParallel);
+      new ImageCacheImageCallbacks(imageEntry, scriptingContext.globalObject()));
     imageEntry.setLoader(imageLoader);
     
     ReadableStreamDefaultReader reader = (ReadableStreamDefaultReader)

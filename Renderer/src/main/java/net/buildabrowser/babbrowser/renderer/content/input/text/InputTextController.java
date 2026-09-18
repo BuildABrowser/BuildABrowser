@@ -11,9 +11,11 @@ import net.buildabrowser.babbrowser.html.html.FormAssociatedElement;
 import net.buildabrowser.babbrowser.html.html.HTMLFormElement;
 import net.buildabrowser.babbrowser.html.html.HTMLInputElement;
 import net.buildabrowser.babbrowser.html.navigation.UserNavigationInvolvement;
-import net.buildabrowser.babbrowser.painter.core.FontMetrics;
 import net.buildabrowser.babbrowser.renderer.content.common.AbstractTextController;
 import net.buildabrowser.babbrowser.renderer.paint.painters.common.TextEditPainter;
+import net.buildabrowser.babbrowser.textshaping.core.FontMetrics;
+import net.buildabrowser.babbrowser.textshaping.core.LoadedFont;
+import net.buildabrowser.babbrowser.textshaping.core.TextRun;
 
 public class InputTextController extends AbstractTextController {
 
@@ -21,6 +23,8 @@ public class InputTextController extends AbstractTextController {
 
   private final HTMLInputElement element;
   private final boolean isHidden;
+  
+  private LoadedFont font;
 
   public InputTextController(
     HTMLInputElement element,
@@ -45,6 +49,12 @@ public class InputTextController extends AbstractTextController {
     } else {
       return List.of(element.value());
     }
+  }
+
+  @Override
+  public TextRun lineRuns(int lineNum) {
+    String runText = displayLines().get(0);
+    return font.shape(runText).runs();
   }
 
   @Override
@@ -114,6 +124,10 @@ public class InputTextController extends AbstractTextController {
   @Override
   protected void afterValueUpdate() {
     element.setValue(value());
+  }
+
+  public void updateFont(LoadedFont font) {
+    this.font = font;
   }
   
 }

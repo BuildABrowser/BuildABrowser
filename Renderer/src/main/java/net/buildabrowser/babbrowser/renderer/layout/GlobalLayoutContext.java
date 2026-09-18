@@ -9,7 +9,7 @@ import net.buildabrowser.babbrowser.renderer.image.ImageCache;
 public record GlobalLayoutContext(
   ResourceLoader resourceLoader,
   FontCache fontCache,
-  FontWordWidthCache fontWordWidthCache,
+  FontWordCache fontWordCache,
   Viewport viewport,
   ScriptingContext scriptingContext,
   SelectionContext selectionContext,

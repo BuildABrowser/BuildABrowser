@@ -98,7 +98,7 @@ public final class FragmentTestUtil {
   private static void assertFragmentEquals(TextFragment expected, LayoutFragment actual) {
     Assertions.assertInstanceOf(TextFragment.class, actual);
     TextFragment actualFragment = (TextFragment) actual;
-    Assertions.assertEquals(expected.text(), actualFragment.text());
+    Assertions.assertEquals(expected._text(), actualFragment._text());
   }
 
   public static void assertFragmentEquals(LineBoxFragment expected, LayoutFragment actual) {

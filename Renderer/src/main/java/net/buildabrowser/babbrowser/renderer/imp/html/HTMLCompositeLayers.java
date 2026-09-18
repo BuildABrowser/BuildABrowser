@@ -3,8 +3,8 @@ package net.buildabrowser.babbrowser.renderer.imp.html;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import net.buildabrowser.babbrowser.painter.core.PaintCanvas;
 import net.buildabrowser.babbrowser.painter.core.Painter;
+import net.buildabrowser.babbrowser.painter.core.PaintCanvas;
 import net.buildabrowser.babbrowser.renderer.composite.CompositeLayer;
 import net.buildabrowser.babbrowser.renderer.composite.imp.CompositeLayerGeneratorImp;
 import net.buildabrowser.babbrowser.renderer.layout.stacking.LayerGenerator;

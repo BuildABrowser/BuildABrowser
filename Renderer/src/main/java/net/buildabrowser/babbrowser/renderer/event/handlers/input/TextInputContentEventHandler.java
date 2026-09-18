@@ -5,7 +5,7 @@ import net.buildabrowser.babbrowser.dom.Element;
 import net.buildabrowser.babbrowser.dom.events.Event;
 import net.buildabrowser.babbrowser.dom.events.FocusEvent;
 import net.buildabrowser.babbrowser.html.html.RenderableDocument;
-import net.buildabrowser.babbrowser.painter.core.FontMetrics;
+import net.buildabrowser.babbrowser.textshaping.core.FontMetrics;
 import net.buildabrowser.babbrowser.renderer.GraphicalDocumentRenderer;
 import net.buildabrowser.babbrowser.renderer.box.ElementBox;
 import net.buildabrowser.babbrowser.renderer.content.input.text.TextTypeContent;

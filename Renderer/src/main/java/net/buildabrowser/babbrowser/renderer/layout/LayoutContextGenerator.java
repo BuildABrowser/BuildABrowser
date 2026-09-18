@@ -2,11 +2,11 @@ package net.buildabrowser.babbrowser.renderer.layout;
 
 import static net.buildabrowser.babbrowser.html.util.HTMLDomUtil.isHtmlElement;
 
-import net.buildabrowser.babbrowser.painter.core.FontMetrics;
-import net.buildabrowser.babbrowser.painter.core.LoadedFont;
+import net.buildabrowser.babbrowser.textshaping.core.FontMetrics;
 import net.buildabrowser.babbrowser.renderer.box.Box;
 import net.buildabrowser.babbrowser.renderer.box.ElementBox;
 import net.buildabrowser.babbrowser.renderer.layout.FontDetermination.FontDeterminationContext;
+import net.buildabrowser.babbrowser.textshaping.core.LoadedFont;
 
 public final class LayoutContextGenerator {
   

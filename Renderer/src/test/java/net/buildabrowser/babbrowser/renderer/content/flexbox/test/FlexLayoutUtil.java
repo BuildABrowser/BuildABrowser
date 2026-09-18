@@ -1,19 +1,13 @@
 package net.buildabrowser.babbrowser.renderer.content.flexbox.test;
 
-import net.buildabrowser.babbrowser.painter.core.FontMetrics;
-import net.buildabrowser.babbrowser.painter.core.ResourceLoader;
 import net.buildabrowser.babbrowser.renderer.box.ElementBox;
+import net.buildabrowser.babbrowser.renderer.content.common.test.LayoutContextTestUtil;
 import net.buildabrowser.babbrowser.renderer.content.flexbox.FlexBoxContent;
 import net.buildabrowser.babbrowser.renderer.fragment.BoxFragment;
-import net.buildabrowser.babbrowser.renderer.fragment.FragmentFactory;
 import net.buildabrowser.babbrowser.renderer.fragment.flexbox.FlexBoxFragment;
-import net.buildabrowser.babbrowser.renderer.layout.GlobalLayoutContext;
 import net.buildabrowser.babbrowser.renderer.layout.LayoutConstraint;
 import net.buildabrowser.babbrowser.renderer.layout.LayoutContext;
 import net.buildabrowser.babbrowser.renderer.layout.LayoutContextGenerator;
-import net.buildabrowser.babbrowser.renderer.layout.Viewport;
-import net.buildabrowser.babbrowser.renderer.paint.test.TestFontMetrics;
-import net.buildabrowser.babbrowser.renderer.paint.test.TestResourceLoader;
 
 public final class FlexLayoutUtil {
   
@@ -36,16 +30,8 @@ public final class FlexLayoutUtil {
     LayoutConstraint widthConstraint,
     LayoutConstraint heightConstraint
   ) {
-    FontMetrics testMetrics = TestFontMetrics.create(10, 5);
-    ResourceLoader resourceLoader = new TestResourceLoader(() -> testMetrics);
-    Viewport viewport = new Viewport(0, 0, (int) widthConstraint.value(), (int) heightConstraint.value());
-    FragmentFactory fragmentFactory = FragmentFactory.createDefault();
-    LayoutContext layoutContext = new LayoutContext(
-      new GlobalLayoutContext(
-        resourceLoader, resourceLoader.fontLoader()::load,
-        (m, s) -> m.stringWidth(s),
-        viewport, null, null, null, fragmentFactory),
-      () -> testMetrics, testMetrics);
+    LayoutContext layoutContext = LayoutContextTestUtil.createTestLayoutContext(
+      widthConstraint, heightConstraint);
     LayoutContextGenerator.generateLayoutContexts(parentBox, layoutContext);
     FlexBoxContent content = (FlexBoxContent) parentBox.content();
 

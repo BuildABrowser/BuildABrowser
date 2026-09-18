@@ -3,7 +3,7 @@ plugins {
 }
 
 dependencies {
-    api project(':PainterCore')
+    api project(':Painter:Core')
     api project(':Network')
     api project(':Fetch')
     api project(':CSSBase')

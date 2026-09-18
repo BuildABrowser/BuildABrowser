@@ -2,13 +2,13 @@ package net.buildabrowser.babbrowser.renderer.event.handlers.common;
 
 import java.util.List;
 
-import net.buildabrowser.babbrowser.painter.core.FontMetrics;
 import net.buildabrowser.babbrowser.renderer.content.common.TextController;
 import net.buildabrowser.babbrowser.renderer.event.EventHandlerResponse;
 import net.buildabrowser.babbrowser.renderer.event.events.RendererMouseEvent;
 import net.buildabrowser.babbrowser.renderer.event.events.RendererMouseEvent.MouseEventType;
-import net.buildabrowser.babbrowser.renderer.event.util.MouseEventUtil;
 import net.buildabrowser.babbrowser.renderer.paint.painters.common.TextEditPainter;
+import net.buildabrowser.babbrowser.textshaping.core.FontMetrics;
+import net.buildabrowser.babbrowser.textshaping.core.TextRuns;
 
 public final class TextEditEventHandler {
   
@@ -39,7 +39,7 @@ public final class TextEditEventHandler {
     if (cursorY >= lines.size()) {
       cursorY = lines.size() - 1;
     }
-    int cursorX = MouseEventUtil.determineTextMouseIndex(adjustedRelX, fontMetrics, lines.get(cursorY));
+    int cursorX = TextRuns.offsetForPos(controller.lineRuns(cursorY), adjustedRelX);
     controller.setCursorX(cursorX);
     controller.setCursorY(cursorY);
   }

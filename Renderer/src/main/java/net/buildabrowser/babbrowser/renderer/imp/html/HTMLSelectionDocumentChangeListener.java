@@ -8,14 +8,13 @@ import net.buildabrowser.babbrowser.dom.events.PointerEvent;
 import net.buildabrowser.babbrowser.dom.listener.DocumentChangeListener;
 import net.buildabrowser.babbrowser.html.html.HTMLDocument;
 import net.buildabrowser.babbrowser.html.selection.Selection;
-import net.buildabrowser.babbrowser.painter.core.FontMetrics;
 import net.buildabrowser.babbrowser.renderer.context.SelectionContext;
 import net.buildabrowser.babbrowser.renderer.event.AbstractRendererDocumentChangeListener;
-import net.buildabrowser.babbrowser.renderer.event.util.MouseEventUtil;
 import net.buildabrowser.babbrowser.renderer.fragment.BoxFragment;
 import net.buildabrowser.babbrowser.renderer.fragment.LayoutFragment;
 import net.buildabrowser.babbrowser.renderer.fragment.LayoutFragment.Measurement;
 import net.buildabrowser.babbrowser.renderer.fragment.TextFragment;
+import net.buildabrowser.babbrowser.textshaping.core.TextRuns;
 
 public class HTMLSelectionDocumentChangeListener extends AbstractRendererDocumentChangeListener {
 
@@ -90,11 +89,8 @@ public class HTMLSelectionDocumentChangeListener extends AbstractRendererDocumen
       fragment instanceof TextFragment textFragment
       && event instanceof PointerEvent pointerEvent
     ) {
-      FontMetrics fontMetrics = refFragment.box().layoutContext().font().metrics();
-      
       float mouseX = pointerEvent.layerX() - fragment.layerX(Measurement.CONTENT);
-      int textIndex = MouseEventUtil.determineTextMouseIndex(
-        mouseX, fontMetrics, textFragment.text());
+      int textIndex = TextRuns.offsetForPos(textFragment.textRuns(), mouseX);
       currentAnchorSource = textFragment.sourceIndex(textIndex);
     }
 

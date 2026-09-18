@@ -4,7 +4,8 @@ rootProject.name = 'buildabrowser'
 include(
   ':Common', ':Infra',
   ':CSSBase', ':CSSEngine', ':Renderer',
-  ':PainterCore', ':PainterSkija', ':PainterJava2D',
+  ':TextShaping:Core', 'TextShaping:HarfBuzz',
+  ':Painter:Core', ':Painter:Skija', ':Painter:Java2D',
   ':DebuggerCore', ':DebuggerSwing',
   ':DOM', ':HTML', ':HTMLParser',':Browser', ':Network',
   ':Stream', ':Fetch', ':Cookies', ':CookiesSQLite')

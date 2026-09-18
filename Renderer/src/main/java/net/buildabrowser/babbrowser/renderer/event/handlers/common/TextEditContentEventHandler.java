@@ -1,6 +1,6 @@
 package net.buildabrowser.babbrowser.renderer.event.handlers.common;
 
-import net.buildabrowser.babbrowser.painter.core.FontMetrics;
+import net.buildabrowser.babbrowser.textshaping.core.FontMetrics;
 import net.buildabrowser.babbrowser.renderer.content.common.TextController;
 import net.buildabrowser.babbrowser.renderer.event.EventHandlerResponse;
 import net.buildabrowser.babbrowser.renderer.event.events.RendererKeyboardEvent;

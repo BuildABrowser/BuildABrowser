@@ -1,0 +1,10 @@
+plugins {
+    id 'java-library'
+}
+
+dependencies {
+    implementation project(':TextShaping:Core')
+
+    implementation "org.lwjgl:lwjgl-harfbuzz"
+    implementation "org.lwjgl:lwjgl-harfbuzz::$lwjglNatives"
+}

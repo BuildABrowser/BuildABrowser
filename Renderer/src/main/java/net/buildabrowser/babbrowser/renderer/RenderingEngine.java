@@ -17,6 +17,7 @@ import net.buildabrowser.babbrowser.renderer.clipboard.ClipboardProvider;
 import net.buildabrowser.babbrowser.renderer.imp.RenderingEngineImp;
 import net.buildabrowser.babbrowser.renderer.loader.DocumentLoaderRegistry;
 import net.buildabrowser.babbrowser.renderer.uistate.Frame;
+import net.buildabrowser.babbrowser.textshaping.core.TextShaperLoader;
 
 public interface RenderingEngine {
 
@@ -30,6 +31,7 @@ public interface RenderingEngine {
     FetchConfig fetchConfig,
     Supplier<ExecutorService> threadGroupSupplier,
     Painter painter,
+    TextShaperLoader textShaperLoader,
     DocumentLoaderRegistry documentLoaderRegistry,
     ResourceResolver resourceResolver,
     ClipboardProvider<?> clipboardProvider,
@@ -39,12 +41,15 @@ public interface RenderingEngine {
     return new RenderingEngineImp(
       FetchEngine.create(fetchConfig),
       threadGroupSupplier, painter,
+      textShaperLoader,
       documentLoaderRegistry, resourceResolver,
       clipboardProvider, virtualKeyboard,
       uaUIFeatures);
   }
 
   Painter painter();
+
+  TextShaperLoader textShaperLoader();
 
   ClipboardProvider<?> clipboardProvider();
 

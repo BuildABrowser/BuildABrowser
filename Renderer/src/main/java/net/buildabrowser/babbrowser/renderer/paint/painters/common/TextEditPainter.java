@@ -6,14 +6,14 @@ import net.buildabrowser.babbrowser.cssbase.util.PropertiesUtil;
 import net.buildabrowser.babbrowser.dom.Element;
 import net.buildabrowser.babbrowser.html.html.HTMLDocument;
 import net.buildabrowser.babbrowser.html.input.FocusManager;
-import net.buildabrowser.babbrowser.painter.core.FontMetrics;
-import net.buildabrowser.babbrowser.painter.core.LoadedFont;
+import net.buildabrowser.babbrowser.textshaping.core.FontMetrics;
 import net.buildabrowser.babbrowser.painter.core.PaintCanvas;
 import net.buildabrowser.babbrowser.renderer.box.ElementBox;
 import net.buildabrowser.babbrowser.renderer.content.common.TextController;
 import net.buildabrowser.babbrowser.renderer.content.input.text.TextTypeContent;
 import net.buildabrowser.babbrowser.renderer.fragment.BoxFragment;
 import net.buildabrowser.babbrowser.renderer.fragment.LayoutFragment.Measurement;
+import net.buildabrowser.babbrowser.textshaping.core.LoadedFont;
 
 public final class TextEditPainter {
 
@@ -49,15 +49,12 @@ public final class TextEditPainter {
     float activeLineY = controller.cursorY() * metrics.height();
     
     canvas.withPaintAndTransform(
-      p -> {
-        p.setColor(PropertiesUtil.textColor(box.properties()));
-        p.setFont(font);
-      },
+      p -> p.setColor(PropertiesUtil.textColor(box.properties())),
       t -> t.translate(-controller.scrollX() + HORIZONTAL_PADDING, 0),
       c -> {
         for (int i = 0; i < allLines.size(); i++) {
           float lineY = i * metrics.height();
-          c.drawText(0, lineY + posY, allLines.get(i));
+          c.drawText(0, lineY + posY, controller.lineRuns(i));
         }
         // TODO: Make a drawLine?
         if (showCaret && controller.isReplaceMode()) {

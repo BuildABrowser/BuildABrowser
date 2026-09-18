@@ -1,7 +1,7 @@
 package net.buildabrowser.babbrowser.renderer.event.handlers.textarea;
 
 import net.buildabrowser.babbrowser.cssbase.cssom.extra.InvalidationLevel;
-import net.buildabrowser.babbrowser.painter.core.FontMetrics;
+import net.buildabrowser.babbrowser.textshaping.core.FontMetrics;
 import net.buildabrowser.babbrowser.renderer.box.ElementBox;
 import net.buildabrowser.babbrowser.renderer.content.textarea.TextAreaContent;
 import net.buildabrowser.babbrowser.renderer.event.EventContext;

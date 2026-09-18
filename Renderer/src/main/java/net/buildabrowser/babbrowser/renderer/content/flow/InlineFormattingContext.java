@@ -13,6 +13,7 @@ import net.buildabrowser.babbrowser.renderer.content.flow.floatbox.FloatTracker;
 import net.buildabrowser.babbrowser.renderer.fragment.LayoutFragment;
 import net.buildabrowser.babbrowser.renderer.fragment.LineBoxFragment;
 import net.buildabrowser.babbrowser.renderer.layout.LayoutConstraint;
+import net.buildabrowser.babbrowser.textshaping.core.TextRun;
 
 public class InlineFormattingContext implements TextWrapTarget, IntrusiveList<InlineFormattingContext> {
  
@@ -115,8 +116,12 @@ public class InlineFormattingContext implements TextWrapTarget, IntrusiveList<In
   }
 
   @Override
-  public void appendText(String text, int sourceIndex, float width, float height) {
-    lineBox().appendText(text, sourceIndex, width, height);
+  public void appendText(
+    TextRun textRuns,
+    int sourceStartIndex, int sourceEndIndex,
+    float width, float height
+  ) {
+    lineBox().appendText(textRuns, sourceStartIndex, sourceEndIndex, width, height);
   }
 
   public void queuedPositioned(ElementBox box) {

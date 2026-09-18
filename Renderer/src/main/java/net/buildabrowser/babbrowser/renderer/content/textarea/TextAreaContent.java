@@ -9,7 +9,7 @@ import net.buildabrowser.babbrowser.cssbase.property.overflow.OverflowValue;
 import net.buildabrowser.babbrowser.cssbase.property.text.TextWrapModeValue;
 import net.buildabrowser.babbrowser.dom.Text;
 import net.buildabrowser.babbrowser.html.html.HTMLTextAreaElement;
-import net.buildabrowser.babbrowser.painter.core.FontMetrics;
+import net.buildabrowser.babbrowser.textshaping.core.FontMetrics;
 import net.buildabrowser.babbrowser.renderer.box.BoxContent;
 import net.buildabrowser.babbrowser.renderer.box.ElementBox;
 import net.buildabrowser.babbrowser.renderer.box.ElementBoxDimensions;
@@ -100,7 +100,7 @@ public class TextAreaContent implements BoxContent {
     wrapTarget.finish();
     List<String> lines = wrapTarget.lines();
     textController.updateLines(
-      lines, wrapTarget.continuations());
+      lines, wrapTarget.lineRuns(), wrapTarget.continuations());
     textController.updateMetrics(fontMetrics);
     textController.scrollToCursor(usedWidth, usedHeight);
 

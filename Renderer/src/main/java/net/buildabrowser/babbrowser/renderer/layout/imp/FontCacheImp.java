@@ -4,10 +4,10 @@ import java.lang.ref.WeakReference;
 import java.util.Map;
 import java.util.WeakHashMap;
 
-import net.buildabrowser.babbrowser.painter.core.FontLoader;
-import net.buildabrowser.babbrowser.painter.core.FontLoader.FontOptions;
-import net.buildabrowser.babbrowser.painter.core.LoadedFont;
 import net.buildabrowser.babbrowser.renderer.layout.FontCache;
+import net.buildabrowser.babbrowser.renderer.layout.FontLoader;
+import net.buildabrowser.babbrowser.textshaping.core.FontOptions;
+import net.buildabrowser.babbrowser.textshaping.core.LoadedFont;
 
 public class FontCacheImp implements FontCache {
   

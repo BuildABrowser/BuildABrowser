@@ -12,24 +12,18 @@ import net.buildabrowser.babbrowser.cssbase.property.display.DisplayValue.InnerD
 import net.buildabrowser.babbrowser.cssbase.property.display.DisplayValue.OuterDisplayValue;
 import net.buildabrowser.babbrowser.dom.Document;
 import net.buildabrowser.babbrowser.html.html.HTMLElement;
-import net.buildabrowser.babbrowser.painter.core.FontMetrics;
-import net.buildabrowser.babbrowser.painter.core.ResourceLoader;
 import net.buildabrowser.babbrowser.renderer.box.Box;
 import net.buildabrowser.babbrowser.renderer.box.ElementBox;
 import net.buildabrowser.babbrowser.renderer.box.ElementBox.BoxLevel;
 import net.buildabrowser.babbrowser.renderer.box.test.TestElementBox;
 import net.buildabrowser.babbrowser.renderer.box.test.TestTextBox;
+import net.buildabrowser.babbrowser.renderer.content.common.test.LayoutContextTestUtil;
 import net.buildabrowser.babbrowser.renderer.content.flow.FlowRootContent;
 import net.buildabrowser.babbrowser.renderer.content.table.TableContent;
-import net.buildabrowser.babbrowser.renderer.fragment.FragmentFactory;
 import net.buildabrowser.babbrowser.renderer.fragment.table.TableBoxFragment;
-import net.buildabrowser.babbrowser.renderer.layout.GlobalLayoutContext;
 import net.buildabrowser.babbrowser.renderer.layout.LayoutConstraint;
 import net.buildabrowser.babbrowser.renderer.layout.LayoutContext;
 import net.buildabrowser.babbrowser.renderer.layout.LayoutContextGenerator;
-import net.buildabrowser.babbrowser.renderer.layout.Viewport;
-import net.buildabrowser.babbrowser.renderer.paint.test.TestFontMetrics;
-import net.buildabrowser.babbrowser.renderer.paint.test.TestResourceLoader;
 
 public final class TableLayoutUtil {
   
@@ -52,16 +46,8 @@ public final class TableLayoutUtil {
     LayoutConstraint widthConstraint,
     LayoutConstraint heightConstraint
   ) {
-    FontMetrics testMetrics = TestFontMetrics.create(10, 5);
-    ResourceLoader resourceLoader = new TestResourceLoader(() -> testMetrics);
-    Viewport viewport = new Viewport(0, 0, (int) widthConstraint.value(), (int) heightConstraint.value());
-    FragmentFactory fragmentFactory = FragmentFactory.createDefault();
-    LayoutContext layoutContext = new LayoutContext(
-      new GlobalLayoutContext(
-        resourceLoader, resourceLoader.fontLoader()::load,
-        (m, s) -> m.stringWidth(s),
-        viewport, null, null, null, fragmentFactory),
-      () -> testMetrics, testMetrics);
+    LayoutContext layoutContext = LayoutContextTestUtil.createTestLayoutContext(
+      widthConstraint, heightConstraint);
     LayoutContextGenerator.generateLayoutContexts(parentBox, layoutContext);
     TableContent content = (TableContent) parentBox.content();
 

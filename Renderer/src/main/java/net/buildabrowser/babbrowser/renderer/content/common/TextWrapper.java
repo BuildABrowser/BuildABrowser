@@ -1,9 +1,11 @@
 package net.buildabrowser.babbrowser.renderer.content.common;
 
 import net.buildabrowser.babbrowser.dom.Text;
-import net.buildabrowser.babbrowser.painter.core.FontMetrics;
-import net.buildabrowser.babbrowser.renderer.layout.FontWordWidthCache;
+import net.buildabrowser.babbrowser.renderer.layout.FontWordCache;
 import net.buildabrowser.babbrowser.renderer.layout.LayoutContext;
+import net.buildabrowser.babbrowser.textshaping.core.LoadedFont;
+import net.buildabrowser.babbrowser.textshaping.core.TextRun;
+import net.buildabrowser.babbrowser.textshaping.core.TextRuns;
 
 public final class TextWrapper {
   
@@ -73,10 +75,11 @@ public final class TextWrapper {
     Text sourceText, String text, int sourceIndex,
     TextWrapTarget textWrapTarget, boolean autoWrap
   ) {
-    FontMetrics fontMetrics = layoutContext.font().metrics();
-    FontWordWidthCache widthCache = layoutContext.global().fontWordWidthCache();
-    float textWidth = widthCache.stringWidth(fontMetrics, text);
-    float textHeight = fontMetrics.height(); // TODO: Need to check against fallbacks
+    LoadedFont font = layoutContext.font();
+    FontWordCache wordCache = layoutContext.global().fontWordCache();
+    TextRuns textRuns = wordCache.shapeWord(font, text);
+    float textWidth = textRuns.runSize();
+    float textHeight = font.metrics().height(); // TODO: Need to check against fallbacks
 
     boolean textOverflows = !textWrapTarget.fits(textWidth, true);
     boolean shouldWrap = autoWrap && textOverflows;
@@ -86,7 +89,9 @@ public final class TextWrapper {
     }
 
     textWrapTarget.appendText(
-      text, sourceIndex, textWidth, textHeight);
+      textRuns.runs(),
+      sourceIndex, sourceIndex + text.length(),
+      textWidth, textHeight);
   }
 
   private static boolean isForcedLineBreak(int codepoint) {
@@ -111,7 +116,8 @@ public final class TextWrapper {
     );
 
     void appendText(
-      String text, int sourceIndex,
+      TextRun runs,
+      int sourceStartIndex, int sourceEndIndex,
       float width, float height
     );
 

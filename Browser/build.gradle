@@ -5,8 +5,9 @@ plugins {
 
 dependencies {
     implementation project(':Renderer')
-    implementation project(':PainterJava2D')
-    implementation project(':PainterSkija')
+    implementation project(':Painter:Java2D')
+    implementation project(':Painter:Skija')
+    implementation project(':TextShaping:HarfBuzz')
     implementation project(':DebuggerSwing')
     implementation project(':CookiesSQLite')
 
@@ -24,7 +25,8 @@ application {
         '-XX:G1PeriodicGCInterval=3000',
         '-XX:+G1PeriodicGCInvokesConcurrent',
         '-XX:+UnlockExperimentalVMOptions', '-XX:+UseCompactObjectHeaders',
-        '-Djava.net.preferIPv4Stack=true', '-XX:CICompilerCount=2'
+        '-Djava.net.preferIPv4Stack=true', '-XX:CICompilerCount=2',
+        '--add-opens=java.desktop/sun.font=ALL-UNNAMED'
     ]
 }
 

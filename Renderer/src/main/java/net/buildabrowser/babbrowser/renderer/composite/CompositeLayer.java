@@ -2,8 +2,8 @@ package net.buildabrowser.babbrowser.renderer.composite;
 
 import java.util.List;
 
-import net.buildabrowser.babbrowser.painter.core.PaintCanvas;
 import net.buildabrowser.babbrowser.painter.core.Painter;
+import net.buildabrowser.babbrowser.painter.core.PaintCanvas;
 import net.buildabrowser.babbrowser.renderer.composite.imp.CompositeLayerImp;
 import net.buildabrowser.babbrowser.renderer.layout.stacking.StackingContextEntry;
 import net.buildabrowser.babbrowser.renderer.layout.stacking.StackingContextPosition;

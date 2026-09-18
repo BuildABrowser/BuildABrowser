@@ -5,7 +5,6 @@ import java.util.Iterator;
 import java.util.LinkedList;
 
 import net.buildabrowser.babbrowser.dom.Node;
-import net.buildabrowser.babbrowser.painter.core.FontMetrics;
 import net.buildabrowser.babbrowser.renderer.box.ElementBox;
 import net.buildabrowser.babbrowser.renderer.content.common.position.PositionUtil;
 import net.buildabrowser.babbrowser.renderer.content.flow.mapping.MappingRLEBuffer;
@@ -14,6 +13,8 @@ import net.buildabrowser.babbrowser.renderer.fragment.LayoutFragment.Measurement
 import net.buildabrowser.babbrowser.renderer.fragment.LineBoxFragment;
 import net.buildabrowser.babbrowser.renderer.fragment.TextFragment;
 import net.buildabrowser.babbrowser.renderer.fragment.flow.FlowInlineBoxFragment;
+import net.buildabrowser.babbrowser.textshaping.core.FontMetrics;
+import net.buildabrowser.babbrowser.textshaping.core.TextRun;
 
 public class LineBox {
 
@@ -62,11 +63,12 @@ public class LineBox {
   }
 
   public void appendText(
-    String text, int sourceIndex,
+    TextRun textRuns,
+    int sourceStartIndex, int sourceEndIndex,
     float width, float height
   ) {
     this.totalWidth += width;
-    textBuilder.addText(text, sourceIndex, width, height);
+    textBuilder.addText(textRuns, sourceStartIndex, sourceEndIndex, width, height);
   }
 
   public void pushElement(ElementBox elementBox) {

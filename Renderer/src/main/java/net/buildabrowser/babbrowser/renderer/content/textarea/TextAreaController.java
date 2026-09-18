@@ -6,20 +6,21 @@ import java.util.List;
 
 import net.buildabrowser.babbrowser.cssbase.cssom.extra.InvalidationLevel;
 import net.buildabrowser.babbrowser.html.html.HTMLTextAreaElement;
-import net.buildabrowser.babbrowser.painter.core.FontMetrics;
 import net.buildabrowser.babbrowser.renderer.box.ElementBox;
 import net.buildabrowser.babbrowser.renderer.content.common.AbstractTextController;
 import net.buildabrowser.babbrowser.renderer.content.scroll.ScrollBox;
 import net.buildabrowser.babbrowser.renderer.fragment.scroll.ScrollBoxFragment;
 import net.buildabrowser.babbrowser.renderer.paint.painters.common.TextEditPainter;
+import net.buildabrowser.babbrowser.textshaping.core.FontMetrics;
+import net.buildabrowser.babbrowser.textshaping.core.TextRun;
 
 public class TextAreaController extends AbstractTextController {
 
   private final HTMLTextAreaElement element;
   private final ElementBox box;
 
-  // Must be mutable
   private List<String> lines = new ArrayList<>();
+  private List<TextRun> lineRuns = new ArrayList<>();
   private BitSet continuations;
 
   public TextAreaController(
@@ -29,13 +30,16 @@ public class TextAreaController extends AbstractTextController {
     this.element = element;
     this.box = box;
     lines.add("");
+    lineRuns.add(null);
   }
 
   public void updateLines(
     List<String> lines,
+    List<TextRun> lineRuns,
     BitSet continuations
   ) {
     this.lines = lines;
+    this.lineRuns = lineRuns;
     this.continuations = continuations;
     setValue(element.value());
   }
@@ -43,6 +47,11 @@ public class TextAreaController extends AbstractTextController {
   @Override
   public String lineValue(int lineNum) {
     return lines.get(lineNum);
+  }
+
+  @Override
+  public TextRun lineRuns(int lineNum) {
+    return lineRuns.get(lineNum);
   }
 
   @Override

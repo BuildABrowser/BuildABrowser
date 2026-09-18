@@ -1,7 +1,8 @@
 package net.buildabrowser.babbrowser.renderer.paint.test;
 
-import net.buildabrowser.babbrowser.painter.core.FontLoader;
-import net.buildabrowser.babbrowser.painter.core.LoadedFont;
+import net.buildabrowser.babbrowser.renderer.layout.FontLoader;
+import net.buildabrowser.babbrowser.textshaping.core.FontOptions;
+import net.buildabrowser.babbrowser.textshaping.core.LoadedFont;
 
 public class TestFontLoader implements FontLoader {
 
@@ -9,26 +10,6 @@ public class TestFontLoader implements FontLoader {
 
   public TestFontLoader(LoadedFont testFont) {
     this.testFont = testFont;
-  }
-
-  @Override
-  public FontFamily monospace() {
-    return null;
-  }
-
-  @Override
-  public FontFamily serif() {
-    return null;
-  }
-
-  @Override
-  public FontFamily sansSerif() {
-    return null;
-  }
-
-  @Override
-  public FontFamily named(String name) {
-    return null;
   }
 
   @Override

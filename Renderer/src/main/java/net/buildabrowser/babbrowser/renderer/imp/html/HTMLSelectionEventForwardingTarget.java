@@ -2,6 +2,7 @@ package net.buildabrowser.babbrowser.renderer.imp.html;
 
 import static net.buildabrowser.babbrowser.html.util.HTMLDomUtil.isHtmlElement;
 
+import java.io.IOException;
 import java.net.URI;
 
 import net.buildabrowser.babbrowser.common.datastruct.SlotFamily;
@@ -104,8 +105,15 @@ public class HTMLSelectionEventForwardingTarget<T> extends AbstractEventForwardi
     LoadedImage image = imageContent.loadedImage();
     if (image == null) return;
 
-    T clip = clipboardProvider.createImageClip(imageURI, image::streamData, alt);
-    clipboardProvider.setActiveClip(clip);
+    try {
+      image.streamData(stream -> {
+        T clip = clipboardProvider.createImageClip(
+          imageURI, () -> stream, alt);
+        clipboardProvider.setActiveClip(clip);
+      });
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
   }
 
 }

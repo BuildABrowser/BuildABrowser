@@ -223,8 +223,6 @@ public class FlowInlineLayout {
   private void addBreakToInline() {
     InlineFormattingContext inlineContext = activeInlineContext;
     inlineContext.lineBox().startText(null, null, false);
-    inlineContext.lineBox().appendText(
-      "\u200B", 0, 0, 0);
     activeInlineContext.nextLine();
   }
 

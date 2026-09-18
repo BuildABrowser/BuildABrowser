@@ -3,6 +3,7 @@ plugins {
 }
 
 import org.gradle.nativeplatform.internal.DefaultTargetMachineFactory
+import org.gradle.internal.os.OperatingSystem
 
 subprojects {
 	apply plugin: 'java'
@@ -25,7 +26,7 @@ subprojects {
 	}
 
 	def desktopModules = [
-		':Browser', ':PainterSkija', ':PainterJava2D', ':DebuggerSwing',
+		':Browser', ':Painter:Skija', ':Painter:Java2D', ':DebuggerSwing',
 		':CookiesSQLite']
 
 	if (!desktopModules.contains(project.path)) {
@@ -54,6 +55,34 @@ subprojects {
 		java {
 			sourceCompatibility = JavaVersion.VERSION_24
 			targetCompatibility = JavaVersion.VERSION_24
+		}
+	}
+
+	def lwjglModules = [
+		':Painter:Skija', ':TextShaping:HarfBuzz']
+
+	if (lwjglModules.contains(project.path)) {
+		dependencies {
+			project.ext.lwjglVersion = "3.4.1"
+			project.ext.lwjgl3_awtVersion = "0.2.4"
+
+			project.ext.skijaVersion = "0.143.6"
+			switch (OperatingSystem.current()) {
+					case OperatingSystem.LINUX:
+					project.ext.lwjglNatives = "natives-linux"
+							project.ext.skijaNatives = "skija-linux-x64"
+							break
+					case OperatingSystem.WINDOWS:
+					project.ext.lwjglNatives = "natives-windows"
+							project.ext.skijaNatives = "skija-windows-x64"
+							break
+					case OperatingSystem.MAC_OS:
+					project.ext.lwjglNatives = "natives-macos-arm64"
+							project.ext.skijaNatives = "skija-macos-arm64"
+							break
+			}
+
+			implementation platform("org.lwjgl:lwjgl-bom:$lwjglVersion")
 		}
 	}
 }

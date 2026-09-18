@@ -12,11 +12,10 @@ import net.buildabrowser.babbrowser.cssbase.property.font.FontNameValue;
 import net.buildabrowser.babbrowser.cssbase.property.font.FontNamedSizeValue;
 import net.buildabrowser.babbrowser.cssbase.property.font.FontWeightValue;
 import net.buildabrowser.babbrowser.cssbase.property.font.FontWeightValue.RelativeFontWeightValue;
-import net.buildabrowser.babbrowser.painter.core.FontLoader;
-import net.buildabrowser.babbrowser.painter.core.FontLoader.FontFamily;
-import net.buildabrowser.babbrowser.painter.core.FontLoader.FontOptions;
-import net.buildabrowser.babbrowser.painter.core.LoadedFont;
 import net.buildabrowser.babbrowser.renderer.content.common.SizingUtil;
+import net.buildabrowser.babbrowser.textshaping.core.FontFamily;
+import net.buildabrowser.babbrowser.textshaping.core.FontOptions;
+import net.buildabrowser.babbrowser.textshaping.core.LoadedFont;
 
 public final class FontDetermination {
   
@@ -46,8 +45,7 @@ public final class FontDetermination {
 
     LoadedFont font = parentDetermination.font();
     if (wasChanged) {
-      FontLoader fontLoader = parentContext.global().resourceLoader().fontLoader();
-      List<FontFamily> fontFamilies = collectFamilies(fontLoader, fontFamily);
+      List<FontFamily> fontFamilies = collectFamilies(fontFamily);
       FontOptions options = new FontOptions(fontFamilies, fontSize, fontWeight);
       font = parentContext.global().fontCache().load(options);
     }
@@ -115,24 +113,24 @@ public final class FontDetermination {
     }
   }
 
-  private static List<FontFamily> collectFamilies(FontLoader fontLoader, ManyResult familyIds) {
+  private static List<FontFamily> collectFamilies(ManyResult familyIds) {
     List<FontFamily> families = new ArrayList<>(familyIds.values().size());
     for (CSSValue value: familyIds.values()) {
       if (value instanceof FontNameValue fontNameValue) {
-        families.add(fontLoader.named(fontNameValue.name()));
+        families.add(FontFamily.named(fontNameValue.name()));
       } else if (value.equals(FontFamilyValue.MONOSPACE)) {
-        families.add(fontLoader.monospace());
+        families.add(FontFamily.MONOSPACE);
       } else if (value.equals(FontFamilyValue.SERIF)) {
-        families.add(fontLoader.serif());
+        families.add(FontFamily.SERIF);
       } else if (value.equals(FontFamilyValue.SANS_SERIF)) {
-        families.add(fontLoader.sansSerif());
+        families.add(FontFamily.SANS_SERIF);
       } else {
         throw new UnsupportedOperationException("Don't recognize supplied CSS value!");
       }
     }
 
     // TODO: Replace this with a proper font loading system
-    families.add(fontLoader.sansSerif());
+    families.add(FontFamily.SANS_SERIF);
     return families;
   }
 

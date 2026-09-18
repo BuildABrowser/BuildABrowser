@@ -2,8 +2,8 @@ package net.buildabrowser.babbrowser.renderer.content.common;
 
 import static net.buildabrowser.babbrowser.common.util.CompatUtil.mathClamp;
 
-import net.buildabrowser.babbrowser.painter.core.FontMetrics;
-import net.buildabrowser.babbrowser.renderer.event.util.MouseEventUtil;
+import net.buildabrowser.babbrowser.textshaping.core.FontMetrics;
+import net.buildabrowser.babbrowser.textshaping.core.TextRuns;
 
 public abstract class AbstractTextController implements TextController {
 
@@ -249,8 +249,8 @@ public abstract class AbstractTextController implements TextController {
     }
     action.run();
     float startNavWidth = this.startNavWidth;
-    setCursorX(MouseEventUtil.determineTextMouseIndex(
-      startNavWidth, fontMetrics, lineValue(cursorY())));
+    setCursorX(TextRuns.offsetForPos(
+      lineRuns(cursorY()), startNavWidth));
     this.startNavWidth = startNavWidth;
   }
 

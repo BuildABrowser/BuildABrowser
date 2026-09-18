@@ -20,6 +20,7 @@ import net.buildabrowser.babbrowser.renderer.RenderingEngine;
 import net.buildabrowser.babbrowser.renderer.api.VirtualKeyboard;
 import net.buildabrowser.babbrowser.renderer.clipboard.ClipboardProvider;
 import net.buildabrowser.babbrowser.renderer.loader.DocumentLoaderRegistry;
+import net.buildabrowser.babbrowser.textshaping.core.TextShaperLoader;
 
 public class BrowserInstanceImp implements BrowserInstance {
 
@@ -29,6 +30,7 @@ public class BrowserInstanceImp implements BrowserInstance {
   public BrowserInstanceImp(
     URI profilePath,
     ComponentPainter<Component> painter,
+    TextShaperLoader textShaperLoader,
     CookieStore cookieStore
   ) {
     this.windowSet = WindowSet.create(this);
@@ -48,6 +50,7 @@ public class BrowserInstanceImp implements BrowserInstance {
       fetchConfig,
       Executors::newVirtualThreadPerTaskExecutor,
       painter,
+      textShaperLoader,
       loaderRegistry,
       ClassLoader.getSystemClassLoader()::getResourceAsStream,
       clipboardProvider,

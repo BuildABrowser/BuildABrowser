@@ -19,6 +19,8 @@ import net.buildabrowser.babbrowser.cookies.CookieStore;
 import net.buildabrowser.babbrowser.debugger.core.Debugger;
 import net.buildabrowser.babbrowser.debugger.swing.SwingDebugger;
 import net.buildabrowser.babbrowser.painter.core.ComponentPainter;
+import net.buildabrowser.babbrowser.textshaping.core.TextShaperLoader;
+import net.buildabrowser.babbrowser.textshaping.harfbuzz.HBTextShaperLoader;
 
 public class Main {
   
@@ -33,13 +35,14 @@ public class Main {
     new File(profilePath.getSchemeSpecificPart()).mkdirs();
 
     ComponentPainter<Component> painter = arguments.painter().get();
+    TextShaperLoader textShaperLoader = new HBTextShaperLoader();
     CookieStore cookieStore = arguments.cookieStore().get(
       profilePath, new PublicSuffixListImp());
     
     Debugger debugger = new SwingDebugger();
 
     BrowserInstance browserInstance = BrowserInstance.create(
-      profilePath, painter, cookieStore);
+      profilePath, painter, textShaperLoader, cookieStore);
   
     WindowSet windowSet = browserInstance.windowSet();
     Window window = windowSet.openWindow(new WindowOptions(false));

@@ -25,6 +25,7 @@ import net.buildabrowser.babbrowser.renderer.api.VirtualKeyboard;
 import net.buildabrowser.babbrowser.renderer.clipboard.ClipboardProvider;
 import net.buildabrowser.babbrowser.renderer.loader.DocumentLoaderRegistry;
 import net.buildabrowser.babbrowser.renderer.uistate.Frame;
+import net.buildabrowser.babbrowser.textshaping.core.TextShaperLoader;
 
 public class RenderingEngineImp implements RenderingEngine {
 
@@ -33,6 +34,7 @@ public class RenderingEngineImp implements RenderingEngine {
   private final FetchEngine fetchEngine;
   private final Supplier<ExecutorService> threadGroupSupplier;
   private final Painter painter;
+  private final TextShaperLoader textShaperLoader;
   private final DocumentLoaderRegistry documentLoaderRegistry;
   private final ResourceResolver resourceResolver;
   private final ClipboardProvider<?> clipboardProvider;
@@ -43,6 +45,7 @@ public class RenderingEngineImp implements RenderingEngine {
     FetchEngine fetchEngine,
     Supplier<ExecutorService> threadGroupSupplier,
     Painter painter,
+    TextShaperLoader textShaperLoader,
     DocumentLoaderRegistry documentLoaderRegistry,
     ResourceResolver resourceResolver,
     ClipboardProvider<?> clipboardProvider,
@@ -52,6 +55,7 @@ public class RenderingEngineImp implements RenderingEngine {
     this.fetchEngine = fetchEngine;
     this.threadGroupSupplier = threadGroupSupplier;
     this.painter = painter;
+    this.textShaperLoader = textShaperLoader;
     this.documentLoaderRegistry = documentLoaderRegistry;
     this.resourceResolver = resourceResolver;
     this.clipboardProvider = clipboardProvider;
@@ -87,6 +91,11 @@ public class RenderingEngineImp implements RenderingEngine {
   @Override
   public Painter painter() {
     return this.painter;
+  }
+
+  @Override
+  public TextShaperLoader textShaperLoader() {
+    return this.textShaperLoader;
   }
   
   @Override

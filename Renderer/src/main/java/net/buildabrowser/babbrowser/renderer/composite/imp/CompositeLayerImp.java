@@ -163,12 +163,13 @@ public class CompositeLayerImp implements CompositeLayer {
 
   @Override
   public void draw(PaintCanvas canvas, VpIntersection vpIntersection) {
-    if (entries != null) {
-      canvas.withPaint(
-        p -> p.setFont(entries.fragment().box().layoutContext().font()),
-        c -> drawMaybeScrollable(c, vpIntersection));
+    // TODO: Having to treat scrollable entries specially is not great
+    ScrollBoxFragment scrollBoxFragment = relatedScrollBox();
+
+    if (scrollBoxFragment == null) {
+      drawInnerContent(canvas, vpIntersection, scrollBoxFragment, 0, 0);
     } else {
-      drawMaybeScrollable(canvas, vpIntersection);
+      drawScrollable(canvas, vpIntersection, scrollBoxFragment);
     }
   }
 
@@ -197,17 +198,6 @@ public class CompositeLayerImp implements CompositeLayer {
   @Override
   public boolean layerActive() {
     return backingImage != null || !activeChildren.isEmpty();
-  }
-
-  private void drawMaybeScrollable(PaintCanvas canvas, VpIntersection vpIntersection) {
-    // TODO: Having to treat scrollable entries specially is not great
-    ScrollBoxFragment scrollBoxFragment = relatedScrollBox();
-
-    if (scrollBoxFragment == null) {
-      drawInnerContent(canvas, vpIntersection, scrollBoxFragment, 0, 0);
-    } else {
-      drawScrollable(canvas, vpIntersection, scrollBoxFragment);
-    }
   }
 
 

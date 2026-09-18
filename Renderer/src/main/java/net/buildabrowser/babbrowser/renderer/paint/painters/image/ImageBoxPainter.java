@@ -10,6 +10,8 @@ import net.buildabrowser.babbrowser.renderer.fragment.image.ImageBoxFragment;
 import net.buildabrowser.babbrowser.renderer.paint.BoxPainter;
 import net.buildabrowser.babbrowser.renderer.paint.VpIntersection;
 import net.buildabrowser.babbrowser.renderer.paint.painters.common.ElementBackgroundPainter;
+import net.buildabrowser.babbrowser.textshaping.core.LoadedFont;
+import net.buildabrowser.babbrowser.textshaping.core.TextRun;
 
 public class ImageBoxPainter implements BoxPainter<ImageBoxFragment> {
 
@@ -40,12 +42,11 @@ public class ImageBoxPainter implements BoxPainter<ImageBoxFragment> {
       return;
     }
 
+    LoadedFont font = box.layoutContext().font();
+    TextRun textRuns = font.shape(fragment.altText()).runs();
     canvas.withPaint(
-      p -> {
-        p.setFont(box.layoutContext().font());
-        p.setColor(PropertiesUtil.textColor(box.properties()));
-      },
-      c -> c.drawText(0, 0, fragment.altText()));
+      p -> p.setColor(PropertiesUtil.textColor(box.properties())),
+      c -> c.drawText(0, 0, textRuns));
   }
 
   @Override

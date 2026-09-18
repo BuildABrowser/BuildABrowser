@@ -5,12 +5,15 @@ import java.util.BitSet;
 import java.util.List;
 
 import net.buildabrowser.babbrowser.renderer.content.common.TextWrapper.TextWrapTarget;
+import net.buildabrowser.babbrowser.textshaping.core.TextRun;
 
 public class TextAreaWrapTarget implements TextWrapTarget {
 
   private final List<String> lines = new ArrayList<>();
+  private final List<TextRun> lineRuns = new ArrayList<>();
   private final BitSet continuations = new BitSet(16);
   private final StringBuilder lineBuilder = new StringBuilder("");
+  private final List<TextRun> currentLineRuns = new ArrayList<>();
 
   private final float maxWidth;
   
@@ -26,6 +29,9 @@ public class TextAreaWrapTarget implements TextWrapTarget {
   public void nextLine(boolean isSoftWrap) {
     lines.add(lineBuilder.toString());
     lineBuilder.setLength(0);
+    lineRuns.add(null);
+    currentLineRuns.clear();
+
     if (this.isSoftWrap) {
       continuations.set(lines.size() - 1);
     }
@@ -46,9 +52,18 @@ public class TextAreaWrapTarget implements TextWrapTarget {
 
   @Override
   public void appendText(
-    String text, int sourceIndex, float width, float height
+    TextRun textRuns,
+    int sourceStartIndex, int sourceEndIndex,
+    float width, float height
   ) {
-    lineBuilder.append(text);
+    TextRun nextRun = textRuns;
+    while (nextRun != null) {
+      TextRun textRun = nextRun;
+      nextRun = nextRun.next();
+
+      lineBuilder.append(textRun.shapedText().fallbackText());
+      currentLineRuns.add(textRun);
+    }
     this.currentWidth += width;
   }
 
@@ -63,6 +78,10 @@ public class TextAreaWrapTarget implements TextWrapTarget {
 
   public List<String> lines() {
     return this.lines;
+  }
+
+  public List<TextRun> lineRuns() {
+    return this.lineRuns;
   }
 
   public BitSet continuations() {

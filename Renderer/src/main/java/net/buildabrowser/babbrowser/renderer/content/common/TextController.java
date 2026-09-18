@@ -2,13 +2,17 @@ package net.buildabrowser.babbrowser.renderer.content.common;
 
 import java.util.List;
 
-import net.buildabrowser.babbrowser.painter.core.FontMetrics;
+import net.buildabrowser.babbrowser.textshaping.core.FontMetrics;
+import net.buildabrowser.babbrowser.textshaping.core.TextRun;
 
 public interface TextController {
 
   String value();
 
   String lineValue(int lineNum);
+
+  // TODO: Not great
+  TextRun lineRuns(int lineNum);
 
   List<String> displayLines();
 
