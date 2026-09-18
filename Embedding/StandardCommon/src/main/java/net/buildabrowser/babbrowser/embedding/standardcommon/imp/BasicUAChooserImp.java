@@ -15,7 +15,7 @@ public class BasicUAChooserImp implements UAChooser {
     String uaString = switch (request.url().getHost()) {
       case "whatismybrowser.com", "www.whatismybrowser.com" -> "$UA ($OS)";
       case "buildabrowser.net" -> "Mozilla/5.0 ($OS) $UA";
-      default -> "Mozilla/5.0($OS) $UA Firefox/149.0 (Not actually Firefox)";
+      default -> "Mozilla/5.0 ($OS) $UA Firefox/149.0 (Not actually Firefox)";
     };
 
     return uaString
