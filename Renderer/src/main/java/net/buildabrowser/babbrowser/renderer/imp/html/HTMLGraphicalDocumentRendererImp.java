@@ -273,8 +273,8 @@ public class HTMLGraphicalDocumentRendererImp implements GraphicalDocumentRender
     this.transformOptions = transformOptions;
     if (vpChanged) return;
 
-    this.width = width;
-    this.height = height;
+    this.width = (int) Math.ceil(width / transformOptions.vpScaleX());
+    this.height = (int) Math.ceil(height / transformOptions.vpScaleY());
     this.invalidationLevel |= InvalidationLevel.STYLE;
     this.invalidationLevel |= InvalidationLevel.LAYOUT;
   }
