@@ -71,6 +71,7 @@ public final class HTMLAriaTraversal {
       || element.hasAttribute("id")
       || element.hasAttribute("role")
       || ops.hasSemanticMeaning(element)
+      || ops.isActivatable(node)
     ) return false;
 
     for (String attrName: element.getAttributeNames()) {

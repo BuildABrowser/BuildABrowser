@@ -39,6 +39,10 @@ public interface Frame extends Closeable {
 
   void removeRepaintListener(Runnable repaintListener);
 
+  void focus();
+
+  void blur();
+
   default UUID uuid() {
     return navigable().uuid();
   }

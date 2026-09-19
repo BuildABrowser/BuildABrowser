@@ -23,7 +23,13 @@ public interface DocumentRenderer extends Closeable {
   
   void onDocumentInvalidated(short invalidationLevel);
 
+  default void onDocumentFocused() {}
+
+  default void onDocumentBlurred() {}
+
   default void close() throws IOException {}
+
+  default void reactivate() throws IOException {}
 
   interface DocumentRendererEventListener {
 

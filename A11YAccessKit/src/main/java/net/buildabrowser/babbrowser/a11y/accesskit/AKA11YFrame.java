@@ -33,7 +33,6 @@ public class AKA11YFrame implements A11YFrame, AKCallbacks {
   private final A11YOps ops;
   private final AKNodeRegistry nodeRegistry;
   private final AKA11YFocusManager focusManager;
-  private boolean isFirstRun = true;
 
   private volatile boolean activated;
 
@@ -42,7 +41,7 @@ public class AKA11YFrame implements A11YFrame, AKCallbacks {
     this.ops = ops;
     this.nodeRegistry = new AKNodeRegistry();
     this.focusManager = new AKA11YFocusManager(
-      nodeRegistry);
+      ak4jHandle, nodeRegistry);
   }
 
   public MemorySegment onActivation(AK4JHandle ak4jHandle) {
@@ -64,6 +63,7 @@ public class AKA11YFrame implements A11YFrame, AKCallbacks {
       case AKAction.SET_TEXT_SELECTION -> {
         focusManager.focusNodeByAriaId(actionRequest.nodeId());
         focusManager.updateTextSelection((AKTextSelection) actionRequest.data());
+        System.out.println(focusManager.focusedNode());
       }
       case AKAction.CLICK -> {
         focusManager.focusNodeByAriaId(actionRequest.nodeId());
@@ -87,16 +87,12 @@ public class AKA11YFrame implements A11YFrame, AKCallbacks {
 
     focusManager.update(node);
     long focusId = focusManager.focusedNodeId();
-
-    if (isFirstRun) {
-      ak4jHandle.adapter().setFocus(true);
-      isFirstRun = false;
-    }
     
     Arena scope = Arena.ofAuto();
     // TODO: Determine capacity
     MemorySegment rootNode = ak4jHandle.nodes().create(AKRole.WINDOW, scope);
     MemorySegment update = ak4jHandle.createTreeUpdate(MemorySegment.NULL, 128, focusId, scope);
+    System.out.println("Update " + focusId);
     nodeRegistry.restart(); // TODO: Not great to regenerate the registry every time
     AriaCallbacks<MemorySegment> callbacks = new AKAriaCallbacks(
       ak4jHandle, nodeRegistry, focusManager, ops, update, scope);

@@ -65,6 +65,16 @@ public class DelegatingGraphicalDocumentRenderer implements GraphicalDocumentRen
   }
 
   @Override
+  public void onDocumentFocused() {
+    activeRenderer().onDocumentFocused();
+  }
+
+  @Override
+  public void onDocumentBlurred() {
+    activeRenderer().onDocumentBlurred();
+  }
+
+  @Override
   public Optional<String> title() {
     return activeRenderer().title();
   }

@@ -73,8 +73,10 @@ public final class AKRoleMapper {
       case SCROLLBAR -> AKRole.SCROLL_BAR;
       case SEARCH -> AKRole.SEARCH;
       case SEARCHBOX -> AKRole.SEARCH_INPUT;
+      case SECTION -> AKRole.SECTION;
       case SECTIONFOOTER -> AKRole.SECTION_FOOTER;
       case SECTIONHEADER -> AKRole.SECTION_HEADER;
+      case SELECT -> AKRole.COMBO_BOX;
       case SEPARATOR -> AKRole.SPLITTER;
       case SLIDER -> AKRole.SLIDER;
       case SPINBUTTON -> AKRole.SPIN_BUTTON;
@@ -97,11 +99,12 @@ public final class AKRoleMapper {
       case TREE -> AKRole.TREE;
       case TREEGRID -> AKRole.TREE_GRID;
       case TREEITEM -> AKRole.TREE_ITEM;
+      case WINDOW -> AKRole.WINDOW;
 
       // TODO: Label is semantically incorrect, but AccessKit removed StaticText
       case STATICTEXT -> AKRole.TEXT_RUN;
       
-      default -> throw new UnsupportedOperationException("Unsupported role: " + role);
+      default -> null;
     };
   }
 

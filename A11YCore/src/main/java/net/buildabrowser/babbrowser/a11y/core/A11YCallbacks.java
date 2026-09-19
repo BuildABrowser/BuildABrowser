@@ -8,6 +8,6 @@ public interface A11YCallbacks {
 
   default void onBlur() {}
 
-  default void onUnblur() {}
+  default void onFocused() {}
   
 }

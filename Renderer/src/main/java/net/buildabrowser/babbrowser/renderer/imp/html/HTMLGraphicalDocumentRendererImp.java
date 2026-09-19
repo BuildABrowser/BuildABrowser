@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 
 import net.buildabrowser.babbrowser.a11y.core.A11YFrame;
+import net.buildabrowser.babbrowser.a11y.core.A11YProvider;
 import net.buildabrowser.babbrowser.common.datastruct.SlotFamily;
 import net.buildabrowser.babbrowser.common.datastruct.SlotFamilyFamily;
 import net.buildabrowser.babbrowser.css.engine.matcher.CSSMatcher;
@@ -16,6 +17,8 @@ import net.buildabrowser.babbrowser.dom.Element;
 import net.buildabrowser.babbrowser.dom.Node;
 import net.buildabrowser.babbrowser.dom.listener.DocumentChangeListener;
 import net.buildabrowser.babbrowser.fetch.FetchEngine;
+import net.buildabrowser.babbrowser.html.events.EventLoop;
+import net.buildabrowser.babbrowser.html.events.TaskSource;
 import net.buildabrowser.babbrowser.html.html.HTMLDocument;
 import net.buildabrowser.babbrowser.html.html.HTMLElement;
 import net.buildabrowser.babbrowser.html.html.handlers.ObjectLoader;
@@ -71,7 +74,6 @@ public class HTMLGraphicalDocumentRendererImp implements GraphicalDocumentRender
   private final Navigable navigable;
   private final FrameAPIs frameAPIs;
   private final Painter painter;
-  private final A11YFrame a11yFrame;
 
   private final BoxGenerator boxGenerator;
   private final StyleSheetList uaStyleSheets;
@@ -88,9 +90,13 @@ public class HTMLGraphicalDocumentRendererImp implements GraphicalDocumentRender
   private final HTMLEventForwardingTarget eventForwardingTarget;
   private final SelectionContext selectionContext;
   private final DebugContext debugContext;
+  private final A11YProvider a11yProvider;
+  private final EventContext eventContext;
 
   private volatile short invalidationLevel = InvalidationLevel.BOX;
+
   private LoadedFont rootFont;
+  private A11YFrame a11yFrame;
 
   // TODO: Switch to AtomicInteger? Synchronize?
   private int width, height;
@@ -110,8 +116,6 @@ public class HTMLGraphicalDocumentRendererImp implements GraphicalDocumentRender
     EventContext eventContext = EventContext.create();
     this.documentBox = DocumentBox.create(document);
     this.renderContexts = slotFamilyFamily.createSlotFamily(ElementContextImp::new);
-    this.a11yFrame = renderingEngine.a11yProvider().createFrame(
-      new HTMLA11YOps(eventContext, renderContexts));
     this.fakeRootContext = new FakeRootContextImp(renderContexts.familyId(), documentBox);
     this.boxGenerator = BoxGenerator.create(renderContexts);
     this.uaStyleSheets = renderingEngine.uaStyleSheets();
@@ -126,9 +130,6 @@ public class HTMLGraphicalDocumentRendererImp implements GraphicalDocumentRender
     this.debugContext = new HTMLDebugContext(
       document, documentBox, renderContexts);
     documentBox.setChild(fakeRootContext.box());
-
-    a11yFrame.a11yFocusManager().attachCallbacks(
-      new HTMLA11YFocusManagerCallbacks(document, a11yFrame));
 
     FetchEngine fetchEngine = navigable.uaNavigableOptions().fetchEngine();
     
@@ -162,9 +163,14 @@ public class HTMLGraphicalDocumentRendererImp implements GraphicalDocumentRender
     this.fontCache = FontCache.create(painter.resourceLoader().fontLoader());
     this.objectLoader = new HTMLObjectLoader(imageCache, renderContexts);
 
+    this.a11yProvider = renderingEngine.a11yProvider();
+    this.eventContext = eventContext;
+
     VirtualKeyboard keyboard = frameAPIs.virtualKeyboard();
     document.focusManager().attachContext(
       new HTMLFocusManagerContext(eventContext, keyboard, renderContexts));
+
+    reactivate();
   }
 
   @Override
@@ -293,6 +299,16 @@ public class HTMLGraphicalDocumentRendererImp implements GraphicalDocumentRender
     this.invalidationLevel |= invalidationLevel;
   }
 
+  @Override 
+  public void onDocumentFocused() {
+    queueA11YTask(true);
+  }
+
+  @Override 
+  public void onDocumentBlurred() {
+    queueA11YTask(false);
+  }
+
   @Override
   public FrameAPIs frameAPIs() {
     return this.frameAPIs;
@@ -301,6 +317,39 @@ public class HTMLGraphicalDocumentRendererImp implements GraphicalDocumentRender
   @Override
   public void close() throws IOException {
     a11yFrame.close();
+    this.a11yFrame = null;
+  }
+
+  @Override
+  public void reactivate() throws IOException {
+    if (this.a11yFrame != null) return;
+    this.a11yFrame = a11yProvider.createFrame(
+      new HTMLA11YOps(eventContext, renderContexts));
+
+    a11yFrame.a11yFocusManager().attachCallbacks(
+      new HTMLA11YFocusManagerCallbacks(
+        document, a11yFrame, document.focusManager()));
+    
+    queueA11YTask(true);
+  }
+
+  private void queueA11YTask(boolean focused) {
+    EventLoop.queueGlobalTask(
+      TaskSource.USER_INTERACTION, navigable.activeWindow(),
+      () -> {
+        if (focused) {
+          a11yFrame.a11yFocusManager().focus();
+        } else {
+          a11yFrame.a11yFocusManager().blur();
+        }
+
+        if (
+          (this.invalidationLevel & (InvalidationLevel.BOX | InvalidationLevel.LAYOUT)) == 0
+        ) {
+          System.out.println("Trigger update");
+          a11yFrame.update(document);
+        }
+      });
   }
 
   private void recomputeBoxes() {

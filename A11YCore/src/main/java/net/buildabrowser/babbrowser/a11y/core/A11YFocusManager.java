@@ -10,7 +10,7 @@ public interface A11YFocusManager {
 
   void update(Node node);
 
-  void unblur();
+  void focus();
 
   void blur();
 

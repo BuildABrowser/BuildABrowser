@@ -253,6 +253,8 @@ public class NavigableImp implements Navigable {
   public void activateHistoryEntry(SessionHistoryEntry entry) {
     // TODO: Other steps
     this.activeSessionHistory = entry;
+    CommonUtil.rethrowV(() -> entry
+      .document().renderer().reactivate());
     uaNavigableOptions.onNavigate(entry.url());
     uaNavigableOptions.requestRepaint();
   }

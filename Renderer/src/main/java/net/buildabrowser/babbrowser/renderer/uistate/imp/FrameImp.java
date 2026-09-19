@@ -37,6 +37,8 @@ public class FrameImp implements DebuggableFrame {
   private final List<FrameDebugger> attachedDebuggers = new ArrayList<>(1);
   private final List<DocumentChangeListener> attachedChangeListeners = new ArrayList<>(1);
 
+  private boolean focused;
+
   public FrameImp(
     RenderingEngine renderingEngine
   ) throws IOException {
@@ -51,6 +53,11 @@ public class FrameImp implements DebuggableFrame {
           eventDispatcher.fire(l -> l.onURLChange(url));
           eventDispatcher.fire(listener -> listener.onTitleChange(getTitle()));
           renderer.onInnerRendererChanged();
+          if (focused) {
+            renderer.onDocumentFocused();
+          } else {
+            renderer.onDocumentBlurred();
+          }
           updateDebuggers();
         }
 
@@ -163,6 +170,22 @@ public class FrameImp implements DebuggableFrame {
   @Override
   public void removeRepaintListener(Runnable repaintListener) {
     navigable.uaNavigableOptions().removeRepaintListener(repaintListener);
+  }
+
+  @Override
+  public void focus() {
+    if (!this.focused) {
+      renderer.onDocumentFocused();
+      this.focused = true;
+    }
+  }
+
+  @Override
+  public void blur() {
+    if (this.focused) {
+      renderer.onDocumentBlurred();
+      this.focused = false;
+    }
   }
 
   @Override

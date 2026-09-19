@@ -2,6 +2,7 @@ package net.buildabrowser.babbrowser.a11y.accesskit;
 
 import java.util.Optional;
 
+import net.buildabrowser.ak4j.AK4JHandle;
 import net.buildabrowser.ak4j.AKTextSelection;
 import net.buildabrowser.babbrowser.a11y.core.A11YCallbacks;
 import net.buildabrowser.babbrowser.a11y.core.A11YFocusManager;
@@ -9,6 +10,7 @@ import net.buildabrowser.babbrowser.dom.Node;
 
 public class AKA11YFocusManager implements A11YFocusManager {
 
+  private final AK4JHandle ak4jHandle;
   private final AKNodeRegistry nodeRegistry;
 
   private boolean focused = true;
@@ -16,9 +18,13 @@ public class AKA11YFocusManager implements A11YFocusManager {
   private AKTextSelection textSelection;
   private Optional<A11YCallbacks> callbacks = Optional.empty();
 
-  public AKA11YFocusManager(AKNodeRegistry nodeRegistry) {
+  public AKA11YFocusManager(
+    AK4JHandle ak4jHandle,
+    AKNodeRegistry nodeRegistry
+  ) {
+    this.ak4jHandle = ak4jHandle;
     this.nodeRegistry = nodeRegistry;
-    unblur();
+    focus();
   }
 
   @Override
@@ -28,9 +34,7 @@ public class AKA11YFocusManager implements A11YFocusManager {
 
   @Override
   public long focusedNodeId() {
-    return focused ?
-      (focusedNode == null ? 2 : focusedNode.ariaId()) :
-      2; // TODO: NONE
+    return (focusedNode == null ? 0 : focusedNode.ariaId());
   }
 
   @Override
@@ -49,19 +53,28 @@ public class AKA11YFocusManager implements A11YFocusManager {
       focusedNode = node.nodeDocument();
       callbacks.ifPresent(c -> c.onNodeFocused(focusedNode));
     }
+
+    System.out.println("Focused " + focused);
+    ak4jHandle.adapter().setFocus(focused);
   }
 
   @Override
-  public void unblur() {
-    this.focused = true;
-    callbacks.ifPresent(c -> c.onUnblur());
+  public void focus() {
+    if (!focused) {
+      ak4jHandle.adapter().setFocus(true);
+      this.focused = true;
+      callbacks.ifPresent(c -> c.onFocused());
+    }
   }
 
   @Override
   public void blur() {
-    this.focused = false;
-    // TODO: NONE
-    callbacks.ifPresent(c -> c.onBlur());
+    if (focused) {
+      ak4jHandle.adapter().setFocus(false);
+      this.focused = false;
+      // TODO: NONE
+      callbacks.ifPresent(c -> c.onBlur());
+    }
   }
 
   @Override

@@ -25,6 +25,10 @@ public final class HTMLRoleMapper {
       && element.namespace().equals(Namespace.HTML_NAMESPACE)
     )) return null;
 
+    String roleAttr = element.getAttribute("role");
+    AriaRole explicitRole = mapRole(roleAttr);
+    if (explicitRole != null) return explicitRole;
+
     // TODO: Check the element's aria-role attribute
     return switch (element.name()) {
       case "a" -> element.hasAttribute("href") ? AriaRole.LINK : AriaRole.GENERIC;
@@ -189,6 +193,100 @@ public final class HTMLRoleMapper {
       case "url" -> AriaRole.TEXTBOX;
       case "week" -> null;
       default -> AriaRole.TEXTBOX;
+    };
+  }
+
+  private static AriaRole mapRole(String role) {
+    if (role == null) return null;
+
+    return switch (role.trim().toLowerCase()) {
+      case "alert" -> AriaRole.ALERT;
+      case "alertdialog" -> AriaRole.ALERTDIALOGUE; // Maps to ALERTDIALOGUE in the enum
+      case "application" -> AriaRole.APPLICATION;
+      case "article" -> AriaRole.ARTICLE;
+      case "banner" -> AriaRole.BANNER;
+      case "button" -> AriaRole.BUTTON;
+      case "cell" -> AriaRole.CELL;
+      case "checkbox" -> AriaRole.CHECKBOX;
+      case "columnheader" -> AriaRole.COLUMNHEADER;
+      case "combobox" -> AriaRole.COMBOBOX;
+      case "command" -> null; // TODO
+      case "comment" -> AriaRole.COMMENT;
+      case "complementary" -> AriaRole.COMPLEMENTARY;
+      case "composite" -> null; // TODO
+      case "contentinfo" -> AriaRole.CONTENTINFO;
+      case "definition" -> AriaRole.DEFINITION;
+      case "dialog" -> AriaRole.DIALOG;
+      case "directory" -> AriaRole.DIRECTORY;
+      case "document" -> AriaRole.DOCUMENT;
+      case "feed" -> AriaRole.FEED;
+      case "figure" -> AriaRole.FIGURE;
+      case "form" -> AriaRole.FORM;
+      case "generic" -> AriaRole.GENERIC;
+      case "grid" -> AriaRole.GRID;
+      case "gridcell" -> AriaRole.GRIDCELL;
+      case "group" -> AriaRole.GROUP;
+      case "heading" -> AriaRole.HEADING;
+      case "img" -> AriaRole.IMG;
+      case "input" -> AriaRole.TEXTBOX; // TODO: Type of input
+      case "landmark" -> null; // TODO
+      case "link" -> AriaRole.LINK;
+      case "list" -> AriaRole.LIST;
+      case "listbox" -> AriaRole.LISTBOX;
+      case "listitem" -> AriaRole.LISTITEM;
+      case "log" -> AriaRole.LOG;
+      case "main" -> AriaRole.MAIN;
+      case "mark" -> AriaRole.MARK;
+      case "marquee" -> AriaRole.MARQUEE;
+      case "math" -> AriaRole.MATH;
+      case "menu" -> AriaRole.MENU;
+      case "menubar" -> AriaRole.MENUBAR;
+      case "menuitem" -> AriaRole.MENUITEM;
+      case "menuitemcheckbox" -> AriaRole.MENUITEMCHECKBOX;
+      case "menuitemradio" -> AriaRole.MENUITEMRADIO;
+      case "meter" -> AriaRole.METER;
+      case "navigation" -> AriaRole.NAVIGATION;
+      case "none" -> AriaRole.NONE;
+      case "note" -> AriaRole.NOTE;
+      case "option" -> AriaRole.OPTION;
+      case "presentation" -> AriaRole.PRESENTATION;
+      case "progressbar" -> AriaRole.PROGRESSBAR;
+      case "radio" -> AriaRole.RADIO;
+      case "radiogroup" -> AriaRole.RADIOGROUP;
+      case "range" -> null; // TODO
+      case "region" -> AriaRole.REGION;
+      case "roletype" -> null; // TODO
+      case "row" -> AriaRole.ROW;
+      case "rowgroup" -> AriaRole.ROWGROUP;
+      case "rowheader" -> AriaRole.ROWHEADER;
+      case "scrollbar" -> AriaRole.SCROLLBAR;
+      case "search" -> AriaRole.SEARCH;
+      case "searchbox" -> AriaRole.SEARCHBOX;
+      case "section" -> AriaRole.SECTION;
+      case "sectionhead" -> AriaRole.SECTIONHEADER;
+      case "select" -> AriaRole.SELECT;
+      case "separator" -> AriaRole.SEPARATOR;
+      case "slider" -> AriaRole.SLIDER;
+      case "spinbutton" -> AriaRole.SPINBUTTON;
+      case "status" -> AriaRole.STATUS;
+      case "structural", "structure" -> null;
+      case "suggestion" -> AriaRole.SUGGESTION;
+      case "switch" -> AriaRole.SWITCH;
+      case "tab" -> AriaRole.TAB;
+      case "table" -> AriaRole.TABLE;
+      case "tablist" -> AriaRole.TABLIST;
+      case "tabpanel" -> AriaRole.TABPANEL;
+      case "term" -> AriaRole.TERM;
+      case "textbox" -> AriaRole.TEXTBOX;
+      case "timer" -> AriaRole.TIMER;
+      case "toolbar" -> AriaRole.TOOLBAR;
+      case "tooltip" -> AriaRole.TOOLTIP;
+      case "tree" -> AriaRole.TREE;
+      case "treegrid" -> AriaRole.TREEGRID;
+      case "treeitem" -> AriaRole.TREEITEM;
+      case "widget" -> null;
+      case "window" -> AriaRole.WINDOW; // TODO
+      default -> null;
     };
   }
 
