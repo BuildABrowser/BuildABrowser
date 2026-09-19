@@ -6,4 +6,6 @@ public interface A11YProvider {
   
   A11YFrame createFrame(A11YOps ops) throws IOException;
 
+  void initialize() throws Exception;
+
 }

@@ -54,7 +54,6 @@ public class AKA11YFocusManager implements A11YFocusManager {
       callbacks.ifPresent(c -> c.onNodeFocused(focusedNode));
     }
 
-    System.out.println("Focused " + focused);
     ak4jHandle.adapter().setFocus(focused);
   }
 

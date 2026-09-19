@@ -1,13 +1,15 @@
-package net.buildabrowser.babbrowser.a11y.core;
+package net.buildabrowser.babbrowser.a11y.core.noop;
 
+import net.buildabrowser.babbrowser.a11y.core.A11YFocusManager;
+import net.buildabrowser.babbrowser.a11y.core.A11YFrame;
 import net.buildabrowser.babbrowser.a11y.core.aom.AriaEvent;
 import net.buildabrowser.babbrowser.dom.Node;
 
-public class DummyA11YFrame implements A11YFrame {
+public class NoOpA11YFrame implements A11YFrame {
 
   @Override
   public A11YFocusManager a11yFocusManager() {
-    return null; // TODO: Return valid focus manager?
+    return new NoOpA11YFocusManager();
   }
 
   @Override

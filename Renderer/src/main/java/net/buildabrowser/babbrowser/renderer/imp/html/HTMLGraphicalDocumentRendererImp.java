@@ -346,7 +346,6 @@ public class HTMLGraphicalDocumentRendererImp implements GraphicalDocumentRender
         if (
           (this.invalidationLevel & (InvalidationLevel.BOX | InvalidationLevel.LAYOUT)) == 0
         ) {
-          System.out.println("Trigger update");
           a11yFrame.update(document);
         }
       });
