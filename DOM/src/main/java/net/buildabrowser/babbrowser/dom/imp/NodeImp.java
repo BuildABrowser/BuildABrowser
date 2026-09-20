@@ -7,6 +7,11 @@ import net.buildabrowser.babbrowser.dom.util.HTMLSerializerUtil;
 
 public abstract class NodeImp implements Node {
 
+  // TODO: There's no way we can overflow this long... right?
+  private static long nextAriaId = 1;
+
+  private final long ariaId = nextAriaId++;
+
   private NodeList nodeList;
 
   protected Node parentNode;
@@ -102,6 +107,10 @@ public abstract class NodeImp implements Node {
   }
 
   @Override
+  public long ariaId() {
+    return this.ariaId;
+  }
+  
   public String toString() {
     return HTMLSerializerUtil.serializeNode(this);
   }

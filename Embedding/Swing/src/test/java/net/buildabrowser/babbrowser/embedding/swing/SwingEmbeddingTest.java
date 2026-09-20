@@ -8,8 +8,9 @@ import java.awt.event.WindowEvent;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 
+import net.buildabrowser.babbrowser.common.util.CommonUtil;
 import net.buildabrowser.babbrowser.embedding.swing.SwingEmbedding.FrameAndComponent;
-
+Z
 public class SwingEmbeddingTest {
   
   public static void main(String[] args) {
@@ -17,7 +18,8 @@ public class SwingEmbeddingTest {
   }
 
   private static void start() {
-    FrameAndComponent frameAndComponent = SwingEmbedding.newFrameComponent("https://whatismybrowser.com/");
+    FrameAndComponent frameAndComponent = CommonUtil.rethrow(
+      () -> SwingEmbedding.newFrameComponent("https://whatismybrowser.com/"));
     Component frameComponent = frameAndComponent.component();
 
     JFrame jframe = new JFrame("BuildABrowser - Swing Embedded Renderer");
@@ -26,7 +28,7 @@ public class SwingEmbeddingTest {
     jframe.addWindowListener(new WindowAdapter() {
       @Override
       public void windowClosing(WindowEvent e) {
-        frameAndComponent.frame().close();
+        CommonUtil.rethrowV(() -> frameAndComponent.frame().close());
         jframe.dispose();
       }
     });

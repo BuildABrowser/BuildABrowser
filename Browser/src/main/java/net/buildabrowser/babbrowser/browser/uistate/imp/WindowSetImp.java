@@ -2,6 +2,7 @@ package net.buildabrowser.babbrowser.browser.uistate.imp;
 
 import static net.buildabrowser.babbrowser.common.util.CompatUtil.getLast;
 
+import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.net.URI;
 import java.util.ArrayList;
@@ -33,7 +34,7 @@ public class WindowSetImp implements WindowSet {
   }
   
   @Override
-  public void close() {
+  public void close() throws IOException {
     for (Window window: List.copyOf(windows)) {
       window.close();
     }

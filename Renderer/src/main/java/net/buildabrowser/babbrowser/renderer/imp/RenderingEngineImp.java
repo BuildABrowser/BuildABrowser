@@ -8,6 +8,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import net.buildabrowser.babbrowser.a11y.core.A11YProvider;
 import net.buildabrowser.babbrowser.common.datastruct.SlotFamilyFamily;
 import net.buildabrowser.babbrowser.common.util.CommonUtil;
 import net.buildabrowser.babbrowser.cssbase.cssom.StyleSheetList;
@@ -34,6 +35,7 @@ public class RenderingEngineImp implements RenderingEngine {
   private final FetchEngine fetchEngine;
   private final Supplier<ExecutorService> threadGroupSupplier;
   private final Painter painter;
+  private final A11YProvider a11yProvider;
   private final DocumentLoaderRegistry documentLoaderRegistry;
   private final ResourceResolver resourceResolver;
   private final ClipboardProvider<?> clipboardProvider;
@@ -44,6 +46,7 @@ public class RenderingEngineImp implements RenderingEngine {
     FetchEngine fetchEngine,
     Supplier<ExecutorService> threadGroupSupplier,
     Painter painter,
+    A11YProvider a11yProvider,
     DocumentLoaderRegistry documentLoaderRegistry,
     ResourceResolver resourceResolver,
     ClipboardProvider<?> clipboardProvider,
@@ -53,6 +56,7 @@ public class RenderingEngineImp implements RenderingEngine {
     this.fetchEngine = fetchEngine;
     this.threadGroupSupplier = threadGroupSupplier;
     this.painter = painter;
+    this.a11yProvider = a11yProvider;
     this.documentLoaderRegistry = documentLoaderRegistry;
     this.resourceResolver = resourceResolver;
     this.clipboardProvider = clipboardProvider;
@@ -62,7 +66,7 @@ public class RenderingEngineImp implements RenderingEngine {
   }
 
   @Override
-  public Frame createFrame() {
+  public Frame createFrame() throws IOException {
     return Frame.create(this);
   }
 
@@ -70,7 +74,7 @@ public class RenderingEngineImp implements RenderingEngine {
   public NavigableRendererPair createNavigable(
     Frame frame,
     DocumentRendererEventListener eventListener
-  ) {
+  ) throws IOException {
     Navigable navigable = TraversableUtil.createNewTopLevelTraversable(
       new UANavigableOptionsImp(
         fetchEngine, threadGroupSupplier, documentLoaderRegistry,
@@ -89,6 +93,11 @@ public class RenderingEngineImp implements RenderingEngine {
   @Override
   public Painter painter() {
     return this.painter;
+  }
+
+  @Override
+  public A11YProvider a11yProvider() {
+    return this.a11yProvider;
   }
   
   @Override

@@ -1,5 +1,6 @@
 package net.buildabrowser.babbrowser.renderer.imp;
 
+import java.io.IOException;
 import java.util.Optional;
 
 import net.buildabrowser.babbrowser.dom.listener.DocumentChangeListener;
@@ -67,6 +68,16 @@ public class DelegatingGraphicalDocumentRenderer implements GraphicalDocumentRen
   }
 
   @Override
+  public void onDocumentFocused() {
+    activeRenderer().onDocumentFocused();
+  }
+
+  @Override
+  public void onDocumentBlurred() {
+    activeRenderer().onDocumentBlurred();
+  }
+
+  @Override
   public Optional<String> title() {
     return activeRenderer().title();
   }
@@ -77,6 +88,10 @@ public class DelegatingGraphicalDocumentRenderer implements GraphicalDocumentRen
   }
 
   @Override
+  public void close() throws IOException {
+    activeRenderer().close();
+  }
+  
   public FrameAPIs frameAPIs() {
     return activeRenderer().frameAPIs();
   }

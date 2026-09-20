@@ -1,5 +1,6 @@
 package net.buildabrowser.babbrowser.renderer.uistate.imp;
 
+import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,6 +19,7 @@ import net.buildabrowser.babbrowser.renderer.GraphicalDocumentRenderer;
 import net.buildabrowser.babbrowser.renderer.GraphicalDocumentRenderer.DebuggableDocumentRendererEventListener;
 import net.buildabrowser.babbrowser.renderer.RenderingEngine;
 import net.buildabrowser.babbrowser.renderer.RenderingEngine.NavigableRendererPair;
+import net.buildabrowser.babbrowser.renderer.imp.DelegatingGraphicalDocumentRenderer;
 import net.buildabrowser.babbrowser.renderer.uistate.DebuggableFrame;
 import net.buildabrowser.babbrowser.renderer.uistate.FrameAPIs;
 import net.buildabrowser.babbrowser.renderer.uistate.event.BrowserEventDispatcher;
@@ -35,7 +37,11 @@ public class FrameImp implements DebuggableFrame {
   private final List<FrameDebugger> attachedDebuggers = new ArrayList<>(1);
   private final List<DocumentChangeListener> attachedChangeListeners = new ArrayList<>(1);
 
-  public FrameImp(RenderingEngine renderingEngine) {
+  private boolean focused;
+
+  public FrameImp(
+    RenderingEngine renderingEngine
+  ) throws IOException {
     this.renderingEngine = renderingEngine;
     this.frameAPIs = renderingEngine.newFrameAPIs(this);
     NavigableRendererPair navigableRendererPair = renderingEngine.createNavigable(
@@ -46,6 +52,11 @@ public class FrameImp implements DebuggableFrame {
         public void onNavigate(URI url) {
           eventDispatcher.fire(l -> l.onURLChange(url));
           eventDispatcher.fire(listener -> listener.onTitleChange(getTitle()));
+          if (focused) {
+            renderer.onDocumentFocused();
+          } else {
+            renderer.onDocumentBlurred();
+          }
           updateDebuggers();
         }
 
@@ -72,7 +83,8 @@ public class FrameImp implements DebuggableFrame {
       });
       
     this.navigable = navigableRendererPair.navigable();
-    this.renderer = navigableRendererPair.renderer();
+    // TODO: This is not great
+    this.renderer = (DelegatingGraphicalDocumentRenderer) navigableRendererPair.renderer();
   }
 
   @Override
@@ -117,7 +129,7 @@ public class FrameImp implements DebuggableFrame {
   }
 
   @Override
-  public void close() {
+  public void close() throws IOException {
     renderer.close();
 
     Window window = navigable.activeDocument().browsingContext().activeWindow();
@@ -157,6 +169,22 @@ public class FrameImp implements DebuggableFrame {
   @Override
   public void removeRepaintListener(Runnable repaintListener) {
     navigable.uaNavigableOptions().removeRepaintListener(repaintListener);
+  }
+
+  @Override
+  public void focus() {
+    if (!this.focused) {
+      renderer.onDocumentFocused();
+      this.focused = true;
+    }
+  }
+
+  @Override
+  public void blur() {
+    if (this.focused) {
+      renderer.onDocumentBlurred();
+      this.focused = false;
+    }
   }
 
   @Override

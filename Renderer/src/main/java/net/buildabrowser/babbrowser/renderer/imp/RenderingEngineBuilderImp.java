@@ -4,6 +4,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import net.buildabrowser.babbrowser.a11y.core.A11YProvider;
 import net.buildabrowser.babbrowser.cookies.CookieStore;
 import net.buildabrowser.babbrowser.fetch.FetchBackend;
 import net.buildabrowser.babbrowser.fetch.FetchConfig;
@@ -26,6 +27,7 @@ public class RenderingEngineBuilderImp implements RenderingEngineBuilder {
   private FetchBackend fetchBackend;
   private FetchPolicy fetchPolicy;
   private CookieStore cookieStore;
+  private A11YProvider a11yProvider;
   private UAChooser uaChooser;
   private Supplier<ExecutorService> threadGroupSupplier;
   private Painter painter;
@@ -51,6 +53,12 @@ public class RenderingEngineBuilderImp implements RenderingEngineBuilder {
   @Override
   public RenderingEngineBuilder setCookieStore(CookieStore cookieStore) {
     this.cookieStore = cookieStore;
+    return this;
+  }
+
+  @Override
+  public RenderingEngineBuilder setA11YProvider(A11YProvider a11yProvider) {
+    this.a11yProvider = a11yProvider;
     return this;
   }
 
@@ -113,6 +121,7 @@ public class RenderingEngineBuilderImp implements RenderingEngineBuilder {
     checkNotNull(fetchBackend, "fetchBackend");
     checkNotNull(fetchPolicy, "fetchPolicy");
     checkNotNull(cookieStore, "cookieStore");
+    checkNotNull(a11yProvider, "a11yProvider");
     checkNotNull(uaChooser, "uaChooser");
     checkNotNull(threadGroupSupplier, "threadGroupSupplier");
     checkNotNull(painter, "painter");
@@ -129,6 +138,7 @@ public class RenderingEngineBuilderImp implements RenderingEngineBuilder {
       fetchConfig,
       threadGroupSupplier,
       painter,
+      a11yProvider,
       documentLoaderRegistry,
       resourceResolver,
       clipboardProvider,

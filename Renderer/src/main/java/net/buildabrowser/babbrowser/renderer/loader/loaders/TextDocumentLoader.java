@@ -2,6 +2,8 @@ package net.buildabrowser.babbrowser.renderer.loader.loaders;
 
 import static net.buildabrowser.babbrowser.htmlparser.insertion.util.ParseElementUtil.createHTMLElementForName;
 
+import java.io.IOException;
+
 import net.buildabrowser.babbrowser.common.datastruct.SlotFamilyFamily;
 import net.buildabrowser.babbrowser.fetch.FetchResponse;
 import net.buildabrowser.babbrowser.html.events.EventLoop;
@@ -28,7 +30,7 @@ public class TextDocumentLoader implements DocumentLoader {
     Frame frame,
     NavigationParams navigationParams,
     SlotFamilyFamily slotFamilyFamily
-  ) {
+  ) throws IOException {
     FetchResponse response = navigationParams.response();
     // TODO: Proper way to obtain a document and its browsing context
     HTMLDocument document = HTMLDocument.create(

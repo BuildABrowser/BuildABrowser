@@ -1,5 +1,7 @@
 package net.buildabrowser.babbrowser.renderer.loader;
 
+import java.io.IOException;
+
 import net.buildabrowser.babbrowser.common.datastruct.SlotFamilyFamily;
 import net.buildabrowser.babbrowser.html.html.RenderableDocument;
 import net.buildabrowser.babbrowser.html.navigation.NavigationParams;
@@ -15,6 +17,6 @@ public interface DocumentLoader {
     Frame frame,
     NavigationParams navigationParams,
     SlotFamilyFamily slotFamilyFamily
-  );
+  ) throws IOException;
   
 }

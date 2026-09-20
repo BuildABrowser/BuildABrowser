@@ -4,10 +4,12 @@ import java.net.URI;
 import java.util.List;
 import java.util.UUID;
 
+import net.buildabrowser.babbrowser.common.util.CommonUtil;
 import net.buildabrowser.babbrowser.common.util.URLUtil2;
 import net.buildabrowser.babbrowser.html.events.EventLoop;
 import net.buildabrowser.babbrowser.html.html.RenderableDocument;
 import net.buildabrowser.babbrowser.html.navigation.BrowsingContext;
+import net.buildabrowser.babbrowser.html.navigation.DocumentRenderer;
 import net.buildabrowser.babbrowser.html.navigation.DocumentState;
 import net.buildabrowser.babbrowser.html.navigation.Navigable;
 import net.buildabrowser.babbrowser.html.navigation.NavigateParameters;
@@ -125,6 +127,7 @@ public class NavigableImp implements Navigable {
         navigationParams,
         true,
         () -> {
+          closeActiveRenderer();
           traversable().appendSessionHistoryTraversalSteps(() -> {
             finalizeACrossDocumentNavigation(
               navigateParameters.historyHandling,
@@ -136,6 +139,12 @@ public class NavigableImp implements Navigable {
         uaNavigableOptions.onNavigate(historyEntry.url());
       }
     });
+  }
+
+  private void closeActiveRenderer() {
+    DocumentRenderer renderer = activeSessionHistory.document().renderer();
+    if (renderer == null) return;
+    CommonUtil.rethrowV(() -> renderer.close());
   }
 
   @Override
@@ -244,6 +253,8 @@ public class NavigableImp implements Navigable {
   public void activateHistoryEntry(SessionHistoryEntry entry) {
     // TODO: Other steps
     this.activeSessionHistory = entry;
+    CommonUtil.rethrowV(() -> entry
+      .document().renderer().reactivate());
     uaNavigableOptions.onNavigate(entry.url());
     uaNavigableOptions.requestRepaint();
   }

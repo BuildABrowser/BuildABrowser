@@ -5,6 +5,9 @@ import java.net.URI;
 import java.util.List;
 import java.util.function.Supplier;
 
+import net.buildabrowser.babbrowser.a11y.accesskit.AKA11YProvider;
+import net.buildabrowser.babbrowser.a11y.core.A11YProvider;
+import net.buildabrowser.babbrowser.a11y.core.noop.NoOpA11YProvider;
 import net.buildabrowser.babbrowser.browser.util.FileUtil;
 import net.buildabrowser.babbrowser.cookies.CookieStore;
 import net.buildabrowser.babbrowser.cookies.PublicSuffixList;
@@ -28,6 +31,7 @@ import net.buildabrowser.jflags.types.URIFlagType;
 public record BrowserArguments(
   Supplier<ComponentPainter<Component>> painter,
   CookieStoreSupplier cookieStore,
+  Supplier<A11YProvider> a11yProvider,
   URI profilePath,
   List<URI> launchPaths,
   boolean noRelaunch
@@ -52,6 +56,11 @@ public record BrowserArguments(
     = (_, suffixList) -> new InMemoryCookieStore(suffixList);
   private static final CookieStoreSupplier COOKIE_STORE_NO_OP
     = (_, suffixList) -> new NoOpCookieStore(suffixList);
+
+  private static final Supplier<A11YProvider> A11Y_PROVIDER_ACCESSKIT
+    = () -> new AKA11YProvider();
+  private static final Supplier<A11YProvider> A11Y_PROVIDER_NO_OP
+    = () -> new NoOpA11YProvider();
 
   public static BrowserArguments parse(String[] args) {
     String osName = System.getProperty("os.name").toLowerCase();
@@ -86,6 +95,17 @@ public record BrowserArguments(
         .option("disabled", COOKIE_STORE_NO_OP)
         .build())
       .defaultValue(isSupportedOS ? COOKIE_STORE_SQLITE : COOKIE_STORE_IN_MEMORY)
+      .build();
+
+    Flag<Supplier<A11YProvider>> a11yProviderFlag = Flag.<Supplier<A11YProvider>>builder()
+      .name("accessibility-provider")
+      .alias("a11y")
+      .helpText("Select the A11Y provider")
+      .flagType(OptionFlagType.<Supplier<A11YProvider>>builder()
+        .option("accesskit", A11Y_PROVIDER_ACCESSKIT)
+        .option("disabled", A11Y_PROVIDER_NO_OP)
+        .build())
+      .defaultValue(A11Y_PROVIDER_NO_OP)
       .build();
 
     Flag<URI> profileURI = Flag.<URI>builder()
@@ -123,6 +143,7 @@ public record BrowserArguments(
       .helpHeader("BuildABrowser Browser is an experimental browser with a custom rendering engine.")
       .flag(graphicsBackendFlag)
       .flag(cookieStoreFlag)
+      .flag(a11yProviderFlag)
       .flag(profileURI)
       .flag(noRelaunchFlag)
       .flag(helpFlag)
@@ -147,6 +168,7 @@ public record BrowserArguments(
     return new BrowserArguments(
       results.value(graphicsBackendFlag).get(),
       results.value(cookieStoreFlag).get(),
+      results.value(a11yProviderFlag).get(),
       results.value(profileURI).get(),
       results.value(launchPathsFlag).get(),
       results.present(noRelaunchFlag)

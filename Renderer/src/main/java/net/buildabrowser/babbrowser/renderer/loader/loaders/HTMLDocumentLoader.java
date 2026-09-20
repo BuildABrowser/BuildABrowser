@@ -1,5 +1,6 @@
 package net.buildabrowser.babbrowser.renderer.loader.loaders;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.atomic.AtomicLong;
@@ -32,7 +33,7 @@ public class HTMLDocumentLoader implements DocumentLoader {
     Frame frame,
     NavigationParams navigationParams,
     SlotFamilyFamily slotFamilyFamily
-  ) {
+  ) throws IOException {
     FetchResponse response = navigationParams.response();
     // TODO: Proper way to obtain a document and its browsing context
     HTMLDocument document = HTMLDocument.create(

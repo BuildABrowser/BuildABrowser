@@ -3,6 +3,7 @@ package net.buildabrowser.babbrowser.browser.imp;
 import java.awt.Component;
 import java.net.URI;
 
+import net.buildabrowser.babbrowser.a11y.core.A11YProvider;
 import net.buildabrowser.babbrowser.browser.BrowserInstance;
 import net.buildabrowser.babbrowser.browser.net.UAChooserImp;
 import net.buildabrowser.babbrowser.browser.uistate.WindowSet;
@@ -20,7 +21,8 @@ public class BrowserInstanceImp implements BrowserInstance {
   public BrowserInstanceImp(
     URI profilePath,
     ComponentPainter<Component> painter,
-    CookieStore cookieStore
+    CookieStore cookieStore,
+    A11YProvider a11yProvider
   ) {
     this.windowSet = WindowSet.create(this);
 
@@ -29,6 +31,7 @@ public class BrowserInstanceImp implements BrowserInstance {
     builder
       .setPainter(painter)
       .setCookieStore(cookieStore)
+      .setA11YProvider(a11yProvider)
       .setTabManager(new TabManagerImp(windowSet))
       .setUAChooser(new UAChooserImp())
       .setDownloadManager(new DownloadManagerImp());

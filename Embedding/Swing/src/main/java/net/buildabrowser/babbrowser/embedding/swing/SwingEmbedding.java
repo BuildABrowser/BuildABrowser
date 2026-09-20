@@ -2,6 +2,9 @@ package net.buildabrowser.babbrowser.embedding.swing;
 
 import java.awt.Component;
 import java.awt.KeyboardFocusManager;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.io.IOException;
 import java.net.URI;
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicReference;
@@ -39,13 +42,15 @@ public final class SwingEmbedding {
       .setPainter(new Java2DPainter());
   }
 
-  public static FrameAndComponent newFrameComponent(String url) {
+  public static FrameAndComponent newFrameComponent(
+    String url
+  ) throws IOException {
     return newFrameComponent(url, null);
   }
 
   public static FrameAndComponent newFrameComponent(
     String url, ComponentPainter<Component> painter
-  ) {
+  ) throws IOException {
     RenderingEngineBuilder builder = RenderingEngineBuilder.create();
     SwingEmbedding.configure(builder);
     if (painter != null) {
@@ -106,8 +111,12 @@ public final class SwingEmbedding {
 
         if (lastFrame != null) {
           lastFrame.removeRepaintListener(repaintListener);
+          lastFrame.blur();
         }
         activeFrame.addRepaintListener(repaintListener);
+        if (currentComponent.get().hasFocus()) {
+          activeFrame.focus();
+        }
         this.lastFrame = activeFrame;
         return activeRenderer(() -> activeFrame);
       }
@@ -145,6 +154,24 @@ public final class SwingEmbedding {
     RendererKeyboardInputAdapter keyboardHandler = new RendererKeyboardInputAdapter(
       () -> activeRenderer(activeFrameSupplier));
     panel.addKeyListener(keyboardHandler);
+
+    panel.addFocusListener(new FocusListener() {
+
+      @Override
+      public void focusGained(FocusEvent e) {
+        Frame frame = activeFrameSupplier.get();
+        if (frame == null) return;
+        frame.focus();
+      }
+
+      @Override
+      public void focusLost(FocusEvent e) {
+        Frame frame = activeFrameSupplier.get();
+        if (frame == null) return;
+        frame.blur();
+      }
+      
+    });
   }
 
   private static GraphicalDocumentRenderer activeRenderer(Supplier<Frame> activeFrameSupplier) {

@@ -1,5 +1,6 @@
 package net.buildabrowser.babbrowser.renderer.imp;
 
+import java.io.IOException;
 import java.net.URI;
 import java.util.LinkedList;
 import java.util.List;
@@ -63,7 +64,9 @@ public class UANavigableOptionsImp implements UANavigableOptions {
   }
 
   @Override
-  public RenderableDocument loadDocument(NavigationParams navigationParams) {
+  public RenderableDocument loadDocument(
+    NavigationParams navigationParams
+  ) throws IOException {
     // TODO: Use the correct mime
     DocumentLoader documentLoader = documentLoaderRegistry.getByMimeType(
       navigationParams.response().headerList().get("Content-Type"));

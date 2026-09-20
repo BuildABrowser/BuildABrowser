@@ -1,10 +1,12 @@
 package net.buildabrowser.babbrowser.renderer;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import net.buildabrowser.babbrowser.a11y.core.A11YProvider;
 import net.buildabrowser.babbrowser.cssbase.cssom.StyleSheetList;
 import net.buildabrowser.babbrowser.fetch.FetchConfig;
 import net.buildabrowser.babbrowser.fetch.FetchEngine;
@@ -21,14 +23,16 @@ import net.buildabrowser.babbrowser.renderer.uistate.FrameAPIs;
 
 public interface RenderingEngine {
 
-  Frame createFrame();
+  Frame createFrame() throws IOException;
 
   NavigableRendererPair createNavigable(
     Frame frame,
     DocumentRendererEventListener eventListener
-  );
+  ) throws IOException;
 
   Painter painter();
+
+  A11YProvider a11yProvider();
 
   ClipboardProvider<?> clipboardProvider();
 
@@ -40,6 +44,7 @@ public interface RenderingEngine {
     FetchConfig fetchConfig,
     Supplier<ExecutorService> threadGroupSupplier,
     Painter painter,
+    A11YProvider a11yProvider,
     DocumentLoaderRegistry documentLoaderRegistry,
     ResourceResolver resourceResolver,
     ClipboardProvider<?> clipboardProvider,
@@ -48,7 +53,7 @@ public interface RenderingEngine {
   ) {
     return new RenderingEngineImp(
       FetchEngine.create(fetchConfig),
-      threadGroupSupplier, painter,
+      threadGroupSupplier, painter, a11yProvider,
       documentLoaderRegistry, resourceResolver,
       clipboardProvider, virtualKeyboardFactory,
       uaUIFeatures);

@@ -18,6 +18,8 @@ public interface FocusManager {
 
   void unfocus();
 
+  boolean canFocus(Node node);
+
   // TODO: Better way to do this...
   void attachContext(FocusManagerContext context);
 

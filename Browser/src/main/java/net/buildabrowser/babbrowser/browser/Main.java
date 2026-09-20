@@ -9,6 +9,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.function.Supplier;
 
 import javax.swing.JDialog;
 import javax.swing.JFrame;
@@ -17,12 +18,15 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
+import net.buildabrowser.babbrowser.a11y.core.A11YProvider;
+import net.buildabrowser.babbrowser.a11y.core.noop.NoOpA11YProvider;
 import net.buildabrowser.babbrowser.browser.chrome.WindowSetGUI;
 import net.buildabrowser.babbrowser.browser.uistate.Window;
 import net.buildabrowser.babbrowser.browser.uistate.Window.WindowOptions;
 import net.buildabrowser.babbrowser.browser.uistate.WindowSet;
 import net.buildabrowser.babbrowser.browser.util.FileUtil;
 import net.buildabrowser.babbrowser.cookies.CookieStore;
+import net.buildabrowser.babbrowser.cookies.stores.InMemoryCookieStore;
 import net.buildabrowser.babbrowser.debugger.core.Debugger;
 import net.buildabrowser.babbrowser.debugger.swing.SwingDebugger;
 import net.buildabrowser.babbrowser.embedding.standardcommon.net.imp.PublicSuffixListImp;
@@ -44,34 +48,83 @@ public class Main {
       return;
     }
 
-    System.setProperty("org.lwjgl.opengl.contextAPI", "GLX");
-    System.setProperty("apple.laf.useScreenMenuBar", "true");
+    System.setProperty("javax.accessibility.assistive_technologies", "");
     setLookAndFeel();
+
+    String osName = System.getProperty("os.name").toLowerCase();
+
+    boolean isLinux = osName.contains("linux");
+    if (isLinux) {
+      System.setProperty("org.lwjgl.opengl.contextAPI", "GLX");
+    }
+
+    boolean isSupportedOS = osName.contains("win") || osName.contains("linux");
+    boolean isMacOS = osName.contains("mac");
+    if (!isSupportedOS) {
+      String errorMessage = "OS named '" + osName + "' is not supported. BuildABrowser Test Program will not work here.";
+      if (isMacOS) {
+        System.setProperty("apple.laf.useScreenMenuBar", "true");
+        errorMessage += " Please contribute.";
+      }
+      showDialog("OS Not Supported!", errorMessage, JOptionPane.WARNING_MESSAGE);
+      // no return;
+    }
 
     URI profilePath = FileUtil.asDirectory(arguments.profilePath());
     new File(profilePath.getSchemeSpecificPart()).mkdirs();
 
-    ComponentPainter<Component> painter = arguments.painter().get();
-      if (!testPainter(painter)) {
-        JOptionPane pane = new JOptionPane(
-          "Failed to initialize graphics backend. Falling back to Java2D - Your browsing experience will be significantly degraded.",
-          JOptionPane.ERROR_MESSAGE
-        );
-        JDialog dialog = pane.createDialog("Graphics Initialization Failed!");
-        dialog.setAlwaysOnTop(true);
-        dialog.setLocationRelativeTo(null);
-        dialog.setVisible(true);
-        
-        painter = new Java2DPainter();
+    ComponentPainter<Component> painter;
+    if (!testPainter(arguments.painter())) {
+      showDialog(
+        "Graphics Initialization Failed!",
+        "Failed to initialize graphics backend. Falling back to Java2D - Your browsing experience will be significantly degraded (pass `-gbe java2d` to suppress).",
+        JOptionPane.ERROR_MESSAGE
+      );
+      
+      painter = new Java2DPainter();
+    } else {
+      painter = arguments.painter().get();
     }
 
-    CookieStore cookieStore = arguments.cookieStore().get(
-      profilePath, new PublicSuffixListImp());
+    CookieStore cookieStore;
+    try {
+      cookieStore = arguments.cookieStore().get(
+        profilePath, new PublicSuffixListImp());
+      cookieStore.initialize();
+    } catch (Throwable e) {
+      showDialog(
+        "Cookie Store Initialization Failed!",
+        "Failed to initialize cookie store. Falling back to in-memory cookie store - cookies will not persist (pass `-cs memory` to suppress).",
+        JOptionPane.ERROR_MESSAGE
+      );
+      e.printStackTrace();
+      cookieStore = new InMemoryCookieStore(new PublicSuffixListImp());
+    }
+    
+    A11YProvider a11yProvider = null;
+    boolean isA11YSupportedOS = osName.contains("linux");;
+    try {
+      if (isA11YSupportedOS) {
+        a11yProvider = arguments.a11yProvider().get();
+        a11yProvider.initialize();
+      }
+    } catch (Throwable e) {
+      e.printStackTrace();
+      a11yProvider = null;
+    }
+
+    if (a11yProvider == null) {
+      showDialog(
+        "A11Y Initialization Failed!",
+        "A11Y FFM bindings either have not been implemented for this OS, or failed to load. Disabling A11Y (pass `-a11y disabled` to suppress).",
+        JOptionPane.ERROR_MESSAGE);
+      a11yProvider = new NoOpA11YProvider();
+    }
     
     Debugger debugger = new SwingDebugger();
 
     BrowserInstance browserInstance = BrowserInstance.create(
-      profilePath, painter, cookieStore);
+      profilePath, painter, cookieStore, a11yProvider);
   
     WindowSet windowSet = browserInstance.windowSet();
     Window window = windowSet.openWindow(new WindowOptions(false));
@@ -82,6 +135,14 @@ public class Main {
     WindowSetGUI.create(windowSet, painter, debugger);
   }
 
+  private static void showDialog(String title, String message, int messageType) {
+    JOptionPane pane = new JOptionPane(message, messageType);
+    JDialog dialog = pane.createDialog(title);
+    dialog.setAlwaysOnTop(true);
+    dialog.setLocationRelativeTo(null);
+    dialog.setVisible(true);
+  }
+
   private static void setLookAndFeel() {
     try {
       UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
@@ -90,13 +151,13 @@ public class Main {
     }
   }
 
-  private static boolean testPainter(ComponentPainter<Component> painter) {
+  private static boolean testPainter(Supplier<ComponentPainter<Component>> painter) {
     CompletableFuture<Boolean> future = new CompletableFuture<>();
 
     SwingUtilities.invokeLater(() -> {
       JFrame dummyFrame = new JFrame();
       try {
-        Component dummyComponent = painter.createComponent(new CanvasCallbacks() {
+        Component dummyComponent = painter.get().createComponent(new CanvasCallbacks() {
           @Override 
           public void paint(PaintCanvas canvas) {
             future.complete(true);

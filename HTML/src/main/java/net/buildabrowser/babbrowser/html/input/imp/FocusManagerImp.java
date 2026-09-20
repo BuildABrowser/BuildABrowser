@@ -82,6 +82,13 @@ public class FocusManagerImp implements FocusManager {
     this.focusOptions = null;
   }
 
+  @Override 
+  public boolean canFocus(Node node) {
+    if (!(node instanceof HTMLOrSVGOrMathMLElement)) return false;
+    List<HTMLOrSVGOrMathMLElement> focusOrder = determineFocusOrder();
+    return focusOrder.contains(node);
+  }
+
   @Override
   public void attachContext(FocusManagerContext context) {
     this.focusManagerContext = context;

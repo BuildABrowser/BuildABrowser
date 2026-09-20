@@ -4,6 +4,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import net.buildabrowser.babbrowser.a11y.core.A11YProvider;
 import net.buildabrowser.babbrowser.cookies.CookieStore;
 import net.buildabrowser.babbrowser.fetch.FetchBackend;
 import net.buildabrowser.babbrowser.fetch.FetchPolicy;
@@ -46,6 +47,15 @@ public interface RenderingEngineBuilder {
    * @return The builder instance (for chaining)
    */
   RenderingEngineBuilder setCookieStore(CookieStore cookieStore);
+
+  /**
+   * Set the A11Y provider, making the application usable with accessibility technologies.
+   * For no accessibility, use NoOpA11YProvider
+   * On Linux, for AccessKit, use AKA11YProvider from the :A11YAccessKit subproject.
+   * @param cookieStore The A11Y provider
+   * @return The builder instance (for chaining)
+   */
+  RenderingEngineBuilder setA11YProvider(A11YProvider a11yProvider);
   
   /**
    * Set the UA chooser, which is responsible for determining what User-Agent should be attached to a given request.
