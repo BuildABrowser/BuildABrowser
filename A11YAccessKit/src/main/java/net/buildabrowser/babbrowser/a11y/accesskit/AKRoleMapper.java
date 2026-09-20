@@ -42,7 +42,7 @@ public final class AKRoleMapper {
       case IMAGE -> AKRole.IMAGE;
       case IMG -> AKRole.IMAGE;
       case INSERTION -> AKRole.CONTENT_INSERTION;
-      case LINK -> AKRole.GENERIC_CONTAINER;
+      case LINK -> AKRole.LINK;
       case LIST -> AKRole.LIST;
       case LISTBOX -> AKRole.LIST_BOX;
       case LISTITEM -> AKRole.LIST_ITEM;

@@ -53,6 +53,13 @@ public class AKAriaCallbacks implements AriaCallbacks<MemorySegment> {
     if (node instanceof Element element) {
       ak4jHandle.nodes().setHTMLTag(nodePtr, element.name(), scope);
 
+      // TODO: Need to filter to a elements?
+      String hrefAttr = element.getAttribute("href");
+      if (hrefAttr != null) {
+        ak4jHandle.nodes().setHref(nodePtr, hrefAttr, scope);
+        ak4jHandle.nodes().addAction(nodePtr, AKAction.FOCUS);
+      }
+
       if (isActivatable(element)) {
         ak4jHandle.nodes().addAction(nodePtr, AKAction.FOCUS);
         ak4jHandle.nodes().addAction(nodePtr, AKAction.CLICK);
