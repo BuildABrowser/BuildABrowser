@@ -123,13 +123,9 @@ public class Main {
       cookieStore = new InMemoryCookieStore(new PublicSuffixListImp());
     }
     
-    A11YProvider a11yProvider = null;
-    boolean isA11YSupportedOS = isLinux;
+    A11YProvider a11yProvider = arguments.a11yProvider().get();
     try {
-      if (isA11YSupportedOS) {
-        a11yProvider = arguments.a11yProvider().get();
-        a11yProvider.initialize();
-      }
+      a11yProvider.initialize();
     } catch (Throwable e) {
       e.printStackTrace();
       a11yProvider = null;

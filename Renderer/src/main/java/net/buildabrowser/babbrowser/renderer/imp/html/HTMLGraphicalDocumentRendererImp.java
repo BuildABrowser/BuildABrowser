@@ -216,6 +216,7 @@ public class HTMLGraphicalDocumentRendererImp implements GraphicalDocumentRender
       PerfLogging.logBoxTime(boxStartTime);
       updateDebugger();
     }
+    if (transformOptions == null) return;
     if ((invalidationLevel & InvalidationLevel.LAYOUT) != 0) {
       long layoutStartTime = System.currentTimeMillis();
       recomputeLayout();

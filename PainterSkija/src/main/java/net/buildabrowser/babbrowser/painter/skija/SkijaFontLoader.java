@@ -15,6 +15,8 @@ import net.buildabrowser.babbrowser.painter.core.LoadedFont;
 public class SkijaFontLoader implements FontLoader {
 
   private static final boolean IS_WINDOWS = System.getProperty("os.name").toLowerCase().contains("win");
+  private static final boolean IS_MAC = System.getProperty("os.name").toLowerCase().contains("mac");
+
   private static final FontMgr manager = FontMgr.getDefault();
 
   @Override
@@ -56,19 +58,38 @@ public class SkijaFontLoader implements FontLoader {
       fonts.add(new Font(typeface, options.size()));
     }
 
+    if (fonts.isEmpty()) {
+      Typeface fallbackTypeface = manager.matchFamilyStyle(null, style);
+      if (fallbackTypeface == null) {
+        fallbackTypeface = manager.matchFamilyStyle("sans-serif", style);
+      }
+      if (fallbackTypeface != null) {
+        fonts.add(new Font(fallbackTypeface, options.size()));
+      }
+    }
+
     // TODO: Also include some default fallbacks, for other languages
     return new SkijaLoadedFont(fonts.toArray(Font[]::new), options);
   }
 
   private String resolveGenericFamily(String genericName) {
-    if (!IS_WINDOWS) return genericName;
-
-    return switch (genericName.toLowerCase()) {
-      case "sans-serif" -> "Segoe UI";
-      case "serif" -> "Times New Roman";
-      case "monospace" -> "Consolas";
-      default -> "Segoe UI";
+    if (IS_MAC) return switch (genericName.toLowerCase()) {
+      case "sans-serif" -> "Helvetica";
+      case "serif" -> "Times";
+      case "monospace" -> "Courier";
+      default -> "Helvetica";
     };
+
+    if (IS_WINDOWS) {
+      return switch (genericName.toLowerCase()) {
+        case "sans-serif" -> "Segoe UI";
+        case "serif" -> "Times New Roman";
+        case "monospace" -> "Consolas";
+        default -> "Segoe UI";
+      };
+    }
+
+    return genericName;
   }
 
   private static record SkijaFontFamily(String name, boolean isGeneric) implements FontFamily {}

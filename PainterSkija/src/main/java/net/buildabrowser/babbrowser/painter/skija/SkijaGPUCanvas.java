@@ -42,6 +42,7 @@ public class SkijaGPUCanvas extends AWTGLCanvas {
     data.minorVersion = 3;
     data.profile = GLData.Profile.CORE;
     data.forwardCompatible = true;
+    data.stencilSize = 8;
     return data;
   }
   
@@ -52,30 +53,33 @@ public class SkijaGPUCanvas extends AWTGLCanvas {
     if (this.context == null) {
       this.context = DirectContext.makeGL();
     }
-
-    this.fboId = GL31.glGetInteger(GL31.GL_FRAMEBUFFER_BINDING);
-    createSurface();
   }
 
   @Override
   public void paintGL() {
-    if (invalid) {
-      callbacks.layout(getWidth(), getHeight());
-    }
+    int currentFboId = GL31.glGetInteger(GL31.GL_FRAMEBUFFER_BINDING);
 
     if (
-      surface.getWidth() != getFramebufferWidth()
+      surface == null
+      || surface.getWidth() != getFramebufferWidth()
       || surface.getHeight() != getFramebufferHeight()
+      || this.fboId != currentFboId
     ) {
+      this.fboId = currentFboId;
       GL11.glViewport(0, 0, getFramebufferWidth(), getFramebufferHeight());
       createSurface();
+    }
+
+    if (invalid) {
+      callbacks.layout(getWidth(), getHeight());
+      invalid = false;
     }
 
     Canvas rawCanvas = surface.getCanvas();
     rawCanvas.resetMatrix();
     PaintCanvas canvas = new SkijaPaintCanvas(rawCanvas);
     callbacks.paint(canvas);
-    context.flush();
+    context.flushAndSubmit(true);
 
     this.swapBuffers();
   }
@@ -91,9 +95,17 @@ public class SkijaGPUCanvas extends AWTGLCanvas {
     this.render();
   }
 
+  @Override
+  public void removeNotify() {
+    if (this.context != null && !context.isClosed()) {
+      context.abandon();
+    }
+    super.removeNotify();
+  }
+
   private void createSurface() {
     BackendRenderTarget renderTarget = BackendRenderTarget.makeGL(
-      getWidth(), getHeight(),
+      getFramebufferWidth(), getFramebufferHeight(),
       0, 8, fboId,
       FramebufferFormat.GR_GL_RGBA8);
 
