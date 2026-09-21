@@ -6,6 +6,7 @@ import java.util.Optional;
 
 import net.buildabrowser.babbrowser.a11y.core.A11YFrame;
 import net.buildabrowser.babbrowser.a11y.core.A11YProvider;
+import net.buildabrowser.babbrowser.a11y.core.noop.NoOpA11YFrame;
 import net.buildabrowser.babbrowser.common.datastruct.SlotFamily;
 import net.buildabrowser.babbrowser.common.datastruct.SlotFamilyFamily;
 import net.buildabrowser.babbrowser.css.engine.matcher.CSSMatcher;
@@ -97,7 +98,7 @@ public class HTMLGraphicalDocumentRendererImp implements GraphicalDocumentRender
   private volatile short invalidationLevel = InvalidationLevel.BOX;
 
   private LoadedFont rootFont;
-  private A11YFrame a11yFrame;
+  private A11YFrame a11yFrame = new NoOpA11YFrame();
 
   // TODO: Switch to AtomicInteger? Synchronize?
   private int width, height;
@@ -340,12 +341,12 @@ public class HTMLGraphicalDocumentRendererImp implements GraphicalDocumentRender
   @Override
   public void close() throws IOException {
     a11yFrame.close();
-    this.a11yFrame = null;
+    this.a11yFrame = new NoOpA11YFrame();
   }
 
   @Override
   public void reactivate() throws IOException {
-    if (this.a11yFrame != null) return;
+    if (!(this.a11yFrame instanceof NoOpA11YFrame)) return;
     this.a11yFrame = a11yProvider.createFrame(
       new HTMLA11YOps(eventContext, renderContexts));
 

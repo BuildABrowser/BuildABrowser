@@ -39,6 +39,7 @@ import net.buildabrowser.babbrowser.painter.core.CanvasCallbacks;
 import net.buildabrowser.babbrowser.painter.core.ComponentPainter;
 import net.buildabrowser.babbrowser.painter.core.PaintCanvas;
 import net.buildabrowser.babbrowser.painter.java2d.Java2DPainter;
+import net.buildabrowser.babbrowser.renderer.uistate.Frame;
 
 public class Main {
 
@@ -141,6 +142,11 @@ public class Main {
     
     Debugger debugger = new SwingDebugger();
 
+    java.awt.Frame sharedFrame = JOptionPane.getRootFrame();
+    if (sharedFrame != null && sharedFrame.isDisplayable()) {
+        sharedFrame.dispose();
+    }
+
     BrowserInstance browserInstance = BrowserInstance.create(
       profilePath, painter, cookieStore, a11yProvider);
   
@@ -165,6 +171,7 @@ public class Main {
     dialog.setAlwaysOnTop(true);
     dialog.setLocationRelativeTo(null);
     dialog.setVisible(true);
+    dialog.dispose();
   }
 
   private static void setLookAndFeel() {

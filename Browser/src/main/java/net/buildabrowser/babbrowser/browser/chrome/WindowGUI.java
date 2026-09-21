@@ -51,6 +51,7 @@ public class WindowGUI extends JFrame implements WindowMutationEventListener {
     this.window = window;
     this.debugger = debugger;
 
+    this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
     this.setLayout(new GridBagLayout());
     this.setSize(new Dimension(1600, 1000));
 

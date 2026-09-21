@@ -9,6 +9,12 @@ plugins {
 def currentOs = OperatingSystem.current()
 def isArm64 = System.getProperty("os.arch") == "aarch64"
 
+String sqliteOs =
+    currentOs.isLinux() ? "Linux" :
+    currentOs.isWindows() ? "Windows" :
+    currentOs.isMacOsX() ? "Mac" : null
+String sqliteArch = isArm64 ? (currentOs.isWindows() ? "arm64" : "aarch64") : "x86_64"
+
 String lwjglNatives = null
 String skijaNatives = null
 String brotliNatives = null
@@ -130,6 +136,25 @@ tasks.named('shadowJar') {
     
     from(tasks.named('generateLicenseReport')) {
         into('META-INF/licenses')
+    }
+
+    includeEmptyDirs = false
+
+    if (currentOs.isLinux()) {
+        exclude '**/*.dll', '**/*.dylib', '**/*.jnilib'
+    } else if (currentOs.isWindows()) {
+        exclude '**/*.so', '**/*.dylib', '**/*.jnilib'
+    } else if (currentOs.isMacOsX()) {
+        exclude '**/*.dll', '**/*.so'
+    }
+
+    if (sqliteOs != null) {
+        def targetSqlitePath = "org/sqlite/native/${sqliteOs}/${sqliteArch}/"
+        eachFile { FileCopyDetails details ->
+            if (details.path.startsWith('org/sqlite/native/') && !details.path.startsWith(targetSqlitePath)) {
+                details.exclude()
+            }
+        }
     }
 }
 
