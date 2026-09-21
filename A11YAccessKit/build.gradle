@@ -5,6 +5,6 @@ plugins {
 dependencies {
     api project(':A11YCore')
 
-    implementation 'com.github.BuildABrowser:AK4J:-SNAPSHOT'
+    implementation "com.github.BuildABrowser.AccessKit4J:AccessKit4J:${accessKit4jVersion}"
     implementation "com.zaxxer:SparseBitSet:1.2"
 }

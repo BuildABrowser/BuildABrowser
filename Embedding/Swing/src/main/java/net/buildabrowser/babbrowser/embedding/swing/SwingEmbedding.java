@@ -5,6 +5,7 @@ import java.awt.KeyboardFocusManager;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.net.URI;
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicReference;
@@ -82,7 +83,7 @@ public final class SwingEmbedding {
 
     Component panel = painter.createComponent(new CanvasCallbacks() {
 
-      private Frame lastFrame = null;
+      private WeakReference<Frame> lastFrameRef = null;
 
       @Override
       public void layout(float width, float height) {
@@ -104,6 +105,7 @@ public final class SwingEmbedding {
 
       private GraphicalDocumentRenderer activateFrame(Supplier<Frame> activeFrameSupplier) {
         Frame activeFrame = activeFrameSupplier.get();
+        Frame lastFrame = lastFrameRef == null ? null : lastFrameRef.get();
         if (activeFrame == null) return null;
         if (activeFrame == lastFrame) {
           return activeRenderer(() -> activeFrame);
@@ -117,7 +119,7 @@ public final class SwingEmbedding {
         if (currentComponent.get().hasFocus()) {
           activeFrame.focus();
         }
-        this.lastFrame = activeFrame;
+        this.lastFrameRef = new WeakReference<>(activeFrame);
         return activeRenderer(() -> activeFrame);
       }
 

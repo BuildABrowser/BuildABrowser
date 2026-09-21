@@ -14,7 +14,7 @@ public final class Relauncher {
 
   private Relauncher() {}
 
-  public static void relaunchWithFlags(String[] args) throws IOException, URISyntaxException {
+  public static void relaunchWithFlags(String[] args) throws IOException, URISyntaxException, InterruptedException {
 
     String currentJvm = ProcessHandle.current()
       .info()
@@ -37,7 +37,7 @@ public final class Relauncher {
       command.addAll(Arrays.asList(args));
     }
 
-    new ProcessBuilder(command).inheritIO().start();
+    new ProcessBuilder(command).inheritIO().start().waitFor();
     System.exit(0);
   }
 
@@ -51,7 +51,8 @@ public final class Relauncher {
     command.add("-XX:+G1PeriodicGCInvokesConcurrent");
     command.add("-Djava.net.preferIPv4Stack=true");
     command.add("-XX:CICompilerCount=2");
-    command.add("--add-opens=java.desktop/sun.font=ALL-UNNAMED");
+    command.add("--enable-native-access=ALL-UNNAMED");
+    command.add("--sun-misc-unsafe-memory-access=allow");
     command.add("-Dawt.useSystemAAFontSettings=lcd");
 
     int jvmFeature = Runtime.version().feature();

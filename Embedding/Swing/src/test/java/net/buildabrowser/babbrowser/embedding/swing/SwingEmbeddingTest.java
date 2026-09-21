@@ -10,7 +10,7 @@ import javax.swing.SwingUtilities;
 
 import net.buildabrowser.babbrowser.common.util.CommonUtil;
 import net.buildabrowser.babbrowser.embedding.swing.SwingEmbedding.FrameAndComponent;
-Z
+
 public class SwingEmbeddingTest {
   
   public static void main(String[] args) {

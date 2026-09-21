@@ -3,6 +3,7 @@ package net.buildabrowser.babbrowser.embedding.standardcommon;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import net.buildabrowser.babbrowser.a11y.core.noop.NoOpA11YProvider;
 import net.buildabrowser.babbrowser.cookies.stores.InMemoryCookieStore;
 import net.buildabrowser.babbrowser.embedding.standardcommon.imp.BasicUAChooserImp;
 import net.buildabrowser.babbrowser.embedding.standardcommon.imp.NoOpDownloadManager;
@@ -30,6 +31,7 @@ public final class StandardCommonEmbedding {
       .setFetchBackend(fetchBackend)
       .setFetchPolicy(new FetchPolicy() {})
       .setCookieStore(new InMemoryCookieStore(_1 -> false))
+      .setA11YProvider(new NoOpA11YProvider())
       .setUAChooser(new BasicUAChooserImp())
       .setDocumentLoaderRegistry(loaderRegistry)
       .setVirtualKeyboardFactory(_1 -> new VirtualKeyboard() {})

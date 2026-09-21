@@ -1,8 +1,10 @@
 package net.buildabrowser.babbrowser.browser;
 
 import java.awt.Component;
+import java.awt.GraphicsEnvironment;
 import java.io.File;
 import java.io.IOException;
+import java.lang.foreign.Linker;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.concurrent.CompletableFuture;
@@ -17,6 +19,9 @@ import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import net.buildabrowser.babbrowser.a11y.core.A11YProvider;
 import net.buildabrowser.babbrowser.a11y.core.noop.NoOpA11YProvider;
@@ -37,6 +42,8 @@ import net.buildabrowser.babbrowser.painter.java2d.Java2DPainter;
 
 public class Main {
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(Main.class);
+
   private static final long GRAPHICS_CHECK_TIMEOUT = 1500;
   
   public static void main(String[] args) throws IOException, URISyntaxException, InterruptedException {
@@ -44,8 +51,16 @@ public class Main {
     if (arguments == null) return;
 
     if (!arguments.noRelaunch()) {
+      LOGGER.info("Relaunching process because user did not specify --no-relaunch.");
       Relauncher.relaunchWithFlags(args);
       return;
+    }
+
+    if (GraphicsEnvironment.isHeadless()) {
+      LOGGER.error(
+        "This system does not have the facilities to run BuildABrowser Test Program,"
+        + " nor does it have the facilities to report the issue to the user.");
+      System.exit(1);
     }
 
     System.setProperty("javax.accessibility.assistive_technologies", "");
@@ -68,6 +83,13 @@ public class Main {
       }
       showDialog("OS Not Supported!", errorMessage, JOptionPane.WARNING_MESSAGE);
       // no return;
+    }
+
+    // Linux is not "GNU/Linux" or whatever names you feel like making up
+    // Despite that, BAB's natives are linked against glibc, so need to double check
+    if (isLinux && !hasGlibc()) {
+      showDialog("glibc?", "glibc?", JOptionPane.WARNING_MESSAGE);
+      // Will fall back to Java2D in a later check
     }
 
     URI profilePath = FileUtil.asDirectory(arguments.profilePath());
@@ -102,7 +124,7 @@ public class Main {
     }
     
     A11YProvider a11yProvider = null;
-    boolean isA11YSupportedOS = osName.contains("linux");;
+    boolean isA11YSupportedOS = isLinux;
     try {
       if (isA11YSupportedOS) {
         a11yProvider = arguments.a11yProvider().get();
@@ -136,6 +158,12 @@ public class Main {
   }
 
   private static void showDialog(String title, String message, int messageType) {
+    if (messageType == JOptionPane.ERROR_MESSAGE) {
+      LOGGER.error(message);
+    } else {
+      LOGGER.warn(message);
+    }
+
     JOptionPane pane = new JOptionPane(message, messageType);
     JDialog dialog = pane.createDialog(title);
     dialog.setAlwaysOnTop(true);
@@ -187,6 +215,14 @@ public class Main {
     try {
       return future.get(GRAPHICS_CHECK_TIMEOUT, TimeUnit.MILLISECONDS);
     } catch (InterruptedException | ExecutionException | TimeoutException e) {
+      return false;
+    }
+  }
+
+  private static boolean hasGlibc() {
+    try {
+      return Linker.nativeLinker().defaultLookup().find("gnu_get_libc_version").isPresent();
+    } catch (Exception e) {
       return false;
     }
   }

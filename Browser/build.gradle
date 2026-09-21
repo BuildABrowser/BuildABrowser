@@ -1,7 +1,38 @@
+import org.gradle.internal.os.OperatingSystem
+
 plugins {
     id 'application'
     id 'com.gradleup.shadow' version '9.2.0'
     id 'com.github.jk1.dependency-license-report' version '3.1.4'
+}
+
+def currentOs = OperatingSystem.current()
+def isArm64 = System.getProperty("os.arch") == "aarch64"
+
+String lwjglNatives = null
+String skijaNatives = null
+String brotliNatives = null
+boolean isLinux = false
+
+if (currentOs.isLinux()) {
+    isLinux = true
+    lwjglNatives = "natives-linux"
+    skijaNatives = "skija-linux-x64"
+    brotliNatives = isArm64 ? "native-linux-aarch64" : "native-linux-x86_64"
+} else if (currentOs.isWindows()) {
+    lwjglNatives = "natives-windows"
+    skijaNatives = "skija-windows-x64"
+    brotliNatives = isArm64 ? "native-windows-aarch64" : "native-windows-x86_64"
+} else if (currentOs.isMacOsX()) {
+    if (isArm64) {
+        lwjglNatives = "natives-macos-arm64"
+        skijaNatives = "skija-macos-arm64"
+        brotliNatives = "native-osx-aarch64"
+    } else {
+        lwjglNatives = "natives-macos"
+        skijaNatives = "skija-macos-x64"
+        brotliNatives = "native-osx-x86_64"
+    }
 }
 
 dependencies {
@@ -13,16 +44,35 @@ dependencies {
     implementation project(':CookiesSQLite')
     implementation project(':Embedding:Swing')
 
-    implementation 'com.github.BuildABrowser:JFlags:-SNAPSHOT'
+    implementation "com.github.BuildABrowser:JFlags:${jflagsVersion}"
 
     implementation 'com.github.taucher2003:t2003-logger-impl:1.0.2'
     implementation 'com.github.taucher2003:t2003-logger-binder:1.0.2'
+
+    if (skijaNatives != null) {
+        runtimeOnly "io.github.humbleui:${skijaNatives}:${skijaVersion}"
+    }
+
+    if (lwjglNatives != null) {
+        runtimeOnly platform("org.lwjgl:lwjgl-bom:${lwjglVersion}")
+        runtimeOnly "org.lwjgl:lwjgl::$lwjglNatives"
+        runtimeOnly "org.lwjgl:lwjgl-harfbuzz::$lwjglNatives"
+        runtimeOnly "org.lwjgl:lwjgl-opengl::$lwjglNatives"
+    }
+
+    if (isLinux) {
+        runtimeOnly "com.github.BuildABrowser.AccessKit4J:AccessKit4J-natives-linux:${accessKit4jVersion}"
+    }
+
+    if (brotliNatives != null) {
+        runtimeOnly "com.aayushatharva.brotli4j:${brotliNatives}:${brotliVersion}"
+    }
 }
 
 def jvmVersion = Runtime.version().feature()
 
 application {
-    mainClass = 'net.buildabrowser.babbrowser.browser.Main'
+    mainClass = 'net.buildabrowser.babbrowser.browser.Main2'
 
     def defaultJvmArgs = [
         '-Xms32m',
@@ -31,7 +81,9 @@ application {
         '-XX:+G1PeriodicGCInvokesConcurrent',
         '-Djava.net.preferIPv4Stack=true',
         '-XX:CICompilerCount=2',
-        '-Dawt.useSystemAAFontSettings=lcd'
+        '-Dawt.useSystemAAFontSettings=lcd',
+        '--enable-native-access=ALL-UNNAMED',
+        '--sun-misc-unsafe-memory-access=allow'
     ]
 
     if (jvmVersion < 25) {
@@ -42,9 +94,6 @@ application {
     } else if (jvmVersion == 25) {
         defaultJvmArgs.add('-XX:+UseCompactObjectHeaders')
     }
-
-    // -XstartOnFirstThread causes it to hang, so cannot add that
-    // (just hope macOS works by default)
 
     applicationDefaultJvmArgs = defaultJvmArgs
 }
@@ -94,3 +143,22 @@ java {
     sourceCompatibility = JavaVersion.VERSION_24
     targetCompatibility = JavaVersion.VERSION_24
 }
+
+compileJava {
+    exclude '**/Main2.java'
+}
+
+tasks.register('compileMainJava8', JavaCompile) {
+    source = fileTree('src/main/java') {
+        include '**/Main2.java'
+    }
+    destinationDirectory = layout.buildDirectory.dir('classes/java/mainJava8')
+    classpath = files()
+    options.release = 8
+}
+
+tasks.named('classes') {
+    dependsOn 'compileMainJava8'
+}
+
+sourceSets.main.output.dir(tasks.named('compileMainJava8').map { it.destinationDirectory })
