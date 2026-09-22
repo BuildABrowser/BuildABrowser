@@ -99,7 +99,9 @@ public final class PaintUtil {
         !aabbFragmentVp(boxFragment, vpIntersection, measurement)
         // TODO: Special handling for COLLAPSE.
         // TODO: Also the spec says in some cases visible children of a hidden element may be shown
-        || !boxFragment.box().properties().get(CSSProperty.VISIBILITY).equals(VisibilityValue.VISIBLE)
+        || !(
+          boxFragment.box().properties() != null
+          && boxFragment.box().properties().get(CSSProperty.VISIBILITY).equals(VisibilityValue.VISIBLE))
     )) return true;
     return false;
   }

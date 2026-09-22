@@ -6,7 +6,7 @@ public final class BrowserVersion {
   public static final String NAME_SHORT = "BABBrowser";
   public static final int MAJOR_VERSION = 0;
   public static final int MINOR_VERSION = 1;
-  public static final int PATCH_VERSION = 0;
+  public static final int PATCH_VERSION = 1;
 
   private BrowserVersion() {}
 

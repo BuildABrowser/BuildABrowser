@@ -150,6 +150,7 @@ public enum CSSProperty {
   BOTTOM(nextId(), false, CSSValue.AUTO),
   LEFT(nextId(), false, CSSValue.AUTO),
   RIGHT(nextId(), false, CSSValue.AUTO),
+  INSET(new CSSProperty[] { TOP, BOTTOM, LEFT, RIGHT }),
   
   POSITION(nextId(), false, PositionValue.STATIC),
   

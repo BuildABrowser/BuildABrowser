@@ -1,6 +1,7 @@
 package net.buildabrowser.babbrowser.browser;
 
 import java.awt.Component;
+import java.awt.Frame;
 import java.awt.GraphicsEnvironment;
 import java.io.File;
 import java.io.IOException;
@@ -39,7 +40,6 @@ import net.buildabrowser.babbrowser.painter.core.CanvasCallbacks;
 import net.buildabrowser.babbrowser.painter.core.ComponentPainter;
 import net.buildabrowser.babbrowser.painter.core.PaintCanvas;
 import net.buildabrowser.babbrowser.painter.java2d.Java2DPainter;
-import net.buildabrowser.babbrowser.renderer.uistate.Frame;
 
 public class Main {
 
@@ -142,7 +142,7 @@ public class Main {
     
     Debugger debugger = new SwingDebugger();
 
-    java.awt.Frame sharedFrame = JOptionPane.getRootFrame();
+    Frame sharedFrame = JOptionPane.getRootFrame();
     if (sharedFrame != null && sharedFrame.isDisplayable()) {
         sharedFrame.dispose();
     }

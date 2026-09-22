@@ -6,7 +6,7 @@ public class RendererVersion {
   public static final String NAME_SHORT = "BABRenderer";
   public static final int MAJOR_VERSION = 0;
   public static final int MINOR_VERSION = 1;
-  public static final int PATCH_VERSION = 0;
+  public static final int PATCH_VERSION = 1;
 
   private RendererVersion() {}
 

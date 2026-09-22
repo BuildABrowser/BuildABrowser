@@ -14,6 +14,13 @@ are in their own dedicated repositories.
 In the future, I intend to also write a guide to rebuilding some of BuildABrowser
 (a few steps already exist on the website, but progress on this front is not far along yet).
 
+## Screenshots
+
+![Screenshot of Acid2 on BuildABrowser](screenshots/acid2_demo.png)
+![Screenshot of GitHub on BuildABrowser](screenshots/github_demo.png)
+
+You can find more screenshots [here](https://buildabrowser.net/#demo)
+
 ## What are the features of BuildABrowser Browser?
 
 The browser has support for the following:
@@ -39,6 +46,8 @@ The browser has support for the following:
 
 ## Running BuildABrowser Browser
 
+The Browser requires JRE 24 or higher to run.
+
 If you downloaded BuildABrowser Browser as a release jarfile, you can run:
 ```bash
 java -jar browser.jar
@@ -59,7 +68,7 @@ cd BuildABrowser
 
 Standard Gradle commands are available:
 * `./gradlew run --args="https://example.com/` - Run BuildABrowser Browser, and open `example.com` in the new tab page
-* `./gradlew build` - Bundles building, testing, and a few other checks into the same command. A jarfile will be output to `./Browser/build/libs/Browser-0.1.0-all.jar`.
+* `./gradlew build` - Bundles building, testing, and a few other checks into the same command. A jarfile will be output to `./Browser/build/libs/Browser-0.1.1-all.jar`.
 
 Because BuildABrowser Browser is a multi-modular project, the tests maybe be split across
 build folders. Gradle should tell you where you can find a report for failing

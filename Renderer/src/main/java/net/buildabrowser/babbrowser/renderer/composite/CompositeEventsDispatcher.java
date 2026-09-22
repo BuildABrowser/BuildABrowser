@@ -13,6 +13,7 @@ import net.buildabrowser.babbrowser.renderer.event.EventHandlerResponse;
 import net.buildabrowser.babbrowser.renderer.event.EventUtil;
 import net.buildabrowser.babbrowser.renderer.event.events.RendererMouseEvent;
 import net.buildabrowser.babbrowser.renderer.fragment.BoxFragment;
+import net.buildabrowser.babbrowser.renderer.fragment.PosRefBoxFragment;
 import net.buildabrowser.babbrowser.renderer.fragment.LayoutFragment.Measurement;
 import net.buildabrowser.babbrowser.renderer.fragment.scroll.ScrollBoxFragment;
 import net.buildabrowser.babbrowser.renderer.layout.stacking.StackingContext;
@@ -143,6 +144,7 @@ public final class CompositeEventsDispatcher {
       // But we can't sync, the whole point of not being on the event loop is to handle
       // things like scrollbars while the event loop is busy
       if (observerFragment == null) return false;
+      if (observerFragment instanceof PosRefBoxFragment) continue;
       
       float childRelX =
         layerRelX - observerFragment.layerX(Measurement.BORDER) + scrollX;

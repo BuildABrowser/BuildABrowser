@@ -183,6 +183,9 @@ public final class PropertyParsers {
     "bottom", SizeParser.forInset(CSSProperty.BOTTOM),
     "left", SizeParser.forInset(CSSProperty.LEFT),
     "right", SizeParser.forInset(CSSProperty.RIGHT),
+    "inset", new ManySideShorthandParser(SizeParser.forInset(null),
+      new CSSProperty[] { CSSProperty.TOP, CSSProperty.RIGHT, CSSProperty.BOTTOM, CSSProperty.LEFT },
+      CSSProperty.INSET),
 
     "position", new PositionParser(),
     "z-index", new ZIndexParser(),
